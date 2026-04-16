@@ -1,0 +1,32 @@
+# Secrets — never commit these
+.env
+config/google_service_account.json
+
+# User data — ephemeral on Streamlit Cloud, don't track in git
+data/*.json
+data/*.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+/tmp/
+
+# Virtual environments
+venv/
+.venv/
+env/
