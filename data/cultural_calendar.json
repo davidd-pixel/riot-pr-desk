@@ -1,0 +1,427 @@
+[
+  {
+    "name": "FA Cup Final",
+    "date": "2026-05-17",
+    "end_date": null,
+    "category": "Sport",
+    "description": "The showpiece of English football's oldest cup competition. Wembley Stadium, massive TV audience.",
+    "relevance_to_riot": "Football culture, lad culture crossover, potential activation at fan zones or pubs."
+  },
+  {
+    "name": "Premier League Final Day",
+    "date": "2026-05-25",
+    "end_date": null,
+    "category": "Sport",
+    "description": "All 20 Premier League teams play simultaneously. Title deciders, relegation drama, emotional storylines.",
+    "relevance_to_riot": "High drama = high engagement. Relegation stories (e.g. Tottenham) create emotional fan content. React on the day."
+  },
+  {
+    "name": "Champions League Final",
+    "date": "2026-05-31",
+    "end_date": null,
+    "category": "Sport",
+    "description": "Europe's biggest club football match. Global audience of 400m+.",
+    "relevance_to_riot": "Global reach, watch party culture, social media moment."
+  },
+  {
+    "name": "Glastonbury Festival",
+    "date": "2026-06-24",
+    "end_date": "2026-06-28",
+    "category": "Music & Festivals",
+    "description": "UK's biggest music festival. 200k attendees, dominates social media for a full week.",
+    "relevance_to_riot": "Festival culture, outdoor lifestyle, vaping at festivals angle, huge social media moment."
+  },
+  {
+    "name": "Wimbledon",
+    "date": "2026-06-29",
+    "end_date": "2026-07-12",
+    "category": "Sport",
+    "description": "The world's most prestigious tennis tournament. Two weeks of British summer, strawberries and cream.",
+    "relevance_to_riot": "British culture, summer, health/outdoors angle, massive UK media coverage."
+  },
+  {
+    "name": "British Grand Prix (Silverstone)",
+    "date": "2026-07-05",
+    "end_date": null,
+    "category": "Sport",
+    "description": "F1 at Silverstone. 150k+ attendance, huge UK TV audience.",
+    "relevance_to_riot": "British manufacturing angle, speed/innovation parallel, fan activations."
+  },
+  {
+    "name": "Love Island Summer Series",
+    "date": "2026-06-09",
+    "end_date": "2026-08-01",
+    "category": "Entertainment",
+    "description": "ITV's biggest reality show. Dominates social media conversation for 8 weeks.",
+    "relevance_to_riot": "Youth culture, viral moments, social media engagement, potential influencer crossover."
+  },
+  {
+    "name": "Reading & Leeds Festival",
+    "date": "2026-08-28",
+    "end_date": "2026-08-30",
+    "category": "Music & Festivals",
+    "description": "Major UK bank holiday music festival across two sites.",
+    "relevance_to_riot": "Festival culture, young adult audience, outdoor lifestyle."
+  },
+  {
+    "name": "The Ashes (England Tour)",
+    "date": "2026-11-01",
+    "end_date": "2027-01-15",
+    "category": "Sport",
+    "description": "England cricket tour of Australia. Iconic sporting rivalry.",
+    "relevance_to_riot": "British vs Australian culture, late-night viewing culture."
+  },
+  {
+    "name": "Six Nations Rugby",
+    "date": "2027-02-06",
+    "end_date": "2027-03-14",
+    "category": "Sport",
+    "description": "Annual European rugby championship. England, Wales, Scotland, Ireland, France, Italy.",
+    "relevance_to_riot": "British sporting tradition, pub culture, regional pride."
+  },
+  {
+    "name": "World Cup 2026",
+    "date": "2026-06-11",
+    "end_date": "2026-07-19",
+    "category": "Sport",
+    "description": "FIFA World Cup in USA, Canada and Mexico. The biggest sporting event on the planet. England will be competing.",
+    "relevance_to_riot": "Massive global moment, England fan culture, watch parties, social media goes wild for a month."
+  },
+  {
+    "name": "Eurovision Song Contest",
+    "date": "2026-05-16",
+    "end_date": null,
+    "category": "Entertainment",
+    "description": "Annual European song contest. Huge UK viewing figures, camp culture, social media event.",
+    "relevance_to_riot": "Kitsch, fun, viral potential, UK pride/self-deprecation angle."
+  },
+  {
+    "name": "BRIT Awards",
+    "date": "2027-02-01",
+    "end_date": null,
+    "category": "Music & Festivals",
+    "description": "UK's biggest music awards ceremony. Red carpet, performances, viral moments.",
+    "relevance_to_riot": "Music culture, celebrity, British music industry."
+  },
+  {
+    "name": "Mercury Prize",
+    "date": "2026-09-15",
+    "end_date": null,
+    "category": "Music & Festivals",
+    "description": "Prestigious UK album of the year award. Celebrates innovative British music.",
+    "relevance_to_riot": "British creativity, independent spirit, challenger culture parallel."
+  },
+  {
+    "name": "Notting Hill Carnival",
+    "date": "2026-08-30",
+    "end_date": "2026-08-31",
+    "category": "Entertainment",
+    "description": "Europe's largest street carnival in London. 2 million visitors, Caribbean culture, music, food.",
+    "relevance_to_riot": "London culture, diversity, street culture, massive social reach."
+  },
+  {
+    "name": "Stoptober",
+    "date": "2026-10-01",
+    "end_date": "2026-10-31",
+    "category": "Awareness Days",
+    "description": "NHS campaign encouraging smokers to quit for 28 days in October. Major public health moment.",
+    "relevance_to_riot": "DIRECTLY RELEVANT. Riot's core mission. Biggest annual quit-smoking moment. Must activate."
+  },
+  {
+    "name": "Vaping Products Duty Go-Live",
+    "date": "2026-10-01",
+    "end_date": null,
+    "category": "Riot-Specific",
+    "description": "New excise duty on vaping products starts. \u00a32.20 per 10ml. Duty stamps required on all retail packaging.",
+    "relevance_to_riot": "CRITICAL. Trade comms, retailer support, media commentary, thought leadership."
+  },
+  {
+    "name": "Duty Stamp Compliance Deadline",
+    "date": "2027-04-01",
+    "end_date": null,
+    "category": "Riot-Specific",
+    "description": "Unstamped vaping products become illegal to sell. Full shelf compliance required.",
+    "relevance_to_riot": "CRITICAL. Final compliance deadline. Major trade and media moment."
+  },
+  {
+    "name": "World No Tobacco Day",
+    "date": "2026-05-31",
+    "end_date": null,
+    "category": "Awareness Days",
+    "description": "WHO annual campaign highlighting tobacco health risks. Global media coverage.",
+    "relevance_to_riot": "DIRECTLY RELEVANT. Harm reduction messaging, activist angle, data-led PR opportunity."
+  },
+  {
+    "name": "National No Smoking Day",
+    "date": "2027-03-10",
+    "end_date": null,
+    "category": "Awareness Days",
+    "description": "UK-specific campaign encouraging people to quit smoking.",
+    "relevance_to_riot": "DIRECTLY RELEVANT. Quit smoking angle, product promotion, retailer activation."
+  },
+  {
+    "name": "Mental Health Awareness Week",
+    "date": "2026-05-11",
+    "end_date": "2026-05-17",
+    "category": "Awareness Days",
+    "description": "UK mental health campaign. Huge social media participation, corporate comms moment.",
+    "relevance_to_riot": "Wellness angle, quitting smoking for mental health, wellbeing at work."
+  },
+  {
+    "name": "UK Autumn Budget",
+    "date": "2026-10-28",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Chancellor's Budget statement. Tax, spending, economic policy announcements.",
+    "relevance_to_riot": "Vape tax commentary, fiscal policy angle, trade impact analysis."
+  },
+  {
+    "name": "King's Speech (State Opening)",
+    "date": "2026-11-01",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Government legislative agenda for the parliamentary session.",
+    "relevance_to_riot": "Policy angle, regulatory commentary, government engagement."
+  },
+  {
+    "name": "Black Friday",
+    "date": "2026-11-27",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Biggest retail event of the year. Consumer spending frenzy.",
+    "relevance_to_riot": "Retail angle, trade activation, product promotions, anti-consumerism activist angle."
+  },
+  {
+    "name": "New Year's Resolutions",
+    "date": "2027-01-01",
+    "end_date": "2027-01-31",
+    "category": "UK Calendar",
+    "description": "January quit-smoking spike. Health, fitness, new starts dominate media.",
+    "relevance_to_riot": "DIRECTLY RELEVANT. New year = new start = quit smoking. Peak demand for switching products."
+  },
+  {
+    "name": "Dry January / Veganuary",
+    "date": "2027-01-01",
+    "end_date": "2027-01-31",
+    "category": "Awareness Days",
+    "description": "Health-focused January campaigns. Huge media and social participation.",
+    "relevance_to_riot": "Health parallel \u2014 if you can quit alcohol for a month, why not cigarettes? Crossover comms."
+  },
+  {
+    "name": "Valentine's Day",
+    "date": "2027-02-14",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Consumer gifting moment. Love, relationships, lifestyle content.",
+    "relevance_to_riot": "Lifestyle content, quirky gift angle, social media engagement."
+  },
+  {
+    "name": "I'm A Celebrity Get Me Out of Here",
+    "date": "2026-11-15",
+    "end_date": "2026-12-07",
+    "category": "Entertainment",
+    "description": "ITV's biggest autumn show. Bushtucker trials, celebrity drama, social media gold.",
+    "relevance_to_riot": "Viral moments, meme culture, social engagement opportunity."
+  },
+  {
+    "name": "Strictly Come Dancing Final",
+    "date": "2026-12-19",
+    "end_date": null,
+    "category": "Entertainment",
+    "description": "BBC's biggest entertainment show finale. Massive viewership.",
+    "relevance_to_riot": "Family viewing, end of year moment, social media."
+  },
+  {
+    "name": "Oscar Nominations",
+    "date": "2027-01-17",
+    "end_date": null,
+    "category": "Entertainment",
+    "description": "Annual Academy Award nominations. Film culture dominates media.",
+    "relevance_to_riot": "Pop culture moment, creative content angle."
+  },
+  {
+    "name": "Oscars Ceremony",
+    "date": "2027-03-02",
+    "end_date": null,
+    "category": "Entertainment",
+    "description": "Hollywood's biggest night. Global media event.",
+    "relevance_to_riot": "Late-night UK viewing, celebrity culture, red carpet."
+  },
+  {
+    "name": "Super Bowl",
+    "date": "2027-02-14",
+    "end_date": null,
+    "category": "Sport",
+    "description": "NFL championship. Even in the UK it's a cultural event \u2014 watch parties, halftime show, ad culture.",
+    "relevance_to_riot": "Ad culture angle, American vs British, watch party activation, social media."
+  },
+  {
+    "name": "GCSEs Results Day",
+    "date": "2026-08-20",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "National results day for 16-year-olds. School leavers, coming of age, media coverage.",
+    "relevance_to_riot": "Youth angle \u2014 but careful. Could activate around responsible messaging to new adults."
+  },
+  {
+    "name": "A-Level Results Day",
+    "date": "2026-08-13",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "University entry results. Young adults, next chapter, media coverage.",
+    "relevance_to_riot": "Similar to GCSEs \u2014 responsible messaging, coming-of-age moment."
+  },
+  {
+    "name": "Back to School",
+    "date": "2026-09-01",
+    "end_date": "2026-09-07",
+    "category": "UK Calendar",
+    "description": "End of summer. Retail moment. Parents, routine, new starts.",
+    "relevance_to_riot": "Retail activation, convenience store tie-in, parents quitting angle."
+  },
+  {
+    "name": "London Marathon",
+    "date": "2026-10-04",
+    "end_date": null,
+    "category": "Sport",
+    "description": "World's biggest marathon. 50k runners, massive spectator event, charity fundraising.",
+    "relevance_to_riot": "Health/fitness angle, quit smoking to run, charity partnership."
+  },
+  {
+    "name": "Bonfire Night",
+    "date": "2026-11-05",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Guy Fawkes Night. Fireworks, bonfires, outdoor social events.",
+    "relevance_to_riot": "British tradition, outdoor culture, visual content opportunity."
+  },
+  {
+    "name": "Christmas",
+    "date": "2026-12-25",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Peak gifting season. Emotional advertising, family, charity.",
+    "relevance_to_riot": "Previous success with Merry Quitmas campaign. Gifting angle, seasonal product push."
+  },
+  {
+    "name": "Boxing Day Sales",
+    "date": "2026-12-26",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Major retail event. Bargain hunting, high street activity.",
+    "relevance_to_riot": "Retail activation, trade angle, consumer deals."
+  },
+  {
+    "name": "Coachella",
+    "date": "2027-04-10",
+    "end_date": "2027-04-19",
+    "category": "Music & Festivals",
+    "description": "World's most famous music festival. Global social media moment for two weekends.",
+    "relevance_to_riot": "Global culture, festival lifestyle, influencer content."
+  },
+  {
+    "name": "Bank Holiday (May)",
+    "date": "2026-05-04",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Early May bank holiday. Long weekend, outdoor socialising.",
+    "relevance_to_riot": "Leisure, outdoor culture, convenience retail footfall."
+  },
+  {
+    "name": "Bank Holiday (Late May)",
+    "date": "2026-05-25",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Spring bank holiday. Start of summer feeling.",
+    "relevance_to_riot": "Summer kickoff, festival season begins."
+  },
+  {
+    "name": "Bank Holiday (August)",
+    "date": "2026-08-31",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Late summer bank holiday. Last hurrah of summer.",
+    "relevance_to_riot": "End of summer content, Reading/Leeds, Notting Hill Carnival."
+  },
+  {
+    "name": "Transfer Deadline Day",
+    "date": "2026-09-01",
+    "end_date": null,
+    "category": "Sport",
+    "description": "Football transfer window closes. Frantic last-minute deals, Sky Sports rolling coverage.",
+    "relevance_to_riot": "Media frenzy, social media engagement, reactive content."
+  },
+  {
+    "name": "Halloween",
+    "date": "2026-10-31",
+    "end_date": null,
+    "category": "UK Calendar",
+    "description": "Costumes, parties, horror content. Growing UK cultural moment.",
+    "relevance_to_riot": "Creative content, themed products, social media."
+  },
+  {
+    "name": "Movember",
+    "date": "2026-11-01",
+    "end_date": "2026-11-30",
+    "category": "Awareness Days",
+    "description": "Men's health awareness month. Moustache growing, charity fundraising.",
+    "relevance_to_riot": "Men's health crossover \u2014 quit smoking for Movember? Health messaging."
+  },
+  {
+    "name": "World Vape Day",
+    "date": "2026-05-30",
+    "end_date": null,
+    "category": "Awareness Days",
+    "description": "Global celebration of vaping as harm reduction. Industry-wide comms moment.",
+    "relevance_to_riot": "DIRECTLY RELEVANT. Industry leadership, activist messaging, media commentary."
+  },
+  {
+    "name": "General Election (if called)",
+    "date": "2027-01-01",
+    "end_date": "2027-12-31",
+    "category": "UK Calendar",
+    "description": "Next UK general election due by Jan 2030. Could be called earlier. Policy debates dominate media.",
+    "relevance_to_riot": "Regulatory policy angle, party positions on vaping, activist engagement."
+  },
+  {
+    "name": "Tour de France",
+    "date": "2026-07-04",
+    "end_date": "2026-07-26",
+    "category": "Sport",
+    "description": "World's biggest cycling race. Growing UK audience since British cycling success.",
+    "relevance_to_riot": "Endurance, health, outdoor lifestyle angle."
+  },
+  {
+    "name": "Edinburgh Fringe",
+    "date": "2026-08-07",
+    "end_date": "2026-08-31",
+    "category": "Entertainment",
+    "description": "World's largest arts festival. Comedy, theatre, cultural conversation for a month.",
+    "relevance_to_riot": "Creative culture, comedy partnerships, fringe activation."
+  },
+  {
+    "name": "Pride Month",
+    "date": "2026-06-01",
+    "end_date": "2026-06-30",
+    "category": "Awareness Days",
+    "description": "LGBTQ+ celebration. London Pride, corporate allyship, rainbow everything.",
+    "relevance_to_riot": "Inclusivity, community, brand values, social content."
+  },
+  {
+    "name": "Earth Day",
+    "date": "2027-04-22",
+    "end_date": null,
+    "category": "Awareness Days",
+    "description": "Environmental awareness day. Sustainability, recycling, green messaging.",
+    "relevance_to_riot": "Riot Recycle Scheme, PLA plastic, sustainability messaging."
+  },
+  {
+    "name": "tottenham relegation battle",
+    "date": "2026-04-15",
+    "end_date": null,
+    "category": "Sport",
+    "description": "tottenham may get relegated from the premier league for the first time in their history which will be a huge news story.",
+    "relevance_to_riot": "Riot are all about avoiding smoking triggers and will stress being a key trigger, there's a clear link for us",
+    "custom": true
+  }
+]

@@ -2,9 +2,12 @@
 .env
 config/google_service_account.json
 
-# User data — ephemeral on Streamlit Cloud, don't track in git
+# User data — don't track in git (except seed files below)
 data/*.json
 data/*.csv
+
+# Keep seed data so Streamlit Cloud starts with content
+!data/cultural_calendar.json
 
 # Python
 __pycache__/
