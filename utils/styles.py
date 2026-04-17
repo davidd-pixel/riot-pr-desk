@@ -529,9 +529,11 @@ def render_sidebar():
         # Logo block — white RIOT wordmark on brand red background
         if logo_b64:
             st.markdown(
-                f"""<div class="riot-logo-block">
-                    <img src="data:image/png;base64,{logo_b64}" alt="RIOT">
-                </div>
+                f"""<a href="/" target="_self" style="text-decoration:none">
+                    <div class="riot-logo-block">
+                        <img src="data:image/png;base64,{logo_b64}" alt="RIOT">
+                    </div>
+                </a>
                 <p class="riot-tagline">PR Desk · Live Loud. Do Better.</p>""",
                 unsafe_allow_html=True,
             )
