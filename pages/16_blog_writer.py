@@ -82,7 +82,7 @@ def _parse_blog(raw: str) -> dict:
         "1. SEO PACKAGE": "SEO Package",
         "2. BLOG POST": "Blog Post",
         "3. IMAGE SUGGESTIONS": "Image Suggestions",
-        "4. INTERNAL LINKS": "Internal Links",
+        "4. EXTERNAL LINKS": "External Links",
         "5. SOCIAL PROMOTION": "Social Promotion",
     }
     for line in raw.split("\n"):
@@ -182,7 +182,7 @@ def _build_blog_docx(sections: dict, blog_title: str) -> bytes:
     meta.runs[0].font.color.rgb = RGBColor(0x80, 0x80, 0x80)
     doc.add_paragraph()
 
-    section_order = ["SEO Package", "Blog Post", "Image Suggestions", "Internal Links", "Social Promotion"]
+    section_order = ["SEO Package", "Blog Post", "Image Suggestions", "External Links", "Social Promotion"]
     ordered_keys = [k for k in section_order if k in sections]
     ordered_keys += [k for k in sections if k not in section_order]
 

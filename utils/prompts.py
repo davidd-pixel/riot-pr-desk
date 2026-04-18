@@ -496,9 +496,17 @@ For each major section, provide:
 
 [Repeat for each section — aim for 4-6 image suggestions total]
 
-### 4. INTERNAL LINKS
-[3-5 suggestions for linking to other Riot pages:]
-- **Anchor text:** "[exact link text]" → Link to: [page description e.g. RIOT CONNEX product page] — Place: [where in the article]
+### 4. EXTERNAL LINKS
+[4-6 suggestions for credible external sources the blog should link to — external links add SEO authority and reader trust:]
+- **Anchor text:** "[exact link text to use in the article]" → **URL:** [full URL — be as specific as possible; for well-known resources give the exact page, for others give the domain + path] → **Source:** [organisation or publication] — **Place:** [which section of the article to place the link] — **Why:** [one sentence on why this source strengthens the claim or adds credibility]
+
+Prioritise:
+- UK government and NHS sources (e.g. gov.uk/health, nhs.uk, mhra.gov.uk)
+- Academic and clinical research (pubmed.ncbi.nlm.nih.gov, cochranelibrary.com, university pages)
+- Reputable journalism (bbc.co.uk, theguardian.com, reuters.com) for news-jacking posts
+- Industry bodies (ash.org.uk, cancerresearchuk.org, ibvta.co.uk, ukvia.co.uk)
+- Specific statistics or studies cited in the article — always link to the primary source
+Avoid linking to competitors. Do not suggest rioteliquid.com links here (those are internal).
 
 ### 5. SOCIAL PROMOTION
 **Twitter/X:** [Under 280 chars — punchy, includes a hook. No hashtag spam — max 2.]
