@@ -138,6 +138,8 @@ def run_daily_briefing(force: bool = False) -> list:
     except Exception:
         articles = []
 
+    print(f"Fetched {len(articles)} articles from news sources")
+
     if not articles:
         _save_cache({"generated_at": datetime.now(timezone.utc).isoformat(), "count": 0})
         return get_pending_opportunities()
@@ -153,11 +155,14 @@ def run_daily_briefing(force: bool = False) -> list:
         if not title or title.lower() in seen_titles:
             continue
 
+        print(f"  Analysing: {title[:80]}")
         analysis = analyse_story_for_riot(article)
         if "error" in analysis:
+            print(f"    → Error: {analysis['error']}")
             continue
 
         score = analysis.get("relevance_score", 0)
+        print(f"    → Score: {score}/10 — {analysis.get('riot_angle','')[:60]}")
         if score < 5:  # only surface genuinely relevant stories
             continue
 
