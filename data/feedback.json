@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2026-04-15T23:37:20.919724",
+    "content": "HMRC says UK businesses should apply now for Vaping Products Duty",
+    "vote": "up",
+    "context": "news_story",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-04-15T23:37:28.258093",
+    "content": "Isle Of Wight Vapers Face Price Hikes Under New Tax Plans",
+    "vote": "up",
+    "context": "news_story",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-04-15T23:37:34.197851",
+    "content": "Vapers warned cost of e-liquids set to rise later this year",
+    "vote": "up",
+    "context": "news_story",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-04-15T23:52:24.608875",
+    "content": "Calendar newsjack: Premier League Final Day",
+    "vote": "up",
+    "context": "newsjack_idea",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-04-15T23:55:13.611085",
+    "content": "Calendar newsjack: tottenham relegation battle",
+    "vote": "up",
+    "context": "newsjack_idea",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-04-16T21:31:02.302781",
+    "content": "PR Pack: Press Release",
+    "vote": "up",
+    "context": "pr_pack_section",
+    "note": ""
+  }
+]

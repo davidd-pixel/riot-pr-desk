@@ -1,0 +1,159 @@
+[
+  {
+    "id": "bb839679",
+    "name": "Sarah Butler",
+    "email": "",
+    "phone": "",
+    "publication": "The Guardian",
+    "job_title": "Retail correspondent",
+    "beats": [
+      "retail",
+      "consumer goods",
+      "business"
+    ],
+    "location": "London",
+    "type": "National",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Covers retail and consumer goods stories - please verify current role and contact details",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  },
+  {
+    "id": "e2766800",
+    "name": "James Moore",
+    "email": "",
+    "phone": "",
+    "publication": "The Independent",
+    "job_title": "Business correspondent",
+    "beats": [
+      "business",
+      "health policy",
+      "consumer affairs"
+    ],
+    "location": "London",
+    "type": "National",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Has covered vaping regulation stories - please verify current position",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  },
+  {
+    "id": "44736eb9",
+    "name": "Denis Campbell",
+    "email": "",
+    "phone": "",
+    "publication": "The Guardian",
+    "job_title": "Health policy correspondent",
+    "beats": [
+      "health policy",
+      "public health",
+      "NHS"
+    ],
+    "location": "London",
+    "type": "National",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Covers health policy including smoking cessation - verify current role",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  },
+  {
+    "id": "7ddcd7c3",
+    "name": "Rebecca Smith",
+    "email": "",
+    "phone": "",
+    "publication": "The Telegraph",
+    "job_title": "Health correspondent",
+    "beats": [
+      "health",
+      "medical research",
+      "public health"
+    ],
+    "location": "London",
+    "type": "National",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Covers health stories including tobacco/vaping topics - verify current position",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  },
+  {
+    "id": "385a23d1",
+    "name": "Oliver Haill",
+    "email": "oliver.haill@ecigclick.co.uk",
+    "phone": "",
+    "publication": "ECig Click",
+    "job_title": "Editor",
+    "beats": [],
+    "location": "UK",
+    "type": "Trade",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Leading vaping publication editor. Covers product launches, industry developments, regulatory changes. Very active in UK vaping community and frequently covers British manufacturers like Riot.",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  },
+  {
+    "id": "a9156e67",
+    "name": "Tim Phillips",
+    "email": "editorial@ecigclick.co.uk",
+    "phone": "",
+    "publication": "ECig Click",
+    "job_title": "Contributor",
+    "beats": [
+      "vaping",
+      "e-cigarettes",
+      "harm reduction"
+    ],
+    "location": "UK",
+    "type": "Trade",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Regular contributor to major vaping publication. Covers harm reduction stories and industry news. Known for balanced reporting on vaping regulation.",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  },
+  {
+    "id": "ebc94973",
+    "name": "Steve K",
+    "email": "editor@planetofthevapes.co.uk",
+    "phone": "",
+    "publication": "Planet of the Vapes",
+    "job_title": "Editor",
+    "beats": [
+      "vaping",
+      "product reviews",
+      "advocacy"
+    ],
+    "location": "UK",
+    "type": "Trade",
+    "notes": "AI-discovered (UK vaping & e-cigarettes). Editor of major UK consumer vaping site. Covers product reviews, advocacy issues, and industry news. Strong focus on UK manufacturers and harm reduction messaging.",
+    "linkedin": "",
+    "last_contacted": "",
+    "relationship_score": 1,
+    "added_date": "2026-04-16",
+    "tags": [
+      "ai-discovered"
+    ]
+  }
+]

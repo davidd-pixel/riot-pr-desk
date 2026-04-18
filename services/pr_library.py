@@ -25,8 +25,25 @@ def _ensure_file():
             json.dump([], f)
 
 
+_drive_synced = False
+
+
 def _load():
+    global _drive_synced
     _ensure_file()
+
+    if not _drive_synced:
+        _drive_synced = True
+        try:
+            from services.drive_persistence import download_json, is_configured
+            if is_configured():
+                drive_data = download_json("pr_library.json")
+                if drive_data is not None:
+                    with open(LIBRARY_FILE, "w") as f:
+                        json.dump(drive_data, f, indent=2)
+        except Exception:
+            pass
+
     try:
         with open(LIBRARY_FILE, "r") as f:
             return json.load(f)
@@ -38,6 +55,11 @@ def _save(records):
     _ensure_file()
     with open(LIBRARY_FILE, "w") as f:
         json.dump(records, f, indent=2)
+    try:
+        from services.drive_persistence import upload_json
+        upload_json("pr_library.json", records)
+    except Exception:
+        pass
 
 
 def _auto_title(input_content):

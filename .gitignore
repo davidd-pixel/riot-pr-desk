@@ -2,12 +2,12 @@
 .env
 config/google_service_account.json
 
-# User data — don't track in git (except seed files below)
-data/*.json
+# User data — tracked in git so Streamlit Cloud always has a baseline.
+# Drive persistence (drive_persistence.py) keeps Cloud data current between deploys.
 data/*.csv
 
-# Keep seed data so Streamlit Cloud starts with content
-!data/cultural_calendar.json
+# Never commit raw feedback noise
+# data/feedback.json  ← keep this tracked too so votes persist
 
 # Python
 __pycache__/

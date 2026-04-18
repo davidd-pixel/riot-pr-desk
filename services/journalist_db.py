@@ -23,6 +23,9 @@ BEAT_OPTIONS = [
 TYPE_OPTIONS = ["Trade", "National", "Regional", "Consumer", "Broadcast", "Freelance", "Online"]
 
 
+_drive_synced = False  # sync from Drive once per process startup
+
+
 def _ensure_file():
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(DB_FILE):
@@ -31,7 +34,22 @@ def _ensure_file():
 
 
 def _load():
+    global _drive_synced
     _ensure_file()
+
+    # On first load after a deploy, pull the authoritative copy from Drive
+    if not _drive_synced:
+        _drive_synced = True
+        try:
+            from services.drive_persistence import download_json, is_configured
+            if is_configured():
+                drive_data = download_json("journalists.json")
+                if drive_data is not None:
+                    with open(DB_FILE, "w") as f:
+                        json.dump(drive_data, f, indent=2)
+        except Exception:
+            pass
+
     try:
         with open(DB_FILE, "r") as f:
             return json.load(f)
@@ -43,6 +61,12 @@ def _save(records):
     _ensure_file()
     with open(DB_FILE, "w") as f:
         json.dump(records, f, indent=2)
+    # Push to Drive so data survives the next redeploy
+    try:
+        from services.drive_persistence import upload_json
+        upload_json("journalists.json", records)
+    except Exception:
+        pass
 
 
 def get_all():
