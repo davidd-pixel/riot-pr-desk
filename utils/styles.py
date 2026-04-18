@@ -203,12 +203,14 @@ def apply_global_styles():
     .riot-tagline {{
         font-family: 'PPFormula', sans-serif !important;
         font-weight: 900;
-        font-size: 0.72rem;
-        letter-spacing: 0.22em;
+        font-size: 1.35rem !important;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #FFFFFF;
+        color: #FFFFFF !important;
         text-align: left;
-        padding: 0.45rem 1.1rem 0.4rem 1.1rem;
+        padding: 0.6rem 1.1rem 0.5rem 1.1rem;
+        margin: 0;
+        line-height: 1;
     }}
     /* Sidebar nav links */
     [data-testid="stSidebar"] .stPageLink a,
@@ -243,7 +245,7 @@ def apply_global_styles():
         font-weight: 900;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #E8192C;
+        color: #E8192C !important;
         margin-top: 1.25rem;
         margin-bottom: 0.25rem;
     }}
