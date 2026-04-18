@@ -481,7 +481,7 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
       <div style="font-size:13px;color:#aaa;margin-bottom:16px">{len(opportunities)} opportunit{'ies' if len(opportunities) != 1 else 'y'} ready for review:</div>
       {opp_html}
       <div style="margin-top:20px">
-        <a href="https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/17_inbox" style="background:#E8192C;color:#fff;padding:10px 20px;text-decoration:none;font-weight:700;font-size:13px;border-radius:3px;display:inline-block">
+        <a href="https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox" style="background:#E8192C;color:#fff;padding:10px 20px;text-decoration:none;font-weight:700;font-size:13px;border-radius:3px;display:inline-block">
           Open Inbox →
         </a>
       </div>

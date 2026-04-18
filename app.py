@@ -150,7 +150,7 @@ if briefing_opps or briefing_meta:
         st.markdown(
             '<p style="color:#555;font-size:0.85rem;margin-bottom:0.75rem">'
             'No high-relevance opportunities found in today\'s news. '
-            'Check back later or <a href="/pages/17_inbox.py" style="color:#E8192C">open the Inbox</a>.</p>',
+            'Check back later or <a href="/inbox" style="color:#E8192C">open the Inbox</a>.</p>',
             unsafe_allow_html=True,
         )
     else:
