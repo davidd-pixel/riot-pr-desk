@@ -6,6 +6,9 @@ on:
     - cron: '0 7 * * 1-5'
   workflow_dispatch:   # manual trigger for testing
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   briefing:
     runs-on: ubuntu-latest
