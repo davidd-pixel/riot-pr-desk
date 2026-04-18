@@ -212,23 +212,29 @@ def apply_global_styles():
         margin: 0;
         line-height: 1;
     }}
-    /* Sidebar nav links */
+    /* Sidebar nav links — target every level Streamlit nests text in */
     [data-testid="stSidebar"] .stPageLink a,
-    [data-testid="stSidebarNav"] a {{
+    [data-testid="stSidebar"] .stPageLink a *,
+    [data-testid="stSidebar"] .stPageLink span,
+    [data-testid="stSidebar"] .stPageLink p,
+    [data-testid="stSidebarNav"] a,
+    [data-testid="stSidebarNav"] a * {{
         font-family: 'PPFormula', sans-serif !important;
-        font-weight: 900;
-        font-size: 0.95rem;
-        letter-spacing: 0.03em;
+        font-weight: 900 !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.03em !important;
         color: #CCCCCC !important;
         text-decoration: none;
         transition: color 0.15s;
     }}
-    [data-testid="stSidebar"] .stPageLink a:hover {{
+    [data-testid="stSidebar"] .stPageLink a:hover,
+    [data-testid="stSidebar"] .stPageLink a:hover * {{
         color: #FFFFFF !important;
     }}
-    [data-testid="stSidebar"] .stPageLink a[aria-current="page"] {{
+    [data-testid="stSidebar"] .stPageLink a[aria-current="page"],
+    [data-testid="stSidebar"] .stPageLink a[aria-current="page"] * {{
         color: #E8192C !important;
-        font-weight: 900;
+        font-weight: 900 !important;
         border-left: 2px solid #E8192C;
         padding-left: 6px;
         background: rgba(232, 25, 44, 0.06);
