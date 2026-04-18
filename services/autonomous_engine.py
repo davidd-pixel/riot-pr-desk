@@ -410,13 +410,14 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
         return False
 
     today = datetime.now().strftime("%A %d %B %Y")
+    n = len(opportunities)
 
     # Build plain text body
     lines = [
         f"RIOT PR DESK — Daily Briefing",
         f"{today}",
         "",
-        f"{len(opportunities)} opportunity{'s' if len(opportunities) != 1 else ''} ready for your review.",
+        f"{n} opportunit{'ies' if n != 1 else 'y'} ready for your review." if n else "Quiet news day — nothing relevant surfaced today.",
         "",
         "=" * 60,
         "",
@@ -466,7 +467,8 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
     </div>"""
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Riot PR Desk — {len(opportunities)} opportunit{'ies' if len(opportunities) != 1 else 'y'} · {today}"
+    subject_line = f"Riot PR Desk — {n} opportunit{'ies' if n != 1 else 'y'} · {today}" if n else f"Riot PR Desk — Quiet news day · {today}"
+    msg["Subject"] = subject_line
     msg["From"] = smtp_user
     msg["To"] = to_email
     msg.attach(MIMEText("\n".join(lines), "plain"))
@@ -500,17 +502,39 @@ if __name__ == "__main__":
 
     if args.send_digest:
         to_email = os.getenv("DIGEST_EMAIL_TO", "")
+        smtp_user = os.getenv("SMTP_USER", "")
+        smtp_pass = os.getenv("SMTP_PASSWORD", "")
+        news_key = os.getenv("NEWSCATCHER_API_KEY", "")
+        ai_key = os.getenv("ANTHROPIC_API_KEY", "")
+
+        print("=== Riot PR Desk — Daily Briefing ===")
+        print(f"DIGEST_EMAIL_TO : {'SET' if to_email else 'MISSING'} ({to_email})")
+        print(f"SMTP_USER       : {'SET' if smtp_user else 'MISSING'} ({smtp_user})")
+        print(f"SMTP_PASSWORD   : {'SET' if smtp_pass else 'MISSING'}")
+        print(f"NEWSCATCHER_KEY : {'SET' if news_key else 'MISSING'}")
+        print(f"ANTHROPIC_KEY   : {'SET' if ai_key else 'MISSING'}")
+
         if not to_email:
-            print("DIGEST_EMAIL_TO not set — exiting")
+            print("ERROR: DIGEST_EMAIL_TO not set")
+            sys.exit(1)
+        if not smtp_user or not smtp_pass:
+            print("ERROR: SMTP_USER or SMTP_PASSWORD not set")
             sys.exit(1)
 
-        print("Running daily briefing...")
-        opps = run_daily_briefing(force=True)
-        print(f"Found {len(opps)} opportunities")
+        print("\nFetching and analysing news...")
+        try:
+            opps = run_daily_briefing(force=True)
+            print(f"Found {len(opps)} opportunities")
+        except Exception as e:
+            print(f"Briefing failed: {e}")
+            opps = []
 
-        if opps:
-            success = send_digest_email(opps, to_email)
-            sys.exit(0 if success else 1)
-        else:
-            print("No opportunities to send")
+        # Always send — even on a quiet news day
+        print(f"\nSending digest to {to_email}...")
+        success = send_digest_email(opps, to_email)
+        if success:
+            print("Digest sent successfully.")
             sys.exit(0)
+        else:
+            print("ERROR: Failed to send digest email.")
+            sys.exit(1)
