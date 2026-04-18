@@ -11,6 +11,15 @@ from utils.prompts import CULTURAL_CALENDAR_PROMPT, NEWSJACK_PROMPT
 from utils.styles import apply_global_styles, render_sidebar
 
 
+def _fmt_date(iso: str) -> str:
+    """Convert YYYY-MM-DD to DD/MM/YYYY for display."""
+    try:
+        y, m, d = iso.split("-")
+        return f"{d}/{m}/{y}"
+    except Exception:
+        return iso
+
+
 def _parse_newsjack_ideas(raw: str) -> list:
     """Extract [(title, body), ...] — one tuple per IDEA block.
     Uses findall so the preamble before the first ### IDEA marker is ignored.
@@ -218,9 +227,9 @@ with tab_calendar:
             custom_tag = " `custom`" if is_custom else ""
             status_tag = f" — **{status}**" if status else ""
 
-            date_display = event.get("date", "?")
+            date_display = _fmt_date(event.get("date", "?"))
             if event.get("end_date"):
-                date_display += f" → {event['end_date']}"
+                date_display += f" → {_fmt_date(event['end_date'])}"
 
             with st.expander(
                 f"**{event['name']}** ({date_display}) `{event.get('category', '')}`{custom_tag}{status_tag}",
