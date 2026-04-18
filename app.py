@@ -207,13 +207,23 @@ with col_right:
     st.write("")
     st.markdown("#### Quick Actions")
 
+    # Primary action — full width
     if st.button("Monitor Today's News", use_container_width=True, type="primary"):
         st.switch_page("pages/1_news_desk.py")
-    if st.button("Generate PR Pack", use_container_width=True):
-        st.switch_page("pages/2_pr_generator.py")
-    if st.button("News-Jacking", use_container_width=True):
-        st.switch_page("pages/4_news_jacking.py")
-    if st.button("Competitor Intel", use_container_width=True):
-        st.switch_page("pages/9_competitors.py")
-    if st.button("Journalist Database", use_container_width=True):
-        st.switch_page("pages/6_journalists.py")
+
+    # Secondary actions — 2-column grid
+    qa1, qa2 = st.columns(2)
+    with qa1:
+        if st.button("PR Generator", use_container_width=True, key="qa_pr"):
+            st.switch_page("pages/2_pr_generator.py")
+    with qa2:
+        if st.button("News-Jacking", use_container_width=True, key="qa_nj"):
+            st.switch_page("pages/4_news_jacking.py")
+
+    qa3, qa4 = st.columns(2)
+    with qa3:
+        if st.button("Competitors", use_container_width=True, key="qa_comp"):
+            st.switch_page("pages/9_competitors.py")
+    with qa4:
+        if st.button("Journalists", use_container_width=True, key="qa_j"):
+            st.switch_page("pages/6_journalists.py")
