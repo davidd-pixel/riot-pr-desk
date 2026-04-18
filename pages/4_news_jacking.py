@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 from services.news_monitor import fetch_trending_news, fetch_social_viral_news, format_article, is_configured as news_configured
 from services.ai_engine import is_configured as ai_configured, generate
@@ -8,6 +9,54 @@ from services.cultural_calendar import (
 )
 from utils.prompts import CULTURAL_CALENDAR_PROMPT, NEWSJACK_PROMPT
 from utils.styles import apply_global_styles, render_sidebar
+
+
+def _parse_newsjack_ideas(raw: str) -> list:
+    """Split AI news-jack output into [(title, body), ...] — one tuple per idea.
+    Falls back to [(None, raw)] if the expected ### IDEA markers aren't found.
+    """
+    parts = re.split(r"###\s*IDEA\s*\d+[:.]\s*", raw, flags=re.IGNORECASE)
+    ideas = []
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        lines = part.split("\n", 1)
+        title = lines[0].strip().strip("*").strip(":")
+        body = lines[1].strip() if len(lines) > 1 else ""
+        if title:
+            ideas.append((title, body))
+    return ideas if ideas else [(None, raw)]
+
+
+def _render_newsjack_ideas(ideas_raw: str, story_context: str, key_prefix: str):
+    """Render parsed news-jack ideas with per-idea 'Build PR Pack' buttons."""
+    st.markdown("### 💡 News-Jacking Ideas")
+    parsed = _parse_newsjack_ideas(ideas_raw)
+
+    for idx, (title, body) in enumerate(parsed):
+        if title:
+            st.markdown(f"#### Idea {idx + 1}: {title}")
+        st.markdown(body)
+
+        build_col, _ = st.columns([2, 3])
+        with build_col:
+            if st.button(
+                f"✍️ Build PR Pack around Idea {idx + 1} →",
+                key=f"{key_prefix}_build_{idx}",
+                use_container_width=True,
+                type="primary",
+            ):
+                combined = (
+                    f"STORY / CONTEXT:\n{story_context}\n\n"
+                    f"---\n\n"
+                    f"CHOSEN NEWS-JACK IDEA — {title or f'Idea {idx + 1}'}:\n\n{body}"
+                )
+                st.session_state["pr_input"] = combined
+                st.switch_page("pages/2_pr_generator.py")
+
+        if idx < len(parsed) - 1:
+            st.divider()
 
 st.set_page_config(page_title="News-Jacking | Riot PR Desk", page_icon="⚡", layout="wide")
 apply_global_styles()
@@ -97,13 +146,18 @@ with tab_trending:
                         st.session_state["pr_input"] = f"{formatted['title']}\n\n{formatted['description']}"
                         st.switch_page("pages/2_pr_generator.py")
 
-                # Show news-jack ideas (outside col_pr, inside expander)
+                # Show news-jack ideas with per-idea PR Pack buttons
                 if f"nj_result_{i}" in st.session_state:
                     st.divider()
-                    st.markdown("### 💡 News-Jacking Ideas")
-                    st.markdown(st.session_state[f"nj_result_{i}"])
+                    story_context = f"{formatted['title']}\n\n{formatted['description']}"
+                    _render_newsjack_ideas(
+                        st.session_state[f"nj_result_{i}"],
+                        story_context,
+                        key_prefix=f"nj_{i}",
+                    )
 
-                    # Vote on ideas
+                    # Vote on the ideas overall
+                    st.divider()
                     idea_vote_key = f"nj_idea_voted_{i}"
                     if idea_vote_key in st.session_state:
                         st.caption(f"{'👍' if st.session_state[idea_vote_key] == 'up' else '👎'} Vote recorded")
@@ -199,13 +253,22 @@ with tab_calendar:
                             delete_event(event["name"])
                             st.rerun()
 
-                # Show ideas
+                # Show ideas with per-idea PR Pack buttons
                 if f"cal_result_{j}" in st.session_state:
                     st.divider()
-                    st.markdown("### 💡 News-Jacking Ideas")
-                    st.markdown(st.session_state[f"cal_result_{j}"])
+                    event_context = (
+                        f"{event['name']} ({date_display})\n\n"
+                        f"{event.get('description', '')}\n\n"
+                        f"Riot relevance: {event.get('relevance_to_riot', 'Not assessed')}"
+                    )
+                    _render_newsjack_ideas(
+                        st.session_state[f"cal_result_{j}"],
+                        event_context,
+                        key_prefix=f"cal_{j}",
+                    )
 
                     # Vote
+                    st.divider()
                     cal_vote_key = f"cal_voted_{j}"
                     if cal_vote_key in st.session_state:
                         st.caption(f"{'👍' if st.session_state[cal_vote_key] == 'up' else '👎'} Vote recorded")
