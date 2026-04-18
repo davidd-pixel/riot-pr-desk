@@ -772,8 +772,7 @@ These are the patterns behind Riot's most successful campaigns. Use as creative 
 ### 9. Bar EDTN Limited Edition — Disposables Ban Launch (June 2025)
 **Type:** Product launch tied to regulatory moment  
 **Hook:** 5 limited edition mint-finish Bar EDTN flavours launched on the week disposables were banned. The brand "blew all their budget on flavour development, leaving nothing for marketing — excuse the unfinished ads!"  
-**Andy Dunn (Marketing Manager) quote:** *"We finally said good riddance to disposables last week... Vaping has already helped millions of adults to kick the habit and the limited edition range of Bar EDTN flavours will pack in mouth-watering flavours with a touch of mint to provide an easy switch from disposables to a more sustainable, refillable option."*  
-**Creative device:** Intentionally "unfinished" ads as a joke/stunt — self-deprecating humour in a product launch.  
+**Creative device:** Intentionally "unfinished" ads as a joke/stunt — self-deprecating humour in a product launch. Riot claimed they'd "blown all the budget on flavour development, leaving nothing for marketing — excuse the unfinished ads."  
 **5 flavours:** Black Grape Glacier, Pink Razz Citrus, Blueberry Acai Cooler, Apple Lime Chill, Strawberry Melon Cooler.  
 **Available:** 0mg, 5mg, 10mg, 20mg from £3.99.  
 **Key lesson:** The "unfinished ads" gimmick is a perfect example of Riot humour in marketing. Self-aware, self-deprecating, actually funny.
@@ -924,14 +923,6 @@ Add these to the proof points bank — sourced from Riot's own press releases:
 - **National recycling scheme** with hundreds of retail partners
 
 ---
-
-## Additional Spokesperson — Andy Dunn (Marketing Manager)
-
-Andy Dunn, Riot's Marketing Manager, features in product launch PRs. His tone mirrors the brand:
-> *"We finally said good riddance to disposables last week. They were a great tool to help adult smokers on their quit smoking journey, but were wasteful, bad for the environment and there are so many better alternatives to help people quit."*
-> *"We spent all our budget on creating the best flavours imaginable for the limited edition range leaving us nothing leftover for the marketing budget. So excuse the unfinished Ads - we'll let the flavours do the talking!"*  
-
-**Tone:** Self-deprecating, direct, no corporate distance. The "unfinished ads" joke shows the Riot voice works equally well in a Marketing Manager as in the CEO or Head of Brand.
 
 ---
 
