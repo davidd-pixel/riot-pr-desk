@@ -12,18 +12,16 @@ from utils.styles import apply_global_styles, render_sidebar
 
 
 def _parse_newsjack_ideas(raw: str) -> list:
-    """Split AI news-jack output into [(title, body), ...] — one tuple per idea.
-    Falls back to [(None, raw)] if the expected ### IDEA markers aren't found.
+    """Extract [(title, body), ...] — one tuple per IDEA block.
+    Uses findall so the preamble before the first ### IDEA marker is ignored.
+    Falls back to [(None, raw)] if no markers are found.
     """
-    parts = re.split(r"###\s*IDEA\s*\d+[:.]\s*", raw, flags=re.IGNORECASE)
+    pattern = r"###\s*IDEA\s*\d+[:.]\s*(.*?)\n([\s\S]*?)(?=###\s*IDEA\s*\d+|\Z)"
+    matches = re.findall(pattern, raw, flags=re.IGNORECASE)
     ideas = []
-    for part in parts:
-        part = part.strip()
-        if not part:
-            continue
-        lines = part.split("\n", 1)
-        title = lines[0].strip().strip("*").strip(":")
-        body = lines[1].strip() if len(lines) > 1 else ""
+    for title, body in matches:
+        title = title.strip().strip("*").strip(":")
+        body = body.strip()
         if title:
             ideas.append((title, body))
     return ideas if ideas else [(None, raw)]
