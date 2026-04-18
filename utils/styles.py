@@ -192,23 +192,22 @@ def apply_global_styles():
     }}
     /* Sidebar logo container */
     .riot-logo-block {{
-        background: #E8192C;
-        padding: 1.2rem 1.2rem 1rem 1.2rem;
-        margin: 0 0 0.75rem 0;
+        padding: 0.75rem 1rem 0.25rem 1rem;
+        margin: 0;
     }}
     .riot-logo-block img {{
-        width: 100%;
+        width: 72%;
         display: block;
     }}
     .riot-tagline {{
-        font-family: 'PPFormulaUI', sans-serif !important;
-        font-weight: 300;
+        font-family: 'PPFormula', sans-serif !important;
+        font-weight: 900;
         font-size: 0.7rem;
-        letter-spacing: 0.15em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
         color: #666;
-        text-align: center;
-        padding: 0 0 0.5rem 0;
+        text-align: left;
+        padding: 0.1rem 1rem 0.5rem 1rem;
     }}
     /* Sidebar nav links */
     [data-testid="stSidebar"] .stPageLink a,
@@ -597,7 +596,7 @@ def render_sidebar():
                         <img src="data:image/png;base64,{logo_b64}" alt="RIOT">
                     </div>
                 </a>
-                <p class="riot-tagline">PR Desk · Live Loud. Do Better.</p>""",
+                <p class="riot-tagline">PR DESK</p>""",
                 unsafe_allow_html=True,
             )
         else:
