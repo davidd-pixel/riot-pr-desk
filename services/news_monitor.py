@@ -241,6 +241,23 @@ def fetch_social_viral_news(page_size=25):
     return _sort_by_date(_deduplicate(all_articles))[:page_size]
 
 
+def _format_uk_date(iso_str: str) -> str:
+    """Convert an ISO datetime string to UK date format — e.g. '18 April 2026'."""
+    if not iso_str:
+        return ""
+    try:
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        return dt.strftime("%-d %B %Y")
+    except Exception:
+        # Fallback: strip time portion if present and reformat
+        try:
+            date_part = iso_str[:10]  # "YYYY-MM-DD"
+            dt = datetime.strptime(date_part, "%Y-%m-%d")
+            return dt.strftime("%-d %B %Y")
+        except Exception:
+            return iso_str[:10]  # Return raw date portion as last resort
+
+
 def format_article(article):
     """Format an article dict for display."""
     return {
@@ -248,7 +265,7 @@ def format_article(article):
         "source": article.get("source", {}).get("name", "Unknown"),
         "description": article.get("description", ""),
         "url": article.get("url", ""),
-        "published": article.get("publishedAt", ""),
+        "published": _format_uk_date(article.get("publishedAt", "")),
         "content": article.get("description", ""),
         "category": article.get("_category", ""),
     }
