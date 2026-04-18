@@ -491,6 +491,7 @@ with tab_write:
                     secondary_keywords=secondary_kw_list,
                 )
                 st.session_state["blog_saved_id"] = saved["id"]
+                st.session_state["blog_current_status"] = "draft"
             except Exception:
                 pass
 
@@ -515,8 +516,6 @@ with tab_write:
 
                 if section_name == "Blog Post":
                     st.caption(f"📊 Word count: ~{len(content.split())} words")
-
-                st.code(content, language=None)
 
                 safe_key = section_name.replace(" ", "_").replace("/", "_")
                 st.divider()
@@ -749,7 +748,62 @@ with tab_write:
 
         with export_col3:
             if "blog_saved_id" in st.session_state:
-                st.caption("✅ Auto-saved to Blog Library")
+                st.caption("✅ Saved to Blog Library")
+
+        # ── Approval ──────────────────────────────────────────────────────────
+        if "blog_saved_id" in st.session_state:
+            st.divider()
+            _saved_id = st.session_state["blog_saved_id"]
+            _current_status = st.session_state.get("blog_current_status", "draft")
+
+            if _current_status == "published":
+                st.success("🌐 **Published** — this post is marked as live.")
+
+            elif _current_status == "ready":
+                st.success(
+                    "✅ **Approved** — this post is marked as ready for publishing. "
+                    "Copy the content and post it to rioteliquid.com/blogs/news."
+                )
+                pub_c1, pub_c2 = st.columns(2)
+                with pub_c1:
+                    if st.button(
+                        "🌐 Mark as Published",
+                        use_container_width=True,
+                        key="blog_mark_published",
+                    ):
+                        try:
+                            update_blog_status(_saved_id, "published")
+                            st.session_state["blog_current_status"] = "published"
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Update failed: {e}")
+                with pub_c2:
+                    if st.button(
+                        "↩️ Return to Draft",
+                        use_container_width=True,
+                        key="blog_unapprove",
+                    ):
+                        try:
+                            update_blog_status(_saved_id, "draft")
+                            st.session_state["blog_current_status"] = "draft"
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Update failed: {e}")
+
+            else:
+                st.caption("Happy with this draft? Approve it to mark it ready for publishing.")
+                if st.button(
+                    "✅ Approve for Publishing",
+                    type="primary",
+                    use_container_width=True,
+                    key="blog_approve_btn",
+                ):
+                    try:
+                        update_blog_status(_saved_id, "ready")
+                        st.session_state["blog_current_status"] = "ready"
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Approval failed: {e}")
 
 
 # ===========================================================================
