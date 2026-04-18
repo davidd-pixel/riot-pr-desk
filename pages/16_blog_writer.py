@@ -11,6 +11,7 @@ import streamlit as st
 
 from services.ai_engine import is_configured as ai_configured, generate_stream, refine_text_sync, generate
 from services.blog_library import save_blog, get_all_blogs, search_blogs, update_blog_status, delete_blog, add_version
+from services.google_docs_export import export_blog_to_docs, is_configured as gdocs_configured
 from utils.prompts import BLOG_PROMPT
 from utils.styles import apply_global_styles, render_sidebar
 
@@ -925,6 +926,65 @@ with tab_library:
                             st.divider()
 
                 with actions_tab:
+
+                    # ── Export ────────────────────────────────────────────────
+                    st.markdown("**Export**")
+                    exp_c1, exp_c2 = st.columns(2)
+
+                    # Word export
+                    with exp_c1:
+                        try:
+                            _safe = "".join(
+                                c if c.isalnum() or c in " _-" else "_"
+                                for c in title[:40]
+                            ).strip()
+                            _docx_bytes = _build_blog_docx(
+                                blog.get("sections", {}), title
+                            )
+                            st.download_button(
+                                "📄 Download as Word",
+                                data=_docx_bytes,
+                                file_name=f"riot_blog_{_safe}_{blog_id}.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                use_container_width=True,
+                                key=f"lib_docx_{blog_id}",
+                            )
+                        except ImportError:
+                            st.caption("Install python-docx for Word export.")
+                        except Exception as _e:
+                            st.caption(f"Word export error: {_e}")
+
+                    # Google Docs export
+                    with exp_c2:
+                        _gdocs_key = f"lib_gdocs_url_{blog_id}"
+                        _gdocs_err_key = f"lib_gdocs_err_{blog_id}"
+
+                        if gdocs_configured():
+                            if st.button(
+                                "📝 Send to Google Docs",
+                                key=f"lib_gdocs_btn_{blog_id}",
+                                use_container_width=True,
+                            ):
+                                with st.spinner("Creating Google Doc..."):
+                                    try:
+                                        _result = export_blog_to_docs(blog)
+                                        st.session_state[_gdocs_key] = _result["doc_url"]
+                                        st.session_state.pop(_gdocs_err_key, None)
+                                    except Exception as _e:
+                                        st.session_state[_gdocs_err_key] = str(_e)
+
+                            if _gdocs_key in st.session_state:
+                                st.markdown(
+                                    f"[📄 Open in Google Docs →]({st.session_state[_gdocs_key]})"
+                                )
+                            elif _gdocs_err_key in st.session_state:
+                                st.error(f"Export failed: {st.session_state[_gdocs_err_key]}")
+                        else:
+                            st.caption("Google Docs not configured.")
+
+                    st.divider()
+
+                    # ── Status & danger zone ──────────────────────────────────
                     actions_left, actions_right = st.columns(2)
 
                     with actions_left:
