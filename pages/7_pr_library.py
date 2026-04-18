@@ -45,6 +45,7 @@ STATUS_BADGES = {
     "draft": "Draft",
     "under_review": "Under Review",
     "approved": "Approved",
+    "declined": "Passed",
     "pitched": "Pitched",
     "covered": "Covered",
 }

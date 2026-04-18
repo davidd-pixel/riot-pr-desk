@@ -253,7 +253,7 @@ if under_review_packs:
         revision_key = f"inbox_revision_{pack_id}"
         approving_b_key = f"inbox_approving_b_{pack_id}"
 
-        action_col1, action_col2, action_col3 = st.columns([2, 2, 2])
+        action_col1, action_col2, action_col3, action_col4 = st.columns([2, 2, 1, 1])
 
         with action_col1:
             if st.button("Approve Content", key=f"inbox_approve_b_{pack_id}", type="primary", use_container_width=True):
@@ -270,7 +270,13 @@ if under_review_packs:
                 st.rerun()
 
         with action_col3:
-            if st.button("Open in PR Library", key=f"inbox_open_lib_{pack_id}", use_container_width=True):
+            if st.button("Pass", key=f"inbox_decline_b_{pack_id}", use_container_width=True):
+                update_pack_status(pack_id, "declined")
+                add_comment(pack_id, "David", "Passed — not the right moment for this story.", "note")
+                st.rerun()
+
+        with action_col4:
+            if st.button("Library", key=f"inbox_open_lib_{pack_id}", use_container_width=True):
                 st.switch_page("pages/7_pr_library.py")
 
         # Handle approve

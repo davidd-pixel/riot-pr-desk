@@ -11,7 +11,7 @@ from datetime import datetime
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 LIBRARY_FILE = os.path.join(DATA_DIR, "pr_library.json")
 
-STATUS_OPTIONS = ["draft", "under_review", "approved", "pitched", "covered"]
+STATUS_OPTIONS = ["draft", "under_review", "approved", "declined", "pitched", "covered"]
 
 
 # ---------------------------------------------------------------------------

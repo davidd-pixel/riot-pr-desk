@@ -252,6 +252,7 @@ with col_left:
             "draft":        ("#888",    "Draft"),
             "under_review": ("#fbbf24", "Under Review"),
             "approved":     ("#4ade80", "Approved"),
+            "declined":     ("#555",    "Passed"),
             "pitched":      ("#60a5fa", "Pitched"),
             "covered":      ("#E8192C", "Covered"),
         }
