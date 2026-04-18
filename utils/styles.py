@@ -78,8 +78,8 @@ def _load_fonts() -> str:
 
 @st.cache_resource
 def _load_logo_b64() -> str:
-    """Load the Riot logo as base64 — prefer logo_patch.png (black on transparent)."""
-    for name in ("logo_patch.png", "logo_white.png"):
+    """Load the Riot logo as base64 — prefer logo_red.png (full colour brand logo)."""
+    for name in ("logo_red.png", "logo_patch.png", "logo_white.png"):
         logo_path = os.path.join(_ASSET_DIR, name)
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as f:
@@ -193,15 +193,12 @@ def apply_global_styles():
     }}
     /* Sidebar logo container */
     .riot-logo-block {{
-        background: #E8192C;
-        padding: 0.85rem 1.1rem;
+        padding: 0;
         margin: 0;
     }}
     .riot-logo-block img {{
         width: 100%;
         display: block;
-        filter: invert(1);
-        mix-blend-mode: screen;
     }}
     .riot-tagline {{
         font-family: 'PPFormula', sans-serif !important;
