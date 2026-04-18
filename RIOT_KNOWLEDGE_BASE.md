@@ -680,3 +680,267 @@ These are the patterns behind Riot's most successful campaigns. Use as creative 
 > - Riot manufactures its e-liquids in the United Kingdom
 > - Vaping is at least 95% less harmful than smoking (Public Health England, 2018)
 > - For press imagery and assets, contact press@riotlabs.com
+
+---
+
+## Press Release Archive — Campaigns, Hooks & Proof Points
+
+*Full archive of Riot Labs press releases. Each entry captures the hook, the angle, key quotes, data used, and what it reveals about Riot's PR approach. Use this to brief the AI on what has actually been published and how Riot structures campaigns.*
+
+---
+
+### 1. Merry Quitmas (Christmas 2024)
+**Type:** Celebrity partnership + charity single  
+**Hook:** East17 (Terry Coldwell, Robbie Craig, Joe Livermore) reunite for new Christmas No.1 bid — charity single to encourage smokers to quit over the festive period, 30 years after their first Christmas hit.  
+**Angle:** Santa in the music video is depicted getting ill from smoking. Proceeds to cancer charities. Celebrity lookalikes (Elton John, George Michael, Cliff Richard, Noddy Holder, Ed Sheeran) in the chaotic video. TikTok influencers "The Riot Squad" and "Chef Dave" also featured.  
+**Data used:** 6.4 million smokers in the UK; a poll of 2,000 smokers found they smoke 13 cigarettes/day but 17% increase by 4 more over Christmas.  
+**Ben Johnson quote:** *"The original Santa across two centuries has been depicted with a smoke pipe, so who better to leverage to highlight the dangers of tobacco use during the festive period."*  
+**Key lesson:** Cultural calendar + nostalgia + charity = triple-threat for coverage. Comedy video, serious cause.
+
+---
+
+### 2. Welcome to Wroxham (2024)
+**Type:** Brand/activism sponsorship + documentary  
+**Hook:** Non-league Norfolk club Wroxham FC claim they missed out on Ryan Reynolds and Rob McElhenney as celebrity owners by just ONE letter.  
+**Angle:** Riot Labs sponsored the club, declared the Kenny Cooke Stand smokefree, and funded a 3-part documentary. Barry Letten (78yo cigar-smoking groundsman on a quit journey), James Blowers (Chairman), Rachel Cole (catering) are the characters.  
+**What went viral:** 300,000+ social views. Fan quote: *"What's 1 vowel and 250 miles between friends? Up the Wr_xhams!"*  
+**Ben Johnson quote:** *"It's simply a great story that had to be told. We're always looking for new ways to help people quit smoking, and non-league football is a great audience."*  
+**Key lesson:** Find the human story. Make the PR angle secondary to a story people actually want to hear.
+
+---
+
+### 3. Ibiza Final Boss "Lawyers Up" (October 2025)
+**Type:** News-jacking / reactive cultural PR  
+**Hook:** Ibiza Final Boss (Jack Kay) — viral raver — sent Riot a "letter before action" over a meme they posted on X. Riot responded by creating "MK Final Boss", appointing a real lawyer called Leanne McSue, and offering her services to other businesses targeted by Kay.  
+**Angle:** Positioned as a "Better Call Saul" parody. Pointed out Kay had previously threatened an Aberdeen nightclub. Offered MK Final Boss's services to other affected brands.  
+**David Donaghy quote:** *"Seeing as everyone was jumping on the 'Ibiza Final Boss' bandwagon, we're not ones to let a cultural phenomenon pass us by... we've had no choice but to arm ourselves with the best in the legal space with MK Final Boss."*  
+**Key lesson:** Riot news-jacks viral cultural moments even when they become adversarial. Humour and speed are the tools.
+
+---
+
+### 4. Kent Meningitis / Vaping (reactive, 2025)
+**Type:** Reactive expert commentary / misinformation rebuttal  
+**Hook:** Meningitis B outbreak in Kent amongst students, with media suggesting vaping was responsible.  
+**Angle:** Riot Labs experts came forward to clarify: vaping does not cause meningitis. The risk is saliva transfer from sharing devices — the same risk as sharing straws, bottles or cigarettes.  
+**David Donaghy quote:** *"Misleading headlines and skewed facts risk creating unnecessary confusion at a time where clear, accurate information is essential — particularly when student safety needs to remain a top priority."*  
+**Advice issued:** Don't share your vape. Keep devices clean. Be mindful in social settings.  
+**Key lesson:** When vaping is blamed in any news story, Riot goes on record with facts fast. They never stay silent when misrepresented.
+
+---
+
+### 5. Strawberry Orange Crush Launch (2025)
+**Type:** Product launch  
+**Hook:** "The best e-liquid flavour EVER made."  
+**Angle:** Bold, unapologetic claim. British-made in award-winning lab.  
+**Matt Crann (Sales Director) quote:** *"We don't mess around when it comes to flavour — it's why we're the most award-winning e-liquid producer in the industry. Strawberry Orange Crush is something else. It's the best flavour ever made — fact. Retailer shelves are packed with boring, flat flavours from brands with no provenance."*  
+**Flavour profile:** Rich candied strawberry + bright orange peel, fresh-squeezed snap, clean icy kick.  
+**Key lesson:** Riot makes bold superlative claims for products confidently. No hedging.
+
+---
+
+### 6. Riot X Full Range Launch (2025)
+**Type:** Product launch  
+**Hook:** Complete Riot X range — "loud and unapologetic, made for late nights, loud tunes, and people who don't do boring."  
+**6 flavours:** Apple Sour Strawberry, Blueberry Blackberry Raspberry, Cherry Berry Crush, Cherry Peach Apple, Blueberry Strawberry Watermelon (+ hero Strawberry Orange Crush).  
+**Matt Crann quote:** *"Creating game-changing flavours is all part of our mission to change the status quo on smoke cessation."*  
+**Available:** 5mg, 10mg, 20mg from £3.99.  
+
+---
+
+### 7. Riot X Supercharged 12-Flavour Range (2025)
+**Type:** Product launch  
+**Hook:** "Supercharged" collection — maximum intensity with maximum clarity. Each flavour multi-layered and evolves puff-to-puff.  
+**12 flavours:** Blackcurrant & Passionfruit, Cherry Ice, Strawberry & Melon Chew, Sour Pineapple Razz, Blueberry & Peach Fizz, Orange & Raspberry Ice, Blueberry Sour Strawberry, Morello Cherry & Banana, Grape & Strawberry, Cola Ice, Sweet Mint, Dark Fruits.  
+**Ben Johnson quote:** *"It's all about balance. Flavours are made up of different molecules, and some fade faster than others. By carefully fine-tuning these elements, we've created a multi-layered flavour experience that evolves with every puff."*  
+**Data used:** 82% of 2,000 customers surveyed would go back to cigarettes if flavours limited to tobacco/menthol. JAMA Network Open study: fruity/sweet vapes made adults **55% more likely to quit smoking in 3 months**.  
+**Key lesson:** Always attach a product launch to a bigger mission argument (disposables ban, flavour protection) — not just "here's a new product."
+
+---
+
+### 8. Oasis Hangover (summer 2025)
+**Type:** Cultural news-jack / expert commentary  
+**Hook:** Oasis reunion gigs will trigger "nostalgia-fuelled impulses" in millennials, increasing risk of relapsing to cigarettes and alcohol.  
+**Expert used:** Behavioural psychologist Jo Hemmings — gave academic credibility to the angle.  
+**Activation:** Riot Labs rolled out Oasis album-inspired quit-smoking messages on billboards across Cardiff (opening night), then Manchester and London.  
+**David Donaghy quote:** *"Riot Labs approach has always been to target smokers, or ex-smokers, in the heart of the action, and use cultural moments to deliver quit smoking messaging."*  
+**Jo Hemmings quote:** *"The mix of familiar songs, alcohol and shared memories can lower inhibitions and revive long-abandoned behaviours, making people act more impulsively than they normally would in everyday life."*  
+**Also used:** Dr Niall Campbell (Priory Hospital) on hangovers getting worse with age.  
+**Key lesson:** Third-party expert credibility (psychologist, doctor) plus a stunt (billboards) plus a cultural moment = strong national media story. Riot supplies the expert, the story, and the visual.
+
+---
+
+### 9. Bar EDTN Limited Edition — Disposables Ban Launch (June 2025)
+**Type:** Product launch tied to regulatory moment  
+**Hook:** 5 limited edition mint-finish Bar EDTN flavours launched on the week disposables were banned. The brand "blew all their budget on flavour development, leaving nothing for marketing — excuse the unfinished ads!"  
+**Andy Dunn (Marketing Manager) quote:** *"We finally said good riddance to disposables last week... Vaping has already helped millions of adults to kick the habit and the limited edition range of Bar EDTN flavours will pack in mouth-watering flavours with a touch of mint to provide an easy switch from disposables to a more sustainable, refillable option."*  
+**Creative device:** Intentionally "unfinished" ads as a joke/stunt — self-deprecating humour in a product launch.  
+**5 flavours:** Black Grape Glacier, Pink Razz Citrus, Blueberry Acai Cooler, Apple Lime Chill, Strawberry Melon Cooler.  
+**Available:** 0mg, 5mg, 10mg, 20mg from £3.99.  
+**Key lesson:** The "unfinished ads" gimmick is a perfect example of Riot humour in marketing. Self-aware, self-deprecating, actually funny.
+
+---
+
+### 10. BÏ Disposables Countdown Party (May 2025)
+**Type:** Event / activist stunt  
+**Hook:** The UK's only official countdown party to celebrate the disposables ban — held at Cloud City Vapes, Whitechapel, London.  
+**Event name:** "BÏ Disposables" (goodbye to disposables).  
+**Headliner:** Danny Rankin from Kurupt FM (DJ set + special midnight countdown surprise).  
+**Supporting:** Mas Que Nada Brothers, Samuel Morgan.  
+**Mamun Chowdhury (Cloud City Vapes owner) quote:** *"Riot Activist got in touch to see if we'd host the countdown bash at the shop. While disposables have been hugely popular with customers over the years, we believe it's time to wave goodbye."*  
+**David Donaghy quote:** *"A countdown party is a very British thing to do, and the disposable vapes ban is a national moment up there with the pub smoking ban."*  
+**Key lesson:** Riot turns regulatory moments into parties. The pub smoking ban comparison positions this as a historic national moment worth celebrating.
+
+---
+
+### 11. Hoarding Disposables / Disposables Ban Recycling (May 2025)
+**Type:** Reactive PR / sustainability / expert collaboration  
+**Hook:** Over 3.3 million used disposable vapes stashed in UK homes per month — as the ban approaches.  
+**Expert used:** "Waste Less Laura" (Laura Young) — sustainability campaigner. Tips on safe disposal.  
+**Riot sustainability credentials cited in this release:**
+- Created the **world's first carbon negative 100% recyclable e-cigarette**
+- Rolled out a **national recycling scheme** with hundreds of retail partners
+- Connex: carbon-negative device made from recycled plastics
+- Switching to Connex slashes carbon footprint by **103,321.05g CO2 in year one** (equivalent to taking a car off road for 10+ days)
+- 500 people switching = CO2 savings equivalent to burning 23,478 litres of gasoline  
+**David Donaghy quote:** *"Disposable vapes have been an effective tool to help adults quit smoking but we know they're wasteful and bad for the environment so we support the ban."*  
+**Key lesson:** Riot has genuine sustainability credentials beyond just saying they care. These specific stats are citable.
+
+---
+
+### 12. Connex 0mg Launch — "Cold Turkey Never Tasted So Good" (2025)
+**Type:** Product launch  
+**Hook:** First-ever 0mg range for Connex — targeting people who want to come off nicotine completely, positioned as a harm-reduction tool.  
+**Campaign tagline:** "Cold Turkey Never Tasted So Good"  
+**4 flavours:** Blueberry Sour Raspberry, Pineapple Ice, Strawberry Blueberry Ice, Cherry Cola.  
+**Ben Johnson quote:** *"In a pivotal year, Connex 0mg will play a crucial role in smokers turning to vaping to help them kick the habit. The device has been designed to be as easy as possible to use, as easy as any disposable vape, featuring a clever closed pod magnetic system and the ability to be recharged 500 times."*  
+**Sustainability stat:** Connex is carbon-negative, made from recycled plastics. Saves 103,321.05g CO2 per user in year one.  
+**Key lesson:** Even 0mg nicotine is framed as a smoking cessation tool, not as a "lifestyle" product.
+
+---
+
+### 13. Vaping While Driving (Easter 2025)
+**Type:** Seasonal reactive / safety expert commentary  
+**Hook:** 19.8 million cars on UK roads over Easter. Drivers who vape face fines up to £5,000 and 9 points if vapour impairs their vision.  
+**Quote from authority:** Surrey & Sussex Police — *"All it takes is a moment of impaired visibility to potentially cause a crash or, worse, a fatality."*  
+**David Donaghy quote:** *"Millions of adult smokers in the UK use vape products to help them quit smoking, and the tool is considered over 92% safer than cigarettes. It's understandable a long drive over Easter weekend will tempt drivers to have a sneaky puff, but we recommend planning regular stops."*  
+**Data:** 50% of drivers don't think there are consequences to vaping while driving; 3.5 million drivers admit still smoking in cars knowing the fine risk.  
+**Key lesson:** Seasonal pegs (Easter, Christmas, Oasis tour) are Riot's reliable news-jacking calendar. Position Riot as the responsible expert voice, not just the vape brand.
+
+---
+
+### 14. Chief Misinformation Officer (March 2025)
+**Type:** Activist campaign / creative job vacancy stunt  
+**Hook:** Riot Labs creates the vape industry's first-ever Chief Misinformation Officer role — to fight the "flood" of misleading anti-vaping stories in mainstream media.  
+**What happened:** 200+ applications. The job went live on Indeed and the Riot Labs careers page. Shared by UKIVIA head John Dunne, Clive Bates (Counterfactual), and dozens of sector KOLs.  
+**Trigger:** A Manchester Metropolitan University study claiming "deadly" vaping effects. Johnson's rebuttal: *"Dig a little deeper and readers would find the cohort for the study was based on 20 vapers, wasn't peer reviewed and was conducted over 3 months — nowhere near long enough to reach a solid conclusion."*  
+**Ben Johnson quote:** *"People are sick of having vape misinformation shoved down their throats. Lightweight research, unpublished reports that aren't peer reviewed, and opinion pieces lacking facts are flooding into mainstream media and misleading adult smokers trying to quit."*  
+**Key lesson:** The job vacancy as PR stunt is a classic format. Riot used it brilliantly — it framed them as proactive defenders of truth rather than reactive complainers.
+
+---
+
+### 15. MPs Banned from Vape Shop (draft, 2025)
+**Type:** Activist stunt — political targeting  
+**Hook:** A London vape shop bans Angela Rayner, Jess Phillips, and Lee Dillon MP — politicians who have used vaping to quit smoking themselves but won't publicly defend flavours in the Tobacco and Vapes Bill.  
+**Angle:** "Blatant hypocrisy" — MPs who benefited from vaping are now supporting legislation that could restrict flavours. Shop displays MPs' "mugshot" posters in windows. Riot Activist invites other UK shops to join the ban and receive a free window display pack.  
+**David Donaghy quote:** *"We know flavours play a crucial role in getting adult smokers to switch to vaping instead of smoking and limiting flavours to tobacco and menthol will remove one of the best options for smokers to kick the habit. This is counter-intuitive for the Government who still have SmokeFree 2030 ambitions."*  
+**Note:** This press release is a draft with placeholder fields (store name, owner name, Lee Dillon MP quote still TBC). Demonstrates how Riot builds activist campaigns — recruits a retail partner, provides them with window materials, creates shared momentum.  
+**Key lesson:** Riot uses retail partners as co-activists, not just distribution. The window display pack is the mechanic that scales the campaign.
+
+---
+
+### 16. Illegal Vapes Heat Map (2025)
+**Type:** Data-led PR / investigative  
+**Hook:** Essex sees a 14,000%+ rise in illegal vape seizures year-on-year — published from VapeClub Freedom of Information data.  
+**Data used:**
+- **2 illegal vapes seized every minute in 2024**
+- **£9 million** worth of illegal vapes removed from UK streets in 2024
+- **100-fold increase** in illegal vape seizures since 2020
+- London = **47%** of all illegal vape seizures in England
+- Newport (Wales) = **70%** of all Welsh seizures
+- Essex: +14,000% year-on-year (proximity to Heathrow)
+- Renfrewshire: highest in Scotland (Glasgow airport proximity)  
+**Ben Johnson quote:** *"The bottom line is, the illegal vape black market is booming due to a lack of enforcement and the Government's ongoing attempts to use prohibition, which is only fuelling the problem. Prohibition does not work."*  
+**Key lesson:** Riot commissions or obtains credible third-party data (VapeClub FOI) and wraps it in a geographic heat map for local/regional media angles. Local angles = more coverage.
+
+---
+
+## PR Approach Patterns — What These Releases Reveal
+
+### The Riot PR Formula
+Across all 16 releases, the same structural patterns appear:
+
+**1. Always attach brand to a bigger purpose**
+Every product launch is framed as a harm reduction mission, not just a commercial launch. "Riot X helps smokers quit" not "Riot X tastes great."
+
+**2. Use cultural pegs relentlessly**
+Oasis reunion → nostalgia triggers relapse. Easter weekend → vaping while driving. Disposables ban → countdown party. Merry Quitmas → Christmas quit rates. Every PR is anchored to something already in the news.
+
+**3. Third-party experts do the heavy lifting**
+Behavioural psychologist (Jo Hemmings for Oasis). Sustainability campaigner (Waste Less Laura). Police spokesperson (Surrey & Sussex for driving). Medical consultant (Dr Niall Campbell for hangovers). Riot is the hook and the quote, but independent experts give the story credibility.
+
+**4. React to misinformation instantly**
+Kent meningitis. Manchester Met study. Every time vaping is misrepresented, Riot goes on record with facts, fast. Never silent when attacked.
+
+**5. Make stunts visual and physical**
+Billboards. Window posters. A countdown party. A fake vape shop branded "Rishi's Vape Shop." Riot understands print and TV need images.
+
+**6. Recruit retail partners as co-campaigners**
+MPs ban stunt used a vape shop as the activist front. Countdown party used Cloud City Vapes. Riot activates retail partner PR regularly.
+
+**7. Bold claims, no hedging**
+"The best flavour EVER made." "The most award-winning e-liquid producer in the industry." Riot doesn't do "one of the best." It's always the best, with reasons.
+
+---
+
+## Additional Statistics (from press releases)
+
+Add these to the proof points bank — sourced from Riot's own press releases:
+
+### Illegal Vapes
+- **2 illegal vapes seized every minute** in 2024 — VapeClub FOI data
+- **£9 million** worth of illegal vapes removed from UK streets in 2024
+- **100-fold increase** in illegal vape seizures since 2020
+- Essex: **+14,000%** year-on-year increase (proximity to Heathrow)
+- London = **47%** of all English illegal vape seizures
+
+### Smoking Triggers
+- Smokers smoke **13 cigarettes/day** on average; **17%** increase by 4+ more over Christmas
+- **Almost 1m fans** attended Oasis gigs summer 2025
+
+### Vaping While Driving
+- **19.8 million cars** on UK roads over Easter weekend
+- Drivers face fines up to **£5,000 and 9 points** if vapour impairs driving
+- **50%** of drivers don't think there are consequences to vaping while driving
+- **3.5 million drivers** admit still smoking in cars knowing the fine risk
+
+### Flavour / Cessation (additional)
+- JAMA Network Open study: adults using fruity/sweet vapes were **55% more likely to quit smoking in 3 months** vs non-flavoured alternatives
+
+### Disposables / Sustainability
+- **3.3 million** used disposable vapes stashed in UK homes per month (at time of ban)
+- Connex carbon savings: **103,321.05g CO2 per user in year one** (= taking a car off the road for 10+ days)
+- 500 Connex users switching = CO2 equivalent of burning **23,478 litres of gasoline**
+- Riot Labs: world's first **carbon negative 100% recyclable e-cigarette** (legacy product)
+- **National recycling scheme** with hundreds of retail partners
+
+---
+
+## Additional Spokesperson — Andy Dunn (Marketing Manager)
+
+Andy Dunn, Riot's Marketing Manager, features in product launch PRs. His tone mirrors the brand:
+> *"We finally said good riddance to disposables last week. They were a great tool to help adult smokers on their quit smoking journey, but were wasteful, bad for the environment and there are so many better alternatives to help people quit."*
+> *"We spent all our budget on creating the best flavours imaginable for the limited edition range leaving us nothing leftover for the marketing budget. So excuse the unfinished Ads - we'll let the flavours do the talking!"*  
+
+**Tone:** Self-deprecating, direct, no corporate distance. The "unfinished ads" joke shows the Riot voice works equally well in a Marketing Manager as in the CEO or Head of Brand.
+
+---
+
+## How to Spot an Illegal Vape (Riot's Published Checklist)
+
+Riot Labs has published this guidance — useful for any PR covering illegal products:
+- Tank size larger than **2ml**
+- Nicotine strength greater than **20mg/ml**
+- Missing health or nicotine warnings
+- Poor quality packaging with low-resolution photos or labels
+- No UK address or labelling in a foreign language
+- No full ingredient list on packaging
