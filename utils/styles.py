@@ -201,6 +201,7 @@ def apply_global_styles():
         width: 100%;
         display: block;
         filter: invert(1);
+        mix-blend-mode: screen;
     }}
     .riot-tagline {{
         font-family: 'PPFormula', sans-serif !important;
