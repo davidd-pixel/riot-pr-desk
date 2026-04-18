@@ -215,9 +215,10 @@ def apply_global_styles():
     /* Sidebar nav links */
     [data-testid="stSidebar"] .stPageLink a,
     [data-testid="stSidebarNav"] a {{
-        font-family: 'PPFormulaUI', sans-serif !important;
-        font-weight: 400;
-        font-size: 0.88rem;
+        font-family: 'PPFormula', sans-serif !important;
+        font-weight: 900;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
         color: #CCCCCC !important;
         text-decoration: none;
         transition: color 0.15s;
@@ -227,7 +228,7 @@ def apply_global_styles():
     }}
     [data-testid="stSidebar"] .stPageLink a[aria-current="page"] {{
         color: #E8192C !important;
-        font-weight: 700;
+        font-weight: 900;
         border-left: 2px solid #E8192C;
         padding-left: 6px;
         background: rgba(232, 25, 44, 0.06);
