@@ -361,6 +361,261 @@ These corporate clichés and vape-industry clichés must be avoided in all AI ou
 
 ---
 
+## Riot Magazine — Voice, Campaigns & Cultural POV
+
+*Sourced directly from all three issues of THE RIOT magazine (2024–2025). These are first-person examples of Riot's actual published voice — the most authoritative reference for tone.*
+
+---
+
+### Recurring Mission Statement (verbatim, used in all three issues)
+
+> "OUR MISSION IS AUDACIOUS: TO DISMANTLE THE STATUS QUO OF SMOKING CESSATION AND LEAD A REVOLUTION TOWARDS A HEALTHIER FUTURE. WE ARE NOT HERE TO BLEND INTO THE SEA OF E-LIQUID BRANDS; WE ARE HERE TO LEAD THE CHARGE, TO DEFEND THE INDUSTRY, AND TO FIGHT FOR THE RIGHTS OF RESPONSIBLE RETAILERS AND CONSUMERS ALIKE. THE REVOLUTION STARTS HERE."
+
+This is the foundational statement. Every piece of Riot content should feel like it lives inside this mission.
+
+---
+
+### How Riot Actually Writes — Real Published Examples
+
+**Opening editorial tone (Issue 1):**
+> "Dive headfirst into the first edition of THE RIOT, your quarterly roundup of news, activism, products, and style from the forefront of the vape industry. As a beacon for responsible retailers, we stand firmly by your side, taking aim at the UK Government's shifts in vape legislation and taxation. We're not just keeping you informed; we're arming you for battle."
+
+**On the vape tax (Issue 1) — punchy, angry but evidence-backed:**
+> "The UK Government's latest scheme — a vape tax — is nothing short of a declaration of war on public health and a golden ticket for the black market."
+> "This tax blurs the line between vaping and smoking, shackling smokers to their deadly habit by making the switch to vaping less financially appealing. It's a twisted logic that could keep the tobacco tills ringing."
+> "We see this tax for what it is: a misguided missile aimed at the vaping revolution."
+
+**On the disposable ban (Issue 1) — nuanced, not defensive:**
+> "Whilst we agree with the decision to ban disposable vapes, we strongly believe this should not be for youth access reasons. Our planet needs it!"
+> "We firmly believe it is the responsibility of our industry to innovate and change consumer habits when it comes to sustainability."
+
+**On Riot Activist (Issue 1) — rallying cry:**
+> "Enter Riot Activist, a movement born to protect the rights of quitters and vapers everywhere. Under the rallying cry 'Don't Quit on Quitters,' Riot Activist is not just a campaign; it's a declaration of war against policies that undermine vaping's potential to save lives."
+> "This isn't about promoting a product; it's about safeguarding a lifeline for those who've turned their backs on smoking."
+
+**On the WHO (Issue 2) — attacking the antagonist:**
+> "The World Health Organization has launched an unrelenting assault on the vaping industry, and it's time we fight back."
+> "The WHO's blanket opposition to e-cigarettes is not only unscientific but also irresponsible. They are ignoring substantial evidence that vaping saves lives." — (quoting Prof. John Britton)
+> "This agenda seems driven by ideological biases and a troubling alignment with traditional tobacco interests."
+
+**On Labour's approach (Issue 2):**
+> "Labour's hefty levies on vape products may push consumers towards the black market."
+> "An outright ban on flavours and excessive taxation are blunt instruments that will backfire, leading to higher smoking rates and an unregulated black market."
+
+**On the black market (Issue 2) — urgent, factual:**
+> "The vape black market is a ticking time bomb threatening our industry and public health."
+> "Black market vapes are a hazardous gamble. These unregulated products often contain toxic substances — heavy metals, harmful chemicals, and even illicit drugs."
+
+**On flavour bans (Issue 3) — fighting talk with evidence:**
+> "The battle lines are drawn. Stay informed. Stay vocal."
+> "Flavour bans: a false solution to a real problem."
+> "The idea that banning flavours will curb youth vaping is nothing more than political theatre."
+> "These aren't the voices of corporate interests; they're the voices of the people who rely on vaping to stay smoke-free."
+> "Let's be clear: flavour bans don't solve the problem. They create new ones."
+
+**On Riot taking action (Issue 3):**
+> "At Riot Labs, we're not just sitting back while the government threatens to strip away essential tools from smokers trying to quit. We're fighting back."
+> "Riot is ready for the battle ahead."
+
+**On Wroxham (Issue 3) — brand philosophy in action:**
+> "Partnering with Wroxham FC was no random choice. Non-league football represents everything Riot stands for: passion, grit, and authenticity."
+> "For us, vaping isn't just a product; it's a tool for harm reduction and a chance to help people take back control of their health."
+> "At Riot, we believe marketing should do more than sell — it should inspire."
+
+---
+
+### Signature Phrases & Rally Cries
+
+These phrases appear across the magazines as Riot's verbal fingerprints:
+- **"Don't Quit on Quitters"** — the Riot Activist campaign tagline
+- **"Join us on the front line"** — closing line of every editorial
+- **"The revolution starts here"**
+- **"Smoking cessation missionaries"** — how Riot describes its events team
+- **"Give Disposables the Finger"** — Bar EDTN campaign tagline
+- **"Let's f*cking do this"** (Issue 2 — with asterisk)
+- **"Wanna join the revolution? Get in touch"** — standard back-page CTA
+
+---
+
+### Humor & Personality — The Riot Way
+
+The magazines reveal a very specific brand of humor that should inform all Riot content:
+
+**Irreverent political humor:**
+- Issue 1 headline on Jeremy Hunt: **"WHAT A TOTAL HUNT"** — wordplay that the magazine leans into fully. The name itself is the joke.
+- A maze puzzle: "Oh dear! Naughty Jeremy has 'misplaced' the vape tax! Can you find where the money has gone in the maze?"
+- Issue 2: Rishi lookalike used in a vape shop stunt. One passerby mistook him for the PM and egged him. Riot's response: *"Despite the egging, the activation was a cracking (sorry) success."*
+- Issue 2: Puzzle captioned "Spot the difference between these two identical photos of former prime minister Rishi Sunak during his resignation."
+- Issue 3 fake Ryan Reynolds quote: "Wroxham? Wrexham? Either way, I'm suing."
+
+**Self-deprecating team humor:**
+- "Agony Ant" — resident love doctor Ant Miarli answers reader relationship questions. Completely off-topic. Runs in every issue.
+- Employee secrets: "I love the smell of dog food," "I got arrested when I was 15 for criminal damage — I wrote my full name on a lamppost in glittery pink pen."
+- Fun facts in captions: "Fun fact: Gemma played Megan Fox in Transformers", "Fun fact: Lawrence singlehandedly invaded Constantinople"
+- The award at creative marketing is called **D.I.C.K. of the Month** — Drive Innovation and Create Khaos. Dave (Head of Creative Marketing) introduces it himself, self-aware enough to say "I'm not a copywriter, give me a break."
+- Team bio intro (Gemma, Sales Manager): "Mother to seven children (aka the sales team)"
+
+**Word games and interactivity:** Word searches, sudoku, anagram challenges — all vape-themed, all done with the same voice.
+
+**The key humor rule:** Riot makes fun of politicians and power, not its customers or the people who depend on vaping. The butt of the joke is always the government, the WHO, the black market, or Riot's own team — never the vaper or retailer.
+
+---
+
+### Key Campaigns — Full Detail
+
+#### Rishi's Vape Shop (Issue 2 — summer 2024)
+- Transformed Right Vape in Northampton into **"Rishi's Vape Shop"**
+- New branding, limited flavours, prices reflecting proposed vape tax
+- Hired a Rishi Sunak lookalike to interact with customers and explain "new policies"
+- Staged a fake "egging" of the lookalike by an "angry passerby"
+- Video went viral: **3 million+ views online**
+- Covered by The Daily Express, GB News; lookalike invited onto Times Radio
+- Customer quote: "As offers go, it's not a great one!"
+- Riot quote on the stunt: "Our Rishi lookalike may have taken an egg for the team, but it only amplified our message."
+
+#### "Two Fingers to the Vape Tax" (Issue 1 — early 2024)
+- Physical protest: sent show of support to retailers by "sticking two fingers up" at the vape tax
+- Photography stunts in London (near Parliament) and Manchester
+- Simple, visual, shareable — minimal production
+
+#### Snowbombing Festival Road Trip (Issue 2 — April 2024)
+- Drove to Snowbombing festival in Mayrhofen, Austria
+- Riot Noise truck led the arrival parade through packed streets
+- Road trip from Dover to Calais, through France, Belgium, Luxembourg, overnight in Germany
+- Debuted Riot Connex at the festival — pink merch everywhere (bucket hats, balaclavas)
+- DJ lineup: LOL, dra.f.t, Samuel Morgan, Selecta Squared
+- Took second in the road trip quiz; "second stage takeover at the Snowbombing Street Party"
+- Mission framing: "Prove you can quit on your own terms"
+
+#### Bar EDTN Bootcamp (Issue 1)
+- Internal sales event styled as military bootcamp
+- Team went through challenges with a real "drill sergeant"
+- Purpose: motivate sales team to convert retailers away from disposables
+- Tone: "Motivation isn't just KPIs and cash incentives — it's empowering your team and giving them experiences that will last a lifetime."
+
+#### Welcome to Wroxham (Issue 3 — 2024/2025)
+- Partnership with Wroxham FC (Norfolk non-league club)
+- 3-part mockumentary: "Welcome to Wroxham: The Team One Letter From the Big Time"
+- Characters: Barry Letten (cigar-smoking, wheelbarrow-wielding) and Rachel Cole (catering queen)
+- The stunt: "accidentally" plastered the Welcome to Wroxham campaign all over Wrexham (250 miles away)
+- Billboards, posters, digital ads appeared in the Hollywood-backed Welsh town
+- A Wrexham fan actually drove 250 miles to see what he thought was a Wrexham match, ended up watching Wroxham and stayed
+- Covered by BBC, ESPN, The Mirror — went international
+- Fan quote: "What's 1 vowel and 250 miles between friends? Up the Wr_xhams!"
+- Fans called for a "Vowel Derby" — a match between the two clubs
+- Made Kenny Cooke Stand a smoke-free zone for the season
+- Riot's framing: "We weren't just sponsoring a team; we were sparking conversations about quitting smoking in places where change is most needed."
+- Chairman James Blowers: "It's put us on the map in a way we never expected."
+
+#### Format GG Liverpool (Issue 3)
+- Gaming/music/vaping crossover event
+- Showcased products to gaming community
+- Framing: "Proving Riot is here to revolutionise both the gaming and vape scenes"
+
+#### Retail Activations (Issue 3)
+- **Castle Vapes, Antrim**: Ould Lammas Fair — handed out Riot goodies, educated on black market vs regulated products. "We had plenty of meaningful conversations with the locals."
+- **The Vapourist, Chesterfield**: Anti-smoking tent collaboration with the Chesterfield Roundtable community group. "An all-round group of legends."
+- **Capital Clouds, Hove**: Store opening — BAR EDTN testing station, free pod kits, two free BAR EDTN samples. "The highlight? Helping smokers ditch cigarettes for good."
+- **The Vapour Room, Portsmouth**: Won BAR EDTN competition, scored custom display units. Store owner Charisma: "OMG I F**KING LOVE THEM!!!"
+- **Vapeology, Kent**: Spooky Stoptober Spectacular — 5 for £10 on BAR EDTN. "The best of British is definitely the best at Vapeology."
+
+---
+
+### Survey Data Riot Has Generated (Issue 3)
+
+Riot conducted a nationwide survey of 3,000 UK vape shops with 2,000+ respondents on the proposed flavour ban:
+- **63%** of vapers said they'd likely quit vaping altogether if flavours were limited to tobacco and menthol
+- **82%** said they'd consider going back to cigarettes
+- **73%** believe flavour restrictions will do nothing to stop young people vaping
+- **92%** oppose government limits on vape flavours
+- **85%** "strongly" oppose flavour limits
+
+These are Riot's own first-party data points — highly citable.
+
+---
+
+### International Evidence Riot Uses
+
+**Netherlands (2021 flavour ban):**
+- 58% of Dutch vapers said they'd return to smoking if flavours were banned
+- Ban created a black market for illegal flavoured products
+- Dutch vapers turned to homemade and unregulated products
+- Ban did NOT reduce youth vaping
+
+**Australia (pharmacy/prescription model):**
+- Youth vaping almost tripled (14–17 year olds) between 2019 and 2023 despite the ban
+- Organised crime networks thrived importing unregulated Chinese products
+- Pharmacists refused to carry vapes due to stigma
+- "Australia has become a nanny state" — Samuel Parsons, Australian YouTuber 'Vaping Bogan', who moved to the UK in protest
+
+---
+
+### Additional Statistics Used Across the Magazines
+
+- **83%** of vapers cite flavour as a key factor in their ability to quit smoking
+- **1.5 million** vapers would return to smoking if flavours were banned
+- **£50 million** annually would be generated for enforcement by an industry licensing scheme
+- **1.5 million** illicit vapes seized in a single year (at time of Issue 1 printing)
+- **4.54 million** illegal vapes seized by UK Border Force between January–October 2023 alone
+- **Only 5%** of sellers caught stocking/selling illegal vapes were issued fines or penalties (Vape Club 2024 Illegal Vaping Report)
+- **10 million** disposable vapes sold in the UK each week (Issue 1)
+- **1.3 million** disposables go into landfill per week
+- Switching from disposables to Bar EDTN saves the average consumer **£1,536 a year**
+- Bar EDTN offers **2,400 more puffs** than disposables at equivalent cost
+- Riot produced **3.25 million bottles in May 2024** — nearly double previous capacity
+- Production facility: **7 manufacturing lines**, speeds up to **120 bottles per minute**
+- **ISO Level 7 clean rooms** for filling and capping
+
+---
+
+### Product Voice — How Riot Describes Its Own Products
+
+**Riot Connex** (sustainable pod system, anti-disposable):
+> "Riot Connex isn't just a vape; it's a statement. We're shaking up the industry and leading a revolution against disposable e-cigarettes. Welcome to the revolution."
+> "The disposable you don't throw away."
+> "Like a disposable, unlike any disposable."
+> "At its heart, Riot Connex is a rebel with a cause. Behind its sleek exterior lies a secret weapon: a detachable, rechargeable battery."
+> "Less nicotine, same attitude." (on the 10mg version)
+
+**Bar EDTN** (flagship e-liquid range):
+> "BAR EDTN is our best-selling E-Liquid range, designed to transition disposable users to a more cost-effective and sustainable option, while maintaining the punchy flavours you are accustomed to."
+> "35 sweet as f*ck flavours to choose from."
+> "Give Disposables the Finger"
+
+**White Label / Fantasia:**
+> "Launching a vape brand with Riot is like strapping a rocket to your business."
+> "We don't just churn out products — we create them."
+> "Innovation isn't just something we talk about — it's something we do every day."
+
+**General product tone:** Bold, confident, anti-corporate. Never "premium." Never "world-class." Describe the actual thing.
+
+---
+
+### Retailer Relationship — How Riot Talks to Trade
+
+Riot talks to retailers as allies in a shared fight, not as customers:
+> "As a beacon for responsible retailers, we stand firmly by your side."
+> "We pride ourselves on being the protectors of the vaping industry, constantly defending responsible retailers and pushing back against the bullshit and misconceptions thrown at us by the media."
+> "United we stand. It's important now more than ever for vape shops to come together in unity."
+> "LET'S F*CKING DO THIS." (closing a call to survey participation)
+> "WANNA HOOK UP? GOT AN IDEA FOR A STUNT? FANCY HOSTING THE RIOT TEAM AT YOUR STORE? WE LOVE COLLABORATING WITH OUR CUSTOMERS TO CREATE POSITIVE PR AND MEDIA COVERAGE."
+
+Riot frames retailers not as distribution channels but as **frontline defenders of the industry**.
+
+---
+
+### What Riot Is NOT
+
+From reading all three issues, the things Riot consistently avoids:
+1. **Victim positioning** — never begging for sympathy, always asserting strength
+2. **Apologising for vaping** — the tone is pride, not defensiveness
+3. **Being preachy about health** — uses stats but doesn't lecture
+4. **Corporate distance** — always first person, always showing the humans behind the company
+5. **Safety-first blandness** — the brand lives right up to the acceptable edge of irreverence
+6. **Ignoring the politics** — directly names politicians (Jeremy Hunt, Rishi Sunak, Wes Streeting) and challenges them by name
+
+---
+
 ## Campaign Playbook — What Makes Riot PR Work
 
 These are the patterns behind Riot's most successful campaigns. Use as creative frameworks for news-jacking and campaign ideas.
