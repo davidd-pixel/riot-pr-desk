@@ -42,6 +42,26 @@ SPOKESPEOPLE = {
             "Industry marketing and PR",
         ],
     },
+    "Sales Director": {
+        "name": "Matt Crann",
+        "title": "Sales Director, Riot Labs",
+        "bio": (
+            "Leads Riot's sales operation and is the primary commercial voice for trade and "
+            "retail-facing commentary. Closest to the shop floor — understands the day-to-day "
+            "reality facing independent vape retailers, from stock compliance and margin pressure "
+            "to the practical consequences of policy decisions. Advocates for the independent "
+            "trade as the frontline of harm reduction."
+        ),
+        "tone": "Trade-facing, commercially grounded, retailer advocate. Speaks from the coal face of the UK vape retail market.",
+        "topics": [
+            "Independent retail trade",
+            "VPD compliance and retail impact",
+            "Illegal and non-compliant products",
+            "Distribution and availability",
+            "Retailer support and training",
+            "Commercial consequences of regulation",
+        ],
+    },
 }
 
 
