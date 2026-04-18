@@ -78,11 +78,12 @@ def _load_fonts() -> str:
 
 @st.cache_resource
 def _load_logo_b64() -> str:
-    """Load the white Riot logo as base64."""
-    logo_path = os.path.join(_ASSET_DIR, "logo_white.png")
-    if os.path.exists(logo_path):
-        with open(logo_path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+    """Load the Riot logo as base64 — prefer logo_patch.png (black on transparent)."""
+    for name in ("logo_patch.png", "logo_white.png"):
+        logo_path = os.path.join(_ASSET_DIR, name)
+        if os.path.exists(logo_path):
+            with open(logo_path, "rb") as f:
+                return base64.b64encode(f.read()).decode()
     return ""
 
 
@@ -192,22 +193,24 @@ def apply_global_styles():
     }}
     /* Sidebar logo container */
     .riot-logo-block {{
-        padding: 0.75rem 1rem 0.25rem 1rem;
+        background: #E8192C;
+        padding: 0.85rem 1.1rem;
         margin: 0;
     }}
     .riot-logo-block img {{
-        width: 72%;
+        width: 100%;
         display: block;
+        filter: invert(1);
     }}
     .riot-tagline {{
         font-family: 'PPFormula', sans-serif !important;
         font-weight: 900;
-        font-size: 0.7rem;
-        letter-spacing: 0.2em;
+        font-size: 0.72rem;
+        letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: #666;
+        color: #FFFFFF;
         text-align: left;
-        padding: 0.1rem 1rem 0.5rem 1rem;
+        padding: 0.45rem 1.1rem 0.4rem 1.1rem;
     }}
     /* Sidebar nav links */
     [data-testid="stSidebar"] .stPageLink a,
