@@ -6,7 +6,7 @@ policy changes that affect Riot. First to comment wins.
 import streamlit as st
 from datetime import datetime, timezone, timedelta
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.regulator_monitor import (
     REGULATORS,
     REGULATOR_DESCRIPTIONS,
@@ -21,13 +21,13 @@ from services.ai_engine import is_configured as ai_configured
 
 st.set_page_config(
     page_title="Regulatory Radar | Riot PR Desk",
-    page_icon="⚖️",
+    page_icon=get_page_icon(),
     layout="wide",
 )
 apply_global_styles()
 render_sidebar()
 
-st.title("⚖️ Regulatory Radar")
+st.title("Regulatory Radar")
 st.markdown(
     "Monitor MHRA, DHSC, IBVTA and other regulators for policy changes that affect Riot. "
     "**First to comment wins.**"
@@ -95,7 +95,7 @@ def _score_colour(score: int) -> str:
 def _render_body_articles(articles: list, body_name: str, key_prefix: str):
     """Render articles for one regulatory body with AI triage and Draft Response buttons."""
     if not articles:
-        st.info("No recent stories found for this body.", icon="⚖️")
+        st.info("No recent stories found for this body.")
         return
 
     valid = [a for a in articles if "error" not in a]
@@ -111,7 +111,7 @@ def _render_body_articles(articles: list, body_name: str, key_prefix: str):
         is_new = _is_recent(pub_str, hours=24)
 
         # Build expander label — include a red ALERT badge for fresh articles
-        alert_tag = " 🔴 NEW" if is_new else ""
+        alert_tag = " [NEW]" if is_new else ""
         label = f"**{formatted['title']}** — {formatted['source']}{alert_tag}"
 
         with st.expander(label, expanded=(i == 0 and is_new)):
@@ -127,7 +127,7 @@ def _render_body_articles(articles: list, body_name: str, key_prefix: str):
             with col1:
                 if ai_configured():
                     if st.button(
-                        "🧠 Triage with AI",
+                        "Triage with AI",
                         key=f"{key_prefix}_triage_btn_{i}",
                         use_container_width=True,
                     ):
@@ -139,7 +139,7 @@ def _render_body_articles(articles: list, body_name: str, key_prefix: str):
 
             with col2:
                 if st.button(
-                    "✍️ Draft Response →",
+                    "Draft Response →",
                     key=f"{key_prefix}_draft_{i}",
                     use_container_width=True,
                 ):
@@ -202,7 +202,7 @@ with ctrl_col:
 
 with refresh_col:
     refresh_all = st.button(
-        "🔄 Refresh All",
+        "Refresh All",
         key="reg_refresh_all",
         use_container_width=True,
         type="primary",
@@ -247,7 +247,7 @@ if recent_articles:
             margin-bottom: 1rem;
         ">
             <span style="color: #f87171; font-weight: 700; font-size: 0.9rem;">
-                🚨 ALERT — {count} new regulatory story{plural} in the last 24 hours
+                ALERT — {count} new regulatory story{plural} in the last 24 hours
             </span>
         </div>
         """.format(
@@ -289,7 +289,7 @@ if selected_body == "All bodies":
                 has_alert = any(
                     _is_recent(a.get("publishedAt", ""), hours=24) for a in valid
                 )
-                alert_indicator = " 🔴" if has_alert else ""
+                alert_indicator = " [NEW]" if has_alert else ""
 
                 desc = REGULATOR_DESCRIPTIONS.get(body_name, "")
                 st.markdown(
@@ -332,7 +332,7 @@ else:
     articles = all_news.get(body_name, [])
     desc = REGULATOR_DESCRIPTIONS.get(body_name, "")
 
-    st.subheader(f"⚖️ {body_name}")
+    st.subheader(f"{body_name}")
     if desc:
         st.caption(desc)
 
@@ -349,5 +349,4 @@ if not ai_configured():
     st.info(
         "Configure your AI engine (ANTHROPIC_API_KEY or OPENAI_API_KEY) "
         "to enable AI triage and draft response features.",
-        icon="ℹ️",
     )

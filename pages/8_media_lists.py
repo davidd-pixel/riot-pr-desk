@@ -4,7 +4,7 @@ Media Lists — group journalists into named lists for campaigns, pitches and ou
 
 import streamlit as st
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 import services.media_lists as media_lists
 import services.journalist_db as journalist_db
 from services.journalist_db import BEAT_OPTIONS, TYPE_OPTIONS
@@ -12,7 +12,7 @@ from services.journalist_db import BEAT_OPTIONS, TYPE_OPTIONS
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="Media Lists | Riot PR Desk", page_icon="📋", layout="wide")
+st.set_page_config(page_title="Media Lists | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
@@ -57,7 +57,7 @@ def _total_contacts(lists: list) -> int:
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
-st.title("📋 Media Lists")
+st.title("Media Lists")
 st.caption("Group journalists into targeted lists for campaigns, pitches and outreach.")
 
 # ---------------------------------------------------------------------------
@@ -86,7 +86,6 @@ if not all_lists and not st.session_state.get("ml_show_create_form", False):
     st.markdown(
         """
 <div style="text-align:center;padding:3rem 2rem;color:#888">
-    <div style="font-size:3rem">📋</div>
     <h3 style="color:#ccc">No media lists yet</h3>
     <p>Media lists let you group journalists for specific campaigns.<br>
     Build one for your next vape tax response, product launch or activist campaign.</p>
@@ -94,7 +93,7 @@ if not all_lists and not st.session_state.get("ml_show_create_form", False):
 """,
         unsafe_allow_html=True,
     )
-    if st.button("➕ Create your first media list", type="primary", key="ml_create_first"):
+    if st.button("Create your first media list", type="primary", key="ml_create_first"):
         st.session_state["ml_show_create_form"] = True
         st.rerun()
 
@@ -142,7 +141,7 @@ if all_lists:
     with left_col:
         st.markdown("#### Your lists")
 
-        if st.button("➕ New List", key="ml_new_btn", use_container_width=True):
+        if st.button("New List", key="ml_new_btn", use_container_width=True):
             st.session_state["ml_show_create_form"] = True
             st.rerun()
 
@@ -188,7 +187,6 @@ if all_lists:
             st.markdown(
                 """
                 <div style="text-align:center; padding: 3rem 1rem; color:#888;">
-                    <div style="font-size:2rem;">👈</div>
                     <p>Select a list from the left to view and manage it.</p>
                 </div>
                 """,
@@ -292,7 +290,7 @@ if all_lists:
                                         f"{beats_str}  {_render_stars(j.get('relationship_score', 3))}"
                                     )
                                 with row_cols[2]:
-                                    if st.button("➕ Add", key=f"ml_add_{active_id}_{jid}", use_container_width=True):
+                                    if st.button("Add", key=f"ml_add_{active_id}_{jid}", use_container_width=True):
                                         media_lists.add_journalist_to_list(active_id, jid)
                                         st.session_state["ml_bulk_selection"] = set()
                                         st.rerun()
@@ -382,12 +380,12 @@ if all_lists:
                 use_c1, use_c2 = st.columns(2)
 
                 with use_c1:
-                    if st.button("📤 Export emails", use_container_width=True, key="ml_export_emails"):
+                    if st.button("Export emails", use_container_width=True, key="ml_export_emails"):
                         media_lists.mark_list_used(active_id)
                         st.session_state["ml_show_emails"] = True
 
                 with use_c2:
-                    if st.button("✍️ Match to PR pack", use_container_width=True, key="ml_match_pr"):
+                    if st.button("Match to PR pack", use_container_width=True, key="ml_match_pr"):
                         media_lists.mark_list_used(active_id)
                         st.session_state["journalist_story_context"] = lst["name"]
                         st.switch_page("pages/6_journalists.py")
@@ -418,7 +416,7 @@ if all_lists:
                         value=st.session_state.get("ml_copy_name", copy_name_default),
                         key="ml_copy_name_input",
                     )
-                    if st.button("📋 Copy list", use_container_width=True, key="ml_copy_btn"):
+                    if st.button("Copy list", use_container_width=True, key="ml_copy_btn"):
                         if copy_name.strip():
                             new_lst = media_lists.copy_list(active_id, copy_name.strip())
                             st.session_state["ml_active_list_id"] = new_lst["id"]
@@ -433,7 +431,7 @@ if all_lists:
                     st.markdown("&nbsp;", unsafe_allow_html=True)
                     if not st.session_state.get("ml_confirm_delete"):
                         if st.button(
-                            "🗑️ Delete list",
+                            "Delete list",
                             use_container_width=True,
                             key="ml_delete_btn",
                             type="secondary",

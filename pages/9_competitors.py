@@ -5,7 +5,7 @@ Competitor Intelligence Dashboard — monitor competitor and regulator activity 
 import streamlit as st
 from datetime import datetime, timezone, timedelta
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.competitor_monitor import (
     COMPETITORS,
     REGULATORS,
@@ -19,13 +19,13 @@ from services.ai_engine import generate, is_configured as ai_configured
 
 st.set_page_config(
     page_title="Competitor Intelligence | Riot PR Desk",
-    page_icon="🔍",
+    page_icon=get_page_icon(),
     layout="wide",
 )
 apply_global_styles()
 render_sidebar()
 
-st.title("🔍 Competitor Intelligence")
+st.title("Competitor Intelligence")
 st.markdown(
     "Monitor competitor and industry body activity in the press. "
     "Spot threats early, find counter-positioning opportunities, and brief the team fast."
@@ -83,7 +83,7 @@ def _most_recent_date(articles: list) -> str:
 def _render_competitor_articles(articles: list, entity_name: str, key_prefix: str):
     """Render articles for one competitor/regulator with action buttons."""
     if not articles:
-        st.info("No recent stories found for this competitor. They may have been quiet lately, or try refreshing.", icon="🔍")
+        st.info("No recent stories found for this competitor. They may have been quiet lately, or try refreshing.")
         return
 
     valid = [a for a in articles if "error" not in a]
@@ -108,7 +108,7 @@ def _render_competitor_articles(articles: list, entity_name: str, key_prefix: st
                 suggest_key = f"{key_prefix}_suggest_{i}"
                 if ai_configured():
                     if st.button(
-                        "💡 Suggest Response",
+                        "Suggest Response",
                         key=f"{key_prefix}_sb_{i}",
                         use_container_width=True,
                     ):
@@ -131,7 +131,7 @@ def _render_competitor_articles(articles: list, entity_name: str, key_prefix: st
 
             with col2:
                 if st.button(
-                    "✍️ Create PR Pack →",
+                    "Create PR Pack →",
                     key=f"{key_prefix}_pr_{i}",
                     use_container_width=True,
                 ):
@@ -171,7 +171,7 @@ def _render_regulator_articles(articles: list, body_name: str, key_prefix: str):
 
             if ai_configured():
                 if st.button(
-                    "✍️ Analyse for Riot",
+                    "Analyse for Riot",
                     key=f"{key_prefix}_ab_{i}",
                     use_container_width=True,
                 ):
@@ -202,7 +202,7 @@ def _render_regulator_articles(articles: list, body_name: str, key_prefix: str):
 # Main tabs
 # ---------------------------------------------------------------------------
 
-tab_comp, tab_reg = st.tabs(["🏢 Competitors", "🏛️ Regulators & Industry Bodies"])
+tab_comp, tab_reg = st.tabs(["Competitors", "Regulators & Industry Bodies"])
 
 
 # ============================================================
@@ -220,7 +220,7 @@ with tab_comp:
         )
     with refresh_col:
         refresh_all = st.button(
-            "🔄 Refresh All",
+            "Refresh All",
             key="comp_refresh_all",
             use_container_width=True,
             help="Load the latest news for every competitor at once (takes ~30s)",
@@ -287,7 +287,7 @@ with tab_comp:
     # AI Competitive Briefing
     # --------------------------------------------------------
     st.divider()
-    st.subheader("🤖 AI Competitive Briefing")
+    st.subheader("AI Competitive Briefing")
     st.caption(
         "Generates a single-page competitive intelligence briefing from the "
         "3 most recent stories per competitor. Requires news to be loaded first."
@@ -328,7 +328,7 @@ with tab_comp:
 
     if "comp_briefing" in st.session_state:
         st.markdown(st.session_state["comp_briefing"])
-        if st.button("✍️ Turn Briefing into PR Pack →", key="comp_briefing_to_pr"):
+        if st.button("Turn Briefing into PR Pack →", key="comp_briefing_to_pr"):
             st.session_state["pr_input"] = st.session_state["comp_briefing"]
             st.switch_page("pages/2_pr_generator.py")
 
@@ -341,7 +341,7 @@ with tab_comp:
 # ============================================================
 with tab_reg:
     reg_refresh = st.button(
-        "🔄 Refresh Regulator News",
+        "Refresh Regulator News",
         key="reg_refresh",
         use_container_width=True,
         type="primary",
@@ -371,7 +371,7 @@ with tab_reg:
                     margin-bottom: 1rem;
                 ">
                     <span style="color: #f87171; font-weight: 700; font-size: 0.9rem;">
-                        🚨 ALERT — {} new regulatory story{} in the last 24 hours
+                        ALERT — {} new regulatory story{} in the last 24 hours
                     </span>
                 </div>
                 """.format(

@@ -13,18 +13,18 @@ from services.ai_engine import is_configured as ai_configured, generate_stream, 
 from services.blog_library import save_blog, get_all_blogs, search_blogs, update_blog_status, delete_blog, add_version
 from services.google_docs_export import export_blog_to_docs, is_configured as gdocs_configured
 from utils.prompts import BLOG_PROMPT
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
 
-st.set_page_config(page_title="Blog Writer | Riot PR Desk", page_icon="📝", layout="wide")
+st.set_page_config(page_title="Blog Writer | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 
 apply_global_styles()
 render_sidebar()
 
-st.title("📝 Blog Writer")
+st.title("Blog Writer")
 st.markdown(
     "Write SEO-optimised blog posts for rioteliquid.com/blogs/news — "
     "Riot's owned platform for setting the agenda, building search traffic "
@@ -41,7 +41,6 @@ if not ai_configured():
     st.error(
         "**AI engine not configured.** Add your `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` "
         "to `.env` to get started. Then set `AI_PROVIDER` to `anthropic` or `openai`.",
-        icon="🔑",
     )
     st.stop()
 
@@ -49,7 +48,7 @@ if not ai_configured():
 # Status badges (used in both tabs)
 # ---------------------------------------------------------------------------
 
-STATUS_BADGES = {"draft": "⚪ Draft", "ready": "✅ Ready", "published": "🌐 Published"}
+STATUS_BADGES = {"draft": "Draft", "ready": "Ready", "published": "Published"}
 
 BLOG_TYPE_OPTIONS = [
     "Industry Commentary",
@@ -227,7 +226,7 @@ def _build_blog_docx(sections: dict, blog_title: str) -> bytes:
 # Tabs
 # ---------------------------------------------------------------------------
 
-tab_write, tab_library = st.tabs(["✍️ Write", "📚 Blog Library"])
+tab_write, tab_library = st.tabs(["Write", "Blog Library"])
 
 # ===========================================================================
 # TAB 1 — WRITE
@@ -287,7 +286,7 @@ with tab_write:
 
     # Auto-suggest (triggered by News Desk or manual button below)
     if _trigger_suggest and topic.strip() and "blog_suggestions" not in st.session_state:
-        with st.spinner("🤖 Analysing story and suggesting the best blog settings..."):
+        with st.spinner("Analysing story and suggesting the best blog settings..."):
             _sugg_result = _generate_blog_suggestions(topic.strip())
         st.session_state["blog_suggestions"] = _sugg_result
         st.session_state["blog_suggestions_for_topic"] = topic.strip()
@@ -317,9 +316,9 @@ with tab_write:
 
         # AI rationale callout
         if sugg.get("rationale"):
-            st.info(f"🤖 **AI Analysis:** {sugg['rationale']}")
+            st.info(f"**AI Analysis:** {sugg['rationale']}")
 
-        st.markdown("### 🎯 Blog Settings — AI Suggested")
+        st.markdown("### Blog Settings — AI Suggested")
         st.caption(
             "The AI has analysed the story and pre-filled these settings. "
             "Review each field and edit anything before generating."
@@ -346,21 +345,21 @@ with tab_write:
             placeholder="e.g. vaping regulations, e-cigarette, quit smoking",
         )
         st.caption(
-            "💡 Use terms people actually search — "
+            "Use terms people actually search — "
             "'how to quit smoking with a vape', not 'cessation journey'."
         )
 
         reanalyse_c, manual_c = st.columns(2)
         with reanalyse_c:
             if topic.strip() and st.button(
-                "🔄 Re-analyse story", use_container_width=True, key="blog_reanalyse"
+                "Re-analyse story", use_container_width=True, key="blog_reanalyse"
             ):
                 for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
                     st.session_state.pop(_k, None)
                 st.session_state["blog_suggest_on_load"] = True
                 st.rerun()
         with manual_c:
-            if st.button("✏️ Switch to manual mode", use_container_width=True, key="blog_to_manual"):
+            if st.button("Switch to manual mode", use_container_width=True, key="blog_to_manual"):
                 for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
                     st.session_state.pop(_k, None)
                 st.rerun()
@@ -371,7 +370,7 @@ with tab_write:
             sugg_btn_col, _ = st.columns([2, 3])
             with sugg_btn_col:
                 if st.button(
-                    "🤖 Suggest blog type & keywords →",
+                    "Suggest blog type & keywords →",
                     type="secondary",
                     use_container_width=True,
                     key="blog_manual_suggest_btn",
@@ -401,7 +400,7 @@ with tab_write:
             placeholder="e.g. vaping regulations, e-cigarette, quit smoking",
         )
         st.caption(
-            "💡 Use terms people actually search — "
+            "Use terms people actually search — "
             "'how to stop smoking with a vape', not 'cessation journey'."
         )
 
@@ -438,7 +437,7 @@ with tab_write:
 
     # ── Generate button ──────────────────────────────────────────────────────
     generate_clicked = st.button(
-        "📝 Write Blog Post",
+        "Write Blog Post",
         type="primary",
         use_container_width=True,
         disabled=not (topic.strip() and primary_keyword.strip()),
@@ -460,14 +459,14 @@ with tab_write:
         )
 
         try:
-            with st.status("✍️ Writing your blog post...", expanded=True) as status:
+            with st.status("Writing your blog post...", expanded=True) as status:
                 st.write(
                     f"Crafting a {word_count_option.lower()} {blog_type.lower()} post "
                     f"optimised for '{primary_keyword}'..."
                 )
                 stream = generate_stream(prompt)
                 raw_response = st.write_stream(stream)
-                status.update(label="✅ Blog post ready!", state="complete", expanded=False)
+                status.update(label="Blog post ready", state="complete", expanded=False)
 
             # Store raw + inputs
             st.session_state["blog_raw"] = raw_response
@@ -508,7 +507,7 @@ with tab_write:
         stored_primary_kw = st.session_state.get("blog_stored_primary_keyword", primary_keyword.strip())
 
         st.divider()
-        st.markdown("### 📄 Your Blog Post")
+        st.markdown("### Your Blog Post")
         st.caption("DRAFT — All outputs require approval before publishing.")
 
         for section_name, content in sections.items():
@@ -516,7 +515,7 @@ with tab_write:
                 st.markdown(content)
 
                 if section_name == "Blog Post":
-                    st.caption(f"📊 Word count: ~{len(content.split())} words")
+                    st.caption(f"Word count: ~{len(content.split())} words")
 
                 safe_key = section_name.replace(" ", "_").replace("/", "_")
                 st.divider()
@@ -526,7 +525,7 @@ with tab_write:
                 with action_col1:
                     regen_key = f"blog_regen_{safe_key}"
                     if st.button(
-                        "🔄 Regenerate section",
+                        "Regenerate section",
                         key=regen_key,
                         help="Rewrite this section from scratch with a fresh approach",
                         use_container_width=True,
@@ -568,7 +567,7 @@ with tab_write:
                 with action_col2:
                     refine_toggle_key = f"blog_refine_active_{safe_key}"
                     if st.button(
-                        "✏️ Refine with AI" if not st.session_state.get(refine_toggle_key) else "✕ Close editor",
+                        "Refine with AI" if not st.session_state.get(refine_toggle_key) else "✕ Close editor",
                         key=f"blog_refine_toggle_{safe_key}",
                         help="Give the AI a specific instruction to improve this section",
                         use_container_width=True,
@@ -594,7 +593,7 @@ with tab_write:
                         "Add a specific statistic",
                         "Strengthen the call to action",
                     ]
-                    st.caption("✏️ **AI EDIT** — Tell the AI exactly what to change:")
+                    st.caption("**AI EDIT** — Tell the AI exactly what to change:")
 
                     qp_col1, qp_col2 = st.columns([3, 1])
                     with qp_col1:
@@ -682,15 +681,15 @@ with tab_write:
         passed = sum(1 for _, v in checklist_items if v)
         total = len(checklist_items)
         score_pct = round(passed / total * 100)
-        score_color = "🟢" if score_pct >= 80 else "🟡" if score_pct >= 60 else "🔴"
+        readiness_label = "Good" if score_pct >= 80 else "Needs Work" if score_pct >= 60 else "Not Ready"
 
         with st.expander(
-            f"{score_color} Publishing Readiness: {score_pct}% ({passed}/{total} checks passed)",
+            f"Publishing Readiness: {score_pct}% ({passed}/{total} checks passed) — {readiness_label}",
             expanded=score_pct < 80,
         ):
             for label, passed_check in checklist_items:
-                icon = "✅" if passed_check else "⚠️"
-                st.caption(f"{icon} {label}")
+                badge = '<span class="status-badge green">OK</span>' if passed_check else '<span class="status-badge yellow">!</span>'
+                st.markdown(f'{badge}&nbsp; {label}', unsafe_allow_html=True)
             if score_pct == 100:
                 st.success("All checks passed. This post is ready for review.")
 
@@ -713,7 +712,7 @@ with tab_write:
 
         with export_col1:
             st.download_button(
-                "📥 Download .txt",
+                "Download .txt",
                 data=full_text,
                 file_name=f"riot_blog_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
                 mime="text/plain",
@@ -738,7 +737,7 @@ with tab_write:
 
                 docx_bytes = _build_blog_docx(sections, blog_title)
                 st.download_button(
-                    "📄 Download .docx",
+                    "Download .docx",
                     data=docx_bytes,
                     file_name=f"riot_blog_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -749,7 +748,7 @@ with tab_write:
 
         with export_col3:
             if "blog_saved_id" in st.session_state:
-                st.caption("✅ Saved to Blog Library")
+                st.caption("Saved to Blog Library")
 
         # ── Approval ──────────────────────────────────────────────────────────
         if "blog_saved_id" in st.session_state:
@@ -758,17 +757,17 @@ with tab_write:
             _current_status = st.session_state.get("blog_current_status", "draft")
 
             if _current_status == "published":
-                st.success("🌐 **Published** — this post is marked as live.")
+                st.success("**Published** — this post is marked as live.")
 
             elif _current_status == "ready":
                 st.success(
-                    "✅ **Approved** — this post is marked as ready for publishing. "
+                    "**Approved** — this post is marked as ready for publishing. "
                     "Copy the content and post it to rioteliquid.com/blogs/news."
                 )
                 pub_c1, pub_c2 = st.columns(2)
                 with pub_c1:
                     if st.button(
-                        "🌐 Mark as Published",
+                        "Mark as Published",
                         use_container_width=True,
                         key="blog_mark_published",
                     ):
@@ -781,7 +780,7 @@ with tab_write:
                             st.error(f"Update failed: {e}")
                 with pub_c2:
                     if st.button(
-                        "↩️ Return to Draft",
+                        "Return to Draft",
                         use_container_width=True,
                         key="blog_unapprove",
                     ):
@@ -796,7 +795,7 @@ with tab_write:
             else:
                 st.caption("Happy with this draft? Approve it to mark it ready for publishing.")
                 if st.button(
-                    "✅ Approve for Publishing",
+                    "Approve for Publishing",
                     type="primary",
                     use_container_width=True,
                     key="blog_approve_btn",
@@ -815,7 +814,7 @@ with tab_write:
 # ===========================================================================
 
 with tab_library:
-    st.markdown("### 📚 Blog Library")
+    st.markdown("### Blog Library")
 
     # ── Stats row ─────────────────────────────────────────────────────────────
     all_blogs = get_all_blogs()
@@ -896,7 +895,7 @@ with tab_library:
                 created_display = f"{_d}/{_m}/{_y}"
             except Exception:
                 created_display = created_raw[:10] if created_raw else "Unknown date"
-            badge = STATUS_BADGES.get(status, "⚪ Draft")
+            badge = STATUS_BADGES.get(status, "Draft")
 
             with st.expander(
                 f"{badge}  |  {title}  —  {created_display}",
@@ -913,7 +912,7 @@ with tab_library:
                 with meta_c4:
                     st.caption(f"**Created:** {created_display}")
 
-                content_tab, actions_tab = st.tabs(["📄 Content", "⚙️ Actions"])
+                content_tab, actions_tab = st.tabs(["Content", "Actions"])
 
                 with content_tab:
                     blog_sections = blog.get("sections", {})
@@ -942,7 +941,7 @@ with tab_library:
                                 blog.get("sections", {}), title
                             )
                             st.download_button(
-                                "📄 Download as Word",
+                                "Download as Word",
                                 data=_docx_bytes,
                                 file_name=f"riot_blog_{_safe}_{blog_id}.docx",
                                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -961,7 +960,7 @@ with tab_library:
 
                         if gdocs_configured():
                             if st.button(
-                                "📝 Send to Google Docs",
+                                "Send to Google Docs",
                                 key=f"lib_gdocs_btn_{blog_id}",
                                 use_container_width=True,
                             ):
@@ -975,7 +974,7 @@ with tab_library:
 
                             if _gdocs_key in st.session_state:
                                 st.markdown(
-                                    f"[📄 Open in Google Docs →]({st.session_state[_gdocs_key]})"
+                                    f"[Open in Google Docs →]({st.session_state[_gdocs_key]})"
                                 )
                             elif _gdocs_err_key in st.session_state:
                                 st.error(f"Export failed: {st.session_state[_gdocs_err_key]}")
@@ -1008,7 +1007,7 @@ with tab_library:
 
                         if status != "published":
                             if st.button(
-                                "🌐 Mark as Published",
+                                "Mark as Published",
                                 key=f"blog_lib_publish_{blog_id}",
                                 use_container_width=True,
                             ):
@@ -1024,7 +1023,7 @@ with tab_library:
                         confirm_key = f"blog_lib_confirm_delete_{blog_id}"
                         if not st.session_state.get(confirm_key):
                             if st.button(
-                                "🗑️ Delete",
+                                "Delete",
                                 key=f"blog_lib_delete_{blog_id}",
                                 use_container_width=True,
                             ):

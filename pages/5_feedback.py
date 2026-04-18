@@ -1,13 +1,13 @@
 import streamlit as st
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.feedback import get_all_feedback, get_stats, get_feedback_by_context, clear_all
 from services.error_logger import get_recent_errors, get_error_summary, clear_errors
 
-st.set_page_config(page_title="Feedback & Learning | Riot PR Desk", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Feedback & Learning | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
-st.title("📊 Feedback & Learning")
+st.title("Feedback & Learning")
 st.markdown("Your votes teach the AI what works for Riot. The more you vote, the better it gets.")
 
 st.divider()
@@ -18,7 +18,7 @@ stats = get_stats()
 if stats["total"] == 0:
     st.markdown("### How it works")
     st.markdown("""
-    1. **Vote** — Use the 👍 👎 buttons on news stories, news-jack ideas and PR pack sections
+    1. **Vote** — Use the Good / Weak buttons on news stories, news-jack ideas and PR pack sections
     2. **Add notes** — Tell the AI *why* you liked or disliked something (optional but powerful)
     3. **AI adapts** — Your feedback is injected into the AI's instructions so future outputs improve
 
@@ -30,9 +30,9 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.metric("Total Votes", stats["total"])
 with col2:
-    st.metric("👍 Liked", stats["up"])
+    st.metric("Liked", stats["up"])
 with col3:
-    st.metric("👎 Disliked", stats["down"])
+    st.metric("Disliked", stats["down"])
 
 st.divider()
 
@@ -40,10 +40,10 @@ st.divider()
 st.markdown("### Votes by Category")
 
 context_labels = {
-    "news_story": "📰 News Stories",
-    "newsjack_story": "⚡ News-Jack Stories",
-    "newsjack_idea": "💡 News-Jack Ideas",
-    "pr_pack_section": "✍️ PR Pack Sections",
+    "news_story": "News Stories",
+    "newsjack_story": "News-Jack Stories",
+    "newsjack_idea": "News-Jack Ideas",
+    "pr_pack_section": "PR Pack Sections",
 }
 
 for ctx, label in context_labels.items():
@@ -53,7 +53,7 @@ for ctx, label in context_labels.items():
         down = ctx_stats["down"]
         total = up + down
         pct = round(up / total * 100) if total > 0 else 0
-        st.markdown(f"**{label}** — {total} votes ({up} 👍 / {down} 👎) — {pct}% approval")
+        st.markdown(f"**{label}** — {total} votes ({up} Good / {down} Weak) — {pct}% approval")
         st.progress(pct / 100)
 
 st.divider()
@@ -78,7 +78,7 @@ if filter_ctx != "All":
 all_feedback.reverse()
 
 for entry in all_feedback[:50]:
-    vote_icon = "👍" if entry["vote"] == "up" else "👎"
+    vote_icon = "Good" if entry["vote"] == "up" else "Weak"
     ctx_label = context_labels.get(entry.get("context", ""), entry.get("context", ""))
     note_part = f" — *\"{entry['note']}\"*" if entry.get("note") else ""
     ts = entry.get("timestamp", "")[:16].replace("T", " ")
@@ -110,7 +110,7 @@ st.divider()
 
 # --- Clear ---
 st.markdown("### Manage Data")
-if st.button("🗑️ Clear All Feedback", type="secondary"):
+if st.button("Clear All Feedback", type="secondary"):
     st.session_state["confirm_clear"] = True
 
 if st.session_state.get("confirm_clear"):
@@ -130,7 +130,7 @@ if st.session_state.get("confirm_clear"):
 st.divider()
 
 # --- Error log ---
-st.markdown("### 🔧 System Health & Error Log")
+st.markdown("### System Health & Error Log")
 st.caption("Automatically captures AI failures, news fetch errors and API issues for debugging.")
 
 err_summary = get_error_summary()
@@ -146,7 +146,7 @@ with ec3:
     st.metric("Last error", last)
 
 if err_summary.get("total", 0) > 0:
-    with st.expander("📋 View recent errors", expanded=False):
+    with st.expander("View recent errors", expanded=False):
         errors = get_recent_errors(50)
         for err in errors:
             ts = err.get("timestamp", "")[:19].replace("T", " ")
@@ -155,8 +155,7 @@ if err_summary.get("total", 0) > 0:
             ctx = err.get("context", "")
             tb = err.get("traceback", "")
 
-            err_icon = {"ai_generation": "🤖", "news_fetch": "📰"}.get(etype, "⚠️")
-            st.markdown(f"{err_icon} **{etype}** — `{ts}`")
+            st.markdown(f"**{etype}** — `{ts}`")
             st.caption(f"Message: {msg}")
             if ctx:
                 st.caption(f"Context: {ctx}")
@@ -165,9 +164,9 @@ if err_summary.get("total", 0) > 0:
                     st.code(tb, language="python")
             st.divider()
 
-    if st.button("🗑️ Clear error log", type="secondary", key="clear_errors_btn"):
+    if st.button("Clear error log", type="secondary", key="clear_errors_btn"):
         clear_errors()
         st.success("Error log cleared.")
         st.rerun()
 else:
-    st.success("No errors logged. All systems running cleanly.", icon="✅")
+    st.success("No errors logged. All systems running cleanly.")

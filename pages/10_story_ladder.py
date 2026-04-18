@@ -4,14 +4,14 @@ from services.ai_engine import generate, is_configured as ai_configured
 from services.feedback import record_vote
 from config.spokespeople import SPOKESPEOPLE, get_spokesperson_names
 from utils.prompts import STORY_LADDER_PROMPT, QUOTE_OF_WEEK_PROMPT
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 
-st.set_page_config(page_title="Story Ladder | Riot PR Desk", page_icon="🪜", layout="wide")
+st.set_page_config(page_title="Story Ladder | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 
 apply_global_styles()
 render_sidebar()
 
-st.title("🪜 Story Ladder")
+st.title("Story Ladder")
 st.markdown("Plan multi-week PR campaigns with a phased sequence of actions that build momentum and maximise coverage.")
 
 st.divider()
@@ -19,11 +19,10 @@ st.divider()
 if not ai_configured():
     st.error(
         "**AI engine not configured.** Add your `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` to `.env` to get started.",
-        icon="🔑",
     )
     st.stop()
 
-tab_ladder, tab_quote = st.tabs(["🪜 Story Ladder", "💬 Quote of the Week"])
+tab_ladder, tab_quote = st.tabs(["Story Ladder", "Quote of the Week"])
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 1: STORY LADDER
@@ -89,7 +88,7 @@ with tab_ladder:
     )
 
     generate_ladder_clicked = st.button(
-        "🪜 Build Story Ladder",
+        "Build Story Ladder",
         type="primary",
         use_container_width=True,
         disabled=not campaign_input.strip(),
@@ -104,7 +103,7 @@ with tab_ladder:
             objective=objective.strip() if objective.strip() else "Maximise PR coverage and establish Riot as the leading voice",
             spokespeople=spokespeople_str,
         )
-        with st.spinner("🪜 Building your Story Ladder — planning the campaign rungs..."):
+        with st.spinner("Building your Story Ladder — planning the campaign rungs..."):
             try:
                 result = generate(prompt)
                 st.session_state["sl_last_result"] = result
@@ -119,7 +118,7 @@ with tab_ladder:
         campaign_ref = st.session_state.get("sl_last_campaign", campaign_input.strip())
 
         st.divider()
-        st.markdown("### 📋 Your Story Ladder")
+        st.markdown("### Your Story Ladder")
         st.caption("DRAFT — Review and adapt before sharing with your team.")
 
         st.markdown(result)
@@ -127,14 +126,14 @@ with tab_ladder:
         st.divider()
 
         # Save as note
-        st.markdown("#### 💾 Save as note")
+        st.markdown("#### Save as note")
         note_content = st.text_area(
             "Edit before saving:",
             value=result,
             height=200,
             key="sl_note_content",
         )
-        if st.button("💾 Save note", key="sl_save_note"):
+        if st.button("Save note", key="sl_save_note"):
             st.session_state["sl_saved_note"] = note_content
             st.success("Note saved to session.")
 
@@ -148,7 +147,7 @@ with tab_ladder:
                 f"{'=' * 60}\n\n{result}"
             )
             st.download_button(
-                "📥 Download as .txt",
+                "Download as .txt",
                 data=download_text,
                 file_name=f"riot_story_ladder_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
                 mime="text/plain",
@@ -156,7 +155,7 @@ with tab_ladder:
             )
 
         with col_pr:
-            if st.button("✍️ Create PR Pack from this", use_container_width=True):
+            if st.button("Create PR Pack from this", use_container_width=True):
                 # Extract first rung action (heuristic: find first "Action:" line)
                 first_action = ""
                 for line in result.splitlines():
@@ -225,7 +224,7 @@ with tab_quote:
     spokesperson = SPOKESPEOPLE[spokesperson_key]
 
     generate_quotes_clicked = st.button(
-        "💬 Generate 5 LinkedIn Posts",
+        "Generate 5 LinkedIn Posts",
         type="primary",
         use_container_width=True,
         disabled=not qw_context.strip(),
@@ -239,7 +238,7 @@ with tab_quote:
             spokesperson_title=spokesperson["title"],
             spokesperson_tone=spokesperson["tone"],
         )
-        with st.spinner("💬 Writing LinkedIn posts — finding the sharpest angles..."):
+        with st.spinner("Writing LinkedIn posts — finding the sharpest angles..."):
             try:
                 result = generate(prompt)
                 st.session_state["qw_last_result"] = result
@@ -255,7 +254,7 @@ with tab_quote:
         sp_used = SPOKESPEOPLE.get(sp_key_used, spokesperson)
 
         st.divider()
-        st.markdown(f"### 💬 Posts for {sp_used['name']}, {sp_used['title']}")
+        st.markdown(f"### Posts for {sp_used['name']}, {sp_used['title']}")
         st.caption("DRAFT — Review before posting. These are suggestions, not final copy.")
 
         # Split on "---" separators (the prompt uses --- between posts)
@@ -276,7 +275,7 @@ with tab_quote:
                 vote_key = f"qw_voted_{post_num}"
                 with col_up:
                     if vote_key not in st.session_state:
-                        if st.button("👍", key=f"qw_up_{post_num}", help="Good post"):
+                        if st.button("Good", key=f"qw_up_{post_num}", help="Good post"):
                             record_vote(
                                 f"Quote of Week post {post_num}: {segment[:100]}",
                                 "up",
@@ -285,11 +284,11 @@ with tab_quote:
                             st.session_state[vote_key] = "up"
                             st.rerun()
                     else:
-                        st.caption("👍" if st.session_state[vote_key] == "up" else "👎")
+                        st.caption("Good" if st.session_state[vote_key] == "up" else "Weak")
 
                 with col_down:
                     if vote_key not in st.session_state:
-                        if st.button("👎", key=f"qw_down_{post_num}", help="Needs improvement"):
+                        if st.button("Weak", key=f"qw_down_{post_num}", help="Needs improvement"):
                             record_vote(
                                 f"Quote of Week post {post_num}: {segment[:100]}",
                                 "down",

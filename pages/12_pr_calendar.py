@@ -7,11 +7,11 @@ import streamlit as st
 from datetime import date, datetime, timedelta
 from itertools import groupby
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 
 st.set_page_config(
     page_title="PR Calendar | Riot PR Desk",
-    page_icon="📅",
+    page_icon=get_page_icon(),
     layout="wide",
 )
 
@@ -37,19 +37,19 @@ HORIZON_MAP = {
 }
 
 CATEGORY_ICONS = {
-    "Sport": "🏟️",
-    "Music & Festivals": "🎵",
-    "Entertainment": "🎭",
-    "UK Calendar": "🇬🇧",
-    "Awareness Days": "🎗️",
-    "Riot-Specific": "⚡",
+    "Sport": "",
+    "Music & Festivals": "",
+    "Entertainment": "",
+    "UK Calendar": "",
+    "Awareness Days": "",
+    "Riot-Specific": "",
 }
 
 STATUS_ICONS = {
-    "draft": "⚪",
-    "approved": "🟢",
-    "pitched": "🔵",
-    "covered": "🏆",
+    "draft": "",
+    "approved": "",
+    "pitched": "",
+    "covered": "",
 }
 
 
@@ -117,7 +117,7 @@ def _month_label(date_str: str) -> str:
 # Header
 # ---------------------------------------------------------------------------
 
-st.title("📅 PR Calendar")
+st.title("PR Calendar")
 st.caption("Your complete view of past activity, upcoming events and planning horizon")
 
 st.divider()
@@ -146,7 +146,7 @@ with ctrl_col2:
 
 with ctrl_col3:
     st.write("")  # vertical alignment nudge
-    refresh = st.button("🔄 Refresh", use_container_width=True, key="pcal_refresh")
+    refresh = st.button("Refresh", use_container_width=True, key="pcal_refresh")
     if refresh:
         st.cache_data.clear()
         st.rerun()
@@ -163,7 +163,7 @@ all_items = _build_timeline(days_ahead, active_categories, show_packs)
 # Tabs
 # ---------------------------------------------------------------------------
 
-tab_timeline, tab_grid = st.tabs(["📅 Timeline View", "📊 Month Grid"])
+tab_timeline, tab_grid = st.tabs(["Timeline View", "Month Grid"])
 
 
 # ===========================================================================
@@ -182,12 +182,12 @@ with tab_timeline:
             if month != current_month:
                 if current_month is not None:
                     st.write("")  # breathing room between months
-                st.markdown(f"### 📆 {month}")
+                st.markdown(f"### {month}")
                 current_month = month
 
             if item["type"] == "event":
                 cat = item.get("category", "")
-                icon = CATEGORY_ICONS.get(cat, "📅")
+                icon = CATEGORY_ICONS.get(cat, "")
                 status = item.get("status", "")
                 status_label = f" — **{status}**" if status else ""
                 custom_badge = " `custom`" if item.get("custom") else ""
@@ -197,15 +197,16 @@ with tab_timeline:
                     date_part = item["date"][5:] if item["date"] else "?"
                     st.caption(date_part)
                 with col2:
+                    icon_prefix = f"{icon} " if icon else ""
                     st.markdown(
-                        f"{icon} **{item['title']}** `{cat}`{custom_badge}{status_label}"
+                        f"{icon_prefix}**{item['title']}** `{cat}`{custom_badge}{status_label}"
                     )
                     if item.get("description"):
                         st.caption(item["description"][:120])
                 with col3:
                     btn_key = f"cal_{item['date']}_{item['title'][:20].replace(' ', '_')}"
                     if st.button(
-                        "💡 News-Jack",
+                        "News-Jack",
                         key=btn_key,
                         use_container_width=True,
                     ):
@@ -216,14 +217,15 @@ with tab_timeline:
 
             elif item["type"] == "pack":
                 status = item.get("status", "draft")
-                icon = STATUS_ICONS.get(status, "⚪")
+                icon = STATUS_ICONS.get(status, "")
 
                 col1, col2, col3 = st.columns([1, 5, 2])
                 with col1:
                     date_part = item["date"][5:] if item["date"] else "?"
                     st.caption(date_part)
                 with col2:
-                    st.markdown(f"{icon} **{item['title']}** `PR Pack`")
+                    pack_icon_prefix = f"{icon} " if icon else ""
+                    st.markdown(f"{pack_icon_prefix}**{item['title']}** `PR Pack`")
                     st.caption(item.get("description", ""))
                 with col3:
                     btn_key = f"pack_{item['date']}_{item['title'][:20].replace(' ', '_')}"
@@ -365,7 +367,7 @@ with tab_grid:
 
                     if day_items:
                         dots = "".join(
-                            "🔴" if it["type"] == "pack" else "🔵"
+                            "●" if it["type"] == "pack" else "●"
                             for it in day_items[:3]
                         )
                         extra = f"+{len(day_items)-3}" if len(day_items) > 3 else ""
@@ -389,16 +391,17 @@ with tab_grid:
             for item in sel_items:
                 if item["type"] == "event":
                     cat = item.get("category", "")
-                    icon = CATEGORY_ICONS.get(cat, "📅")
+                    icon = CATEGORY_ICONS.get(cat, "")
                     custom_tag = " _(custom)_" if item.get("custom") else ""
+                    icon_prefix = f"{icon} " if icon else ""
                     st.markdown(
-                        f"{icon} **{item['title']}**{custom_tag} `{cat}`"
+                        f"{icon_prefix}**{item['title']}**{custom_tag} `{cat}`"
                     )
                     if item.get("description"):
                         st.caption(item["description"][:200])
                     news_jack_key = f"pcal_nj_{selected_date}_{item['title'][:20].replace(' ', '_')}"
                     if st.button(
-                        "💡 News-Jack this",
+                        "News-Jack this",
                         key=news_jack_key,
                     ):
                         st.session_state["pr_input"] = (
@@ -407,9 +410,10 @@ with tab_grid:
                         st.switch_page("pages/2_pr_generator.py")
                 elif item["type"] == "pack":
                     status = item.get("status", "draft")
-                    icon = STATUS_ICONS.get(status, "⚪")
+                    icon = STATUS_ICONS.get(status, "")
+                    icon_prefix = f"{icon} " if icon else ""
                     st.markdown(
-                        f"{icon} **{item['title']}** `PR Pack` — _{status.title()}_"
+                        f"{icon_prefix}**{item['title']}** `PR Pack` — _{status.title()}_"
                     )
                     if item.get("description"):
                         st.caption(item["description"])
@@ -420,6 +424,6 @@ with tab_grid:
                         st.switch_page("pages/7_pr_library.py")
         else:
             st.info(f"No items found for {selected_date}.")
-        if st.button("✕ Clear selection", key="pcal_clear_sel"):
+        if st.button("Clear selection", key="pcal_clear_sel"):
             st.session_state["pcal_selected_date"] = None
             st.rerun()

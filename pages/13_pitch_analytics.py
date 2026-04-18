@@ -7,13 +7,13 @@ recent activity timeline and top journalist relationships.
 import streamlit as st
 from datetime import datetime, timezone, timedelta
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 
-st.set_page_config(page_title="Pitch Analytics | Riot PR Desk", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Pitch Analytics | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
-st.title("📈 Pitch Analytics")
+st.title("Pitch Analytics")
 st.caption("Track what you've pitched, who responded and what landed coverage.")
 
 # ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ except Exception:
 # Section 1 — Headline metrics
 # ---------------------------------------------------------------------------
 
-st.markdown("### 📋 Headline Metrics")
+st.markdown("### Headline Metrics")
 
 n_generated = len(all_packs)
 n_pitched = sum(1 for p in all_packs if p.get("status") in ["pitched", "covered"])
@@ -100,7 +100,7 @@ st.divider()
 # Section 2 — Coverage funnel
 # ---------------------------------------------------------------------------
 
-st.markdown("### 📊 PR Funnel")
+st.markdown("### PR Funnel")
 
 if n_generated > 0:
     col1, col2 = st.columns([1, 2])
@@ -133,7 +133,7 @@ st.divider()
 # Section 3 — Coverage by publication
 # ---------------------------------------------------------------------------
 
-st.markdown("### 🗞️ Coverage by Publication")
+st.markdown("### Coverage by Publication")
 
 coverage_by_pub = {}
 for pack in all_packs:
@@ -159,7 +159,7 @@ st.divider()
 # Section 4 — Pitch performance by position
 # ---------------------------------------------------------------------------
 
-st.markdown("### 🏛️ Performance by Position")
+st.markdown("### Performance by Position")
 
 position_stats = {}
 for pack in all_packs:
@@ -195,7 +195,7 @@ st.divider()
 # Section 5 — Recent activity timeline
 # ---------------------------------------------------------------------------
 
-st.markdown("### ⏱️ Recent Activity")
+st.markdown("### Recent Activity")
 
 try:
     recent_contacts_60 = get_recent_contacts(days=60)
@@ -214,39 +214,32 @@ for c in recent_contacts_60[:20]:
     timeline.append({
         "date": c.get("logged_at", "")[:10],
         "type": "contact",
-        "description": f"📞 Pitched **{j['name'] if j else 'journalist'}** ({c.get('subject', '')})",
+        "description": f"Pitched **{j['name'] if j else 'journalist'}** ({c.get('subject', '')})",
         "outcome": c.get("outcome", ""),
     })
 for p in recent_packs:
     timeline.append({
         "date": p.get("created_at", "")[:10],
         "type": "pack",
-        "description": f"✍️ Generated **{p.get('title', 'PR Pack')}**",
+        "description": f"Generated **{p.get('title', 'PR Pack')}**",
         "outcome": p.get("status", "draft"),
     })
 
 timeline.sort(key=lambda x: x["date"], reverse=True)
 
 if timeline:
-    outcome_icons = {
-        "responded": "✅",
-        "coverage_landed": "🏆",
-        "declined": "❌",
-        "draft": "⚪",
-        "approved": "🟢",
-        "pitched": "🔵",
-        "covered": "🏆",
-        "no_response": "⏳",
-        "": "",
-    }
     for item in timeline[:20]:
-        outcome = item.get("outcome", "")
-        icon = outcome_icons.get(outcome, "")
         col1, col2 = st.columns([1, 5])
         with col1:
             st.caption(item["date"])
         with col2:
-            st.markdown(f"{item['description']} {icon}")
+            outcome = item.get("outcome", "")
+            outcome_label = outcome.replace("_", " ").title() if outcome else ""
+            desc = item['description']
+            if outcome_label:
+                st.markdown(f"{desc} — {outcome_label}")
+            else:
+                st.markdown(desc)
 else:
     st.info("Activity will appear here as you use the platform.")
 
@@ -256,7 +249,7 @@ st.divider()
 # Section 6 — Top journalists by coverage
 # ---------------------------------------------------------------------------
 
-st.markdown("### 🏆 Best-Performing Journalist Relationships")
+st.markdown("### Best-Performing Journalist Relationships")
 
 # Build top journalists list from analytics best_response_rate_journalist_ids
 # and enrich with journalist data

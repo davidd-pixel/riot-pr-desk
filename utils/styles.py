@@ -86,6 +86,21 @@ def _load_logo_b64() -> str:
     return ""
 
 
+def get_page_icon() -> str:
+    """Consistent branded favicon for all pages — avoids 16 different emoji."""
+    return "🔴"
+
+
+def _status_dot(ok: bool) -> str:
+    """Return an HTML inline dot indicator for service status."""
+    colour = "#4ade80" if ok else "#888"
+    label = "Online" if ok else "Not configured"
+    return (
+        f'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;'
+        f'background:{colour};margin-right:6px;vertical-align:middle;"></span>{label}'
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main style injection
 # ---------------------------------------------------------------------------
@@ -211,6 +226,10 @@ def apply_global_styles():
     [data-testid="stSidebar"] .stPageLink a[aria-current="page"] {{
         color: #E8192C !important;
         font-weight: 700;
+        border-left: 2px solid #E8192C;
+        padding-left: 6px;
+        background: rgba(232, 25, 44, 0.06);
+        border-radius: 0 2px 2px 0;
     }}
     /* Sidebar dividers */
     [data-testid="stSidebar"] hr {{
@@ -391,8 +410,8 @@ def apply_global_styles():
         font-family: 'PPFormulaUI', sans-serif !important;
     }}
     [data-testid="stAlertContainer"][data-type="info"] {{
-        background: rgba(232, 25, 44, 0.08) !important;
-        border-left: 3px solid #E8192C !important;
+        background: rgba(148, 163, 184, 0.08) !important;
+        border-left: 3px solid #64748b !important;
         color: #E0E0E0 !important;
     }}
     [data-testid="stAlertContainer"][data-type="success"] {{
@@ -528,6 +547,23 @@ def apply_global_styles():
     ::-webkit-scrollbar-thumb {{ background: #222; border-radius: 3px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: #333; }}
 
+    /* ── Page title bottom separator ── */
+    [data-testid="stTitle"] {{
+        border-bottom: 1px solid #1A1A1A;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+    }}
+
+    /* ── Status line (sidebar bottom indicators) ── */
+    .status-line {{
+        font-family: 'PPFormulaUI', sans-serif !important;
+        font-weight: 300;
+        font-size: 0.75rem;
+        color: #666;
+        margin: 0.15rem 0;
+        letter-spacing: 0.04em;
+    }}
+
     /* ── Streamlit default overrides ── */
     .stDeployButton {{ display: none; }}
     #MainMenu {{ display: none; }}
@@ -570,35 +606,39 @@ def render_sidebar():
         st.divider()
 
         st.markdown('<p class="section-header">Workflow</p>', unsafe_allow_html=True)
-        st.page_link("pages/1_news_desk.py",    label="News Desk",       icon="📰")
-        st.page_link("pages/4_news_jacking.py", label="News-Jacking",    icon="⚡")
-        st.page_link("pages/2_pr_generator.py", label="PR Generator",    icon="✍️")
-        st.page_link("pages/7_pr_library.py",   label="PR Library",      icon="📂")
-        st.page_link("pages/12_pr_calendar.py", label="PR Calendar",     icon="📅")
-        st.page_link("pages/10_story_ladder.py",  label="Story Ladder",    icon="🪜")
-        st.page_link("pages/14_quote_generator.py", label="Quote Generator", icon="💬")
-        st.page_link("pages/11_crisis_comms.py",label="Crisis Comms",    icon="🚨")
+        st.page_link("pages/1_news_desk.py",        label="News Desk",        icon=":material/newspaper:")
+        st.page_link("pages/4_news_jacking.py",     label="News-Jacking",     icon=":material/bolt:")
+        st.page_link("pages/2_pr_generator.py",     label="PR Generator",     icon=":material/edit_note:")
+        st.page_link("pages/7_pr_library.py",       label="PR Library",       icon=":material/folder_open:")
+        st.page_link("pages/12_pr_calendar.py",     label="PR Calendar",      icon=":material/calendar_month:")
+        st.page_link("pages/10_story_ladder.py",    label="Story Ladder",     icon=":material/trending_up:")
+        st.page_link("pages/14_quote_generator.py", label="Quote Generator",  icon=":material/format_quote:")
+        st.page_link("pages/11_crisis_comms.py",    label="Crisis Comms",     icon=":material/crisis_alert:")
 
         st.markdown('<p class="section-header">Intelligence</p>', unsafe_allow_html=True)
-        st.page_link("pages/9_competitors.py",  label="Competitor Monitor", icon="🔍")
-        st.page_link("pages/15_regulators.py",  label="Regulatory Radar",   icon="⚖️")
+        st.page_link("pages/9_competitors.py",      label="Competitor Monitor", icon=":material/manage_search:")
+        st.page_link("pages/15_regulators.py",      label="Regulatory Radar",   icon=":material/balance:")
 
         st.markdown('<p class="section-header">Content</p>', unsafe_allow_html=True)
-        st.page_link("pages/16_blog_writer.py", label="Blog Writer", icon="📝")
+        st.page_link("pages/16_blog_writer.py",     label="Blog Writer",      icon=":material/article:")
 
         st.markdown('<p class="section-header">Tools</p>', unsafe_allow_html=True)
-        st.page_link("pages/6_journalists.py",  label="Journalist Database", icon="📇")
-        st.page_link("pages/8_media_lists.py",  label="Media Lists",         icon="📋")
-        st.page_link("pages/3_position_bank.py",label="Position Bank",       icon="🏛️")
-        st.page_link("pages/5_feedback.py",     label="Feedback & Learning", icon="📊")
-        st.page_link("pages/13_pitch_analytics.py", label="Pitch Analytics", icon="📈")
+        st.page_link("pages/6_journalists.py",      label="Journalist Database", icon=":material/contacts:")
+        st.page_link("pages/8_media_lists.py",      label="Media Lists",         icon=":material/list:")
+        st.page_link("pages/3_position_bank.py",    label="Position Bank",       icon=":material/account_balance:")
+        st.page_link("pages/5_feedback.py",         label="Feedback & Learning", icon=":material/thumb_up:")
+        st.page_link("pages/13_pitch_analytics.py", label="Pitch Analytics",     icon=":material/analytics:")
 
         st.divider()
 
-        # Status indicators
+        # Status indicators — CSS dots, no emoji
         from services.ai_engine import is_configured as ai_ok
         from services.news_monitor import is_configured as news_ok
-        ai_status  = "🟢 Online" if ai_ok()   else "🔴 Not configured"
-        news_status= "🟢 Online" if news_ok() else "🔴 Not configured"
-        st.caption(f"AI Engine: {ai_status}")
-        st.caption(f"News API:  {news_status}")
+        st.markdown(
+            f'<p class="status-line">AI Engine&nbsp;&nbsp;{_status_dot(ai_ok())}</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<p class="status-line">News API&nbsp;&nbsp;&nbsp;{_status_dot(news_ok())}</p>',
+            unsafe_allow_html=True,
+        )

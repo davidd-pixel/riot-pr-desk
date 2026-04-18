@@ -1,19 +1,18 @@
 import streamlit as st
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from config.positions import POSITIONS
 from config.spokespeople import SPOKESPEOPLE
 
-st.set_page_config(page_title="Position Bank | Riot PR Desk", page_icon="🏛️", layout="wide")
+st.set_page_config(page_title="Position Bank | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
-st.title("🏛️ Position Bank")
+st.title("Position Bank")
 st.markdown("Riot's key positions and spokesperson profiles. Edit in-session to test different messaging.")
 
 st.warning(
     "Edits here are **session-only** — they'll feed into PR pack generation for this session but won't persist. "
     "To make permanent changes, edit `config/positions.py` and `config/spokespeople.py`.",
-    icon="⚠️",
 )
 
 st.divider()
@@ -28,7 +27,7 @@ if "spokespeople" not in st.session_state:
     st.session_state["spokespeople"] = copy.deepcopy(SPOKESPEOPLE)
 
 # --- Tabs ---
-tab_positions, tab_spokespeople = st.tabs(["🏛️ Positions", "🎤 Spokespeople"])
+tab_positions, tab_spokespeople = st.tabs(["Positions", "Spokespeople"])
 
 # ===================== POSITIONS =====================
 with tab_positions:
@@ -55,7 +54,7 @@ with tab_positions:
                     height=100,
                 )
 
-                if st.form_submit_button("💾 Save changes"):
+                if st.form_submit_button("Save changes"):
                     st.session_state["positions"][name]["headline"] = new_headline
                     st.session_state["positions"][name]["stance"] = new_stance
                     st.session_state["positions"][name]["key_messages"] = [
@@ -82,7 +81,7 @@ with tab_spokespeople:
                 new_tone = st.text_input("Tone:", value=spk["tone"])
                 new_topics = st.text_input("Topics (comma-separated):", value=", ".join(spk["topics"]))
 
-                if st.form_submit_button("💾 Save changes"):
+                if st.form_submit_button("Save changes"):
                     st.session_state["spokespeople"][role]["name"] = new_name
                     st.session_state["spokespeople"][role]["title"] = new_title
                     st.session_state["spokespeople"][role]["bio"] = new_bio
@@ -97,5 +96,4 @@ st.divider()
 st.info(
     "**Note:** Edits on this page are session-only and feed into PR pack generation. "
     "To make permanent changes, edit `config/positions.py` and `config/spokespeople.py`.",
-    icon="💡",
 )

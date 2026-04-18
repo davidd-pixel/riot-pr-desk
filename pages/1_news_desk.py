@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.news_monitor import (
     fetch_uk_vape_news, fetch_global_vape_news, fetch_trending_news, fetch_social_viral_news,
     format_article, is_configured as news_configured, is_url, fetch_article_text,
@@ -9,11 +9,11 @@ from services.content_generator import triage_news
 from services.feedback import record_vote
 from config.settings import TRIAGE_CATEGORIES
 
-st.set_page_config(page_title="News Desk | Riot PR Desk", page_icon="📰", layout="wide")
+st.set_page_config(page_title="News Desk | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
-st.title("📰 News Desk")
+st.title("News Desk")
 st.markdown("Monitor industry news, analyse stories and spot PR opportunities.")
 
 st.divider()
@@ -72,16 +72,16 @@ def _render_articles(articles, key_prefix):
             # Action buttons
             c1, c2, c3, c4, c5 = st.columns([2, 2, 2, 1, 1])
             with c1:
-                if ai_configured() and st.button("🔍 Analyse", key=f"{key_prefix}_tri_{i}", use_container_width=True):
+                if ai_configured() and st.button("Analyse", key=f"{key_prefix}_tri_{i}", use_container_width=True):
                     with st.spinner("Analysing..."):
                         result = triage_news(f"{formatted['title']}\n\n{formatted['description']}")
                     st.session_state[f"{key_prefix}_result_{i}"] = result
             with c2:
-                if st.button("✍️ Create PR Pack →", key=f"{key_prefix}_gen_{i}", use_container_width=True):
+                if st.button("Create PR Pack →", key=f"{key_prefix}_gen_{i}", use_container_width=True):
                     st.session_state["pr_input"] = f"{formatted['title']}\n\n{formatted['description']}"
                     st.switch_page("pages/2_pr_generator.py")
             with c3:
-                if st.button("📝 Create Blog →", key=f"{key_prefix}_blog_{i}", use_container_width=True):
+                if st.button("Create Blog →", key=f"{key_prefix}_blog_{i}", use_container_width=True):
                     st.session_state["blog_topic"] = f"{formatted['title']}\n\n{formatted['description']}"
                     st.session_state["blog_suggest_on_load"] = True
                     for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
@@ -92,20 +92,20 @@ def _render_articles(articles, key_prefix):
             vote_key = f"{key_prefix}_v_{i}"
             with c4:
                 if vote_key not in st.session_state:
-                    if st.button("👍", key=f"{key_prefix}_up_{i}", use_container_width=True):
+                    if st.button("Good", key=f"{key_prefix}_up_{i}", use_container_width=True):
                         record_vote(formatted["title"], "up", "news_story")
                         st.session_state[vote_key] = "up"
                         st.rerun()
             with c5:
                 if vote_key not in st.session_state:
-                    if st.button("👎", key=f"{key_prefix}_dn_{i}", use_container_width=True):
+                    if st.button("Weak", key=f"{key_prefix}_dn_{i}", use_container_width=True):
                         record_vote(formatted["title"], "down", "news_story")
                         st.session_state[vote_key] = "down"
                         st.rerun()
 
             if vote_key in st.session_state:
                 v = st.session_state[vote_key]
-                st.caption(f"{'👍 Relevant' if v == 'up' else '👎 Not relevant'}")
+                st.caption(f"{'Relevant' if v == 'up' else 'Not relevant'}")
 
             # Show triage result if available
             if f"{key_prefix}_result_{i}" in st.session_state:
@@ -116,26 +116,26 @@ def _render_articles(articles, key_prefix):
                 else:
                     cat = result.get("category", "unknown")
                     badge_styles = {
-                        "respond": ("🔴", "#3a0a0a", "#ff6b6b", "RESPOND NOW"),
-                        "campaign": ("🟢", "#0a2a0a", "#51cf66", "CAMPAIGN OPPORTUNITY"),
-                        "monitor": ("🟡", "#2a2a0a", "#fcc419", "MONITOR"),
-                        "ignore": ("⚪", "#1a1a1a", "#868e96", "NOT RELEVANT"),
+                        "respond": ("#3a0a0a", "#ff6b6b", "RESPOND NOW"),
+                        "campaign": ("#0a2a0a", "#51cf66", "CAMPAIGN OPPORTUNITY"),
+                        "monitor": ("#2a2a0a", "#fcc419", "MONITOR"),
+                        "ignore": ("#1a1a1a", "#868e96", "NOT RELEVANT"),
                     }
-                    icon, bg, fg, label = badge_styles.get(cat, ("❓", "#1a1a1a", "#aaa", cat.upper()))
+                    bg, fg, label = badge_styles.get(cat, ("#1a1a1a", "#aaa", cat.upper()))
                     relevance = result.get('relevance_score', '')
                     score_display = f" · Relevance: {relevance}/10" if relevance else ""
 
                     st.markdown(
                         f'<div style="background:{bg};border-left:4px solid {fg};padding:8px 12px;border-radius:4px;margin:4px 0">'
-                        f'<span style="color:{fg};font-weight:700;font-size:0.9rem">{icon} {label}{score_display}</span><br>'
+                        f'<span style="color:{fg};font-weight:700;font-size:0.9rem">{label}{score_display}</span><br>'
                         f'<span style="color:#ccc;font-size:0.85rem">{result.get("reasoning", "")}</span>'
                         f'</div>',
                         unsafe_allow_html=True
                     )
                     if result.get("suggested_angle"):
-                        st.success(f"💡 **Angle:** {result['suggested_angle']}")
+                        st.success(f"**Angle:** {result['suggested_angle']}")
                     if result.get("urgency"):
-                        urgency_map = {"immediate": "🔴 Respond immediately", "this_week": "🟡 Respond this week", "when_convenient": "🟢 When convenient"}
+                        urgency_map = {"immediate": "Respond immediately", "this_week": "Respond this week", "when_convenient": "When convenient"}
                         st.caption(urgency_map.get(result["urgency"], result["urgency"]))
 
 
@@ -144,7 +144,7 @@ _news_loaded = all(k in st.session_state for k in ("news_uk", "news_global", "ne
 
 col_refresh, col_ts = st.columns([1, 3])
 with col_refresh:
-    refresh_clicked = st.button("🔄 Refresh News", use_container_width=True, type="secondary")
+    refresh_clicked = st.button("Refresh News", use_container_width=True, type="secondary")
 with col_ts:
     if _news_loaded:
         st.caption("Stories loaded — click Refresh to check for the latest.")
@@ -165,10 +165,10 @@ trend_count  = len([a for a in st.session_state.get("news_trending",[]) if "erro
 social_count = len([a for a in st.session_state.get("news_social",  []) if "error" not in a])
 
 tab_uk, tab_global, tab_trending, tab_social = st.tabs([
-    f"🇬🇧 UK Vape ({uk_count})",
-    f"🌍 Global Vape ({global_count})",
-    f"🔥 Trending ({trend_count})",
-    f"🌐 Social & Viral ({social_count})",
+    f"UK Vape ({uk_count})",
+    f"Global Vape ({global_count})",
+    f"Trending ({trend_count})",
+    f"Social & Viral ({social_count})",
 ])
 
 with tab_uk:

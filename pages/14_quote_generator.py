@@ -11,12 +11,12 @@ import datetime
 import streamlit as st
 
 from services.ai_engine import generate_stream, is_configured as ai_configured
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Quote Generator | Riot PR Desk",
-    page_icon="💬",
+    page_icon=get_page_icon(),
     layout="wide",
 )
 
@@ -99,7 +99,7 @@ st.markdown(
 )
 
 # ── Header ────────────────────────────────────────────────────────────────────
-st.title("💬 Quote of the Week")
+st.title("Quote of the Week")
 st.markdown(
     "Generate punchy, shareable quotes for Ben Johnson or David Donaghy to post on LinkedIn "
     "— keeping their thought leadership fresh without effort."
@@ -112,7 +112,6 @@ if not ai_configured():
     st.error(
         "**AI engine not configured.** Add your `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` "
         "to `.env` to get started.",
-        icon="🔑",
     )
     st.stop()
 
@@ -236,7 +235,7 @@ if "generated_quotes" in st.session_state:
         st.markdown(raw_text)
     else:
         # ── Tabs: Copy Boxes vs LinkedIn Preview ─────────────────────────────
-        tab_copy, tab_preview = st.tabs(["📋 Copy Quotes", "💼 LinkedIn Preview"])
+        tab_copy, tab_preview = st.tabs(["Copy Quotes", "LinkedIn Preview"])
 
         with tab_copy:
             st.markdown(
@@ -288,7 +287,7 @@ if "generated_quotes" in st.session_state:
         save_col, dl_col = st.columns(2)
 
         with save_col:
-            if st.button("💾 Save to quotes library", use_container_width=True):
+            if st.button("Save to quotes library", use_container_width=True):
                 data_dir = os.path.join(
                     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
                 )
@@ -344,7 +343,7 @@ if "generated_quotes" in st.session_state:
                 dl_lines.append("")
 
             st.download_button(
-                "📥 Download as .txt",
+                "Download as .txt",
                 data="\n".join(dl_lines),
                 file_name=f"riot_quotes_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
                 mime="text/plain",

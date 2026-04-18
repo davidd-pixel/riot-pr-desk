@@ -8,14 +8,14 @@ from services.pr_library import save_pack, get_recent_packs
 from config.positions import get_position_names
 from config.spokespeople import get_spokesperson_names
 from config.settings import TONES, AUDIENCES
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 
-st.set_page_config(page_title="PR Generator | Riot PR Desk", page_icon="✍️", layout="wide")
+st.set_page_config(page_title="PR Generator | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 
 apply_global_styles()
 render_sidebar()
 
-st.title("✍️ PR Pack Generator")
+st.title("PR Pack Generator")
 st.markdown("Generate an approval-ready PR response pack in minutes.")
 
 st.divider()
@@ -25,12 +25,11 @@ if not ai_configured():
     st.error(
         "**AI engine not configured.** Add your `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` to `.env` to get started. "
         "Then set `AI_PROVIDER` to `anthropic` or `openai`.",
-        icon="🔑",
     )
     st.stop()
 
 # --- Template library ---
-with st.expander("📚 Template Library — start from a proven framework", expanded=False):
+with st.expander("Template Library — start from a proven framework", expanded=False):
     st.caption("Click a template to load it into the input field. Edit freely from there.")
 
     templates = {
@@ -130,7 +129,6 @@ st.info(
     f"**Spokesperson:** {spk['name']}, {spk['title']} — Tone: *{spk['tone']}*  \n"
     f"**Audience:** {audience_key} — *{AUDIENCES[audience_key]}*  \n"
     f"**Tone:** {tone_key} — *{TONES[tone_key]}*",
-    icon="📋",
 )
 
 st.divider()
@@ -166,7 +164,7 @@ st.divider()
 st.markdown("### 4. Generate")
 
 generate_clicked = st.button(
-    "🚀 Generate PR Pack",
+    "Generate PR Pack",
     type="primary",
     use_container_width=True,
     disabled=not input_content.strip(),
@@ -186,14 +184,14 @@ if generate_clicked and input_content.strip():
         )
 
         try:
-            with st.status("🚀 Generating your PR pack...", expanded=True) as status:
+            with st.status("Generating your PR pack...", expanded=True) as status:
                 st.write("Crafting 6 tailored outputs — press releases, pitch emails, LinkedIn, WhatsApp, social and internal briefing...")
                 stream = generate_stream(prompt)
                 raw_response = st.write_stream(stream)
-                status.update(label="✅ PR Pack ready!", state="complete", expanded=False)
+                status.update(label="PR Pack ready", state="complete", expanded=False)
         except Exception:
             # Fallback to non-streaming if st.write_stream is unavailable
-            with st.spinner("🚀 Generating your PR pack — this takes 30-60 seconds while we craft 6 tailored outputs..."):
+            with st.spinner("Generating your PR pack — this takes 30-60 seconds while we craft 6 tailored outputs..."):
                 raw_response = generate_pr_pack(
                     input_content=input_content.strip(),
                     position_name=position_name,
@@ -249,7 +247,7 @@ if "last_pr_pack" in st.session_state:
     stored_input = st.session_state.get("last_pr_input", input_content.strip())
 
     st.divider()
-    st.markdown("### 📦 Your PR Pack")
+    st.markdown("### Your PR Pack")
     st.caption("DRAFT — All outputs require approval before external use.")
 
     # --- Variations UI ---
@@ -258,7 +256,7 @@ if "last_pr_pack" in st.session_state:
 
         if len(all_vars) < st.session_state["variation_count"]:
             if st.button(
-                f"🔀 Generate Variation {len(all_vars) + 1} of {st.session_state['variation_count']}",
+                f"Generate Variation {len(all_vars) + 1} of {st.session_state['variation_count']}",
                 use_container_width=True,
                 type="secondary",
             ):
@@ -273,10 +271,10 @@ if "last_pr_pack" in st.session_state:
                         length_dial=st.session_state.get("last_length_dial", "Standard"),
                     ) + f"\n\nNote: This is variation {len(all_vars) + 1}. Use a DIFFERENT approach, angle, headline and structure than you would normally. Be creative and distinct."
 
-                    with st.status(f"🔀 Generating variation {len(all_vars) + 1}...", expanded=True) as var_status:
+                    with st.status(f"Generating variation {len(all_vars) + 1}...", expanded=True) as var_status:
                         stream = generate_stream(variation_prompt)
                         raw = st.write_stream(stream)
-                        var_status.update(label=f"✅ Variation {len(all_vars) + 1} ready!", state="complete", expanded=False)
+                        var_status.update(label=f"Variation {len(all_vars) + 1} ready", state="complete", expanded=False)
 
                     new_sections = _parse_pr_pack(raw)
                     all_vars.append(new_sections)
@@ -336,11 +334,12 @@ if "last_pr_pack" in st.session_state:
     total = len(checklist_items)
     score_pct = round(passed / total * 100)
 
-    score_color = "🟢" if score_pct >= 80 else "🟡" if score_pct >= 60 else "🔴"
-    with st.expander(f"{score_color} Publishing Readiness: {score_pct}% ({passed}/{total} checks passed)", expanded=score_pct < 80):
+    with st.expander(f"Publishing Readiness: {score_pct}% ({passed}/{total} checks passed)", expanded=score_pct < 80):
         for label, passed_check in checklist_items:
-            icon = "✅" if passed_check else "⚠️"
-            st.caption(f"{icon} {label}")
+            if passed_check:
+                st.markdown(f'<span class="status-badge green">OK</span>&nbsp; {label}', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<span class="status-badge yellow">!</span>&nbsp; {label}', unsafe_allow_html=True)
         if forbidden_found:
             st.warning(f"Forbidden phrases detected: {', '.join(forbidden_found)}")
         if score_pct == 100:
@@ -368,7 +367,7 @@ if "last_pr_pack" in st.session_state:
                     with col_copy:
                         st.code(content, language=None)
                     with col_feedback:
-                        st.caption(f"{'👍' if st.session_state[vote_key] == 'up' else '👎'} Feedback recorded")
+                        st.caption(f"{'Good' if st.session_state[vote_key] == 'up' else 'Weak'} — Feedback recorded")
                 else:
                     col_copy, col_up, col_down, col_note = st.columns([1, 0.5, 0.5, 4])
                     with col_copy:
@@ -380,12 +379,12 @@ if "last_pr_pack" in st.session_state:
                             placeholder="e.g. 'tone is off', 'great headline'",
                         )
                     with col_up:
-                        if st.button("👍", key=f"pr_up_{safe_key}", help="Good output"):
+                        if st.button("Good", key=f"pr_up_{safe_key}", help="Good output"):
                             record_vote(f"PR Pack: {section_name}", "up", "pr_pack_section", note=pr_note)
                             st.session_state[vote_key] = "up"
                             st.rerun()
                     with col_down:
-                        if st.button("👎", key=f"pr_down_{safe_key}", help="Needs improvement"):
+                        if st.button("Weak", key=f"pr_down_{safe_key}", help="Needs improvement"):
                             record_vote(f"PR Pack: {section_name}", "down", "pr_pack_section", note=pr_note)
                             st.session_state[vote_key] = "down"
                             st.rerun()
@@ -395,7 +394,7 @@ if "last_pr_pack" in st.session_state:
 
                 with action_col1:
                     regen_key = f"pr_regen_{safe_key}"
-                    if st.button("🔄 Regenerate section", key=regen_key, help="Rewrite this section from scratch with a fresh approach", use_container_width=True):
+                    if st.button("Regenerate section", key=regen_key, help="Rewrite this section from scratch with a fresh approach", use_container_width=True):
                         with st.spinner(f"Regenerating {section_name}..."):
                             try:
                                 from services.ai_engine import generate
@@ -429,7 +428,7 @@ if "last_pr_pack" in st.session_state:
                 with action_col2:
                     refine_toggle_key = f"pr_refine_active_{safe_key}"
                     if st.button(
-                        "✏️ Refine with AI" if not st.session_state.get(refine_toggle_key) else "✕ Close editor",
+                        "Refine with AI" if not st.session_state.get(refine_toggle_key) else "Close editor",
                         key=f"pr_refine_toggle_{safe_key}",
                         help="Give the AI a specific instruction to improve this section",
                         use_container_width=True,
@@ -451,7 +450,7 @@ if "last_pr_pack" in st.session_state:
                         "Add a specific statistic",
                         "Strengthen the call to action",
                     ]
-                    st.caption("✏️ **AI EDIT** — Tell the AI exactly what to change:")
+                    st.caption("**AI EDIT** — Tell the AI exactly what to change:")
 
                     qp_col1, qp_col2 = st.columns([3, 1])
                     with qp_col1:
@@ -513,7 +512,7 @@ if "last_pr_pack" in st.session_state:
     st.divider()
 
     journalist_count = get_journalist_count()
-    journalist_label = f"📇 Find matching journalists ({journalist_count} in database) →" if journalist_count else "📇 Find matching journalists →"
+    journalist_label = f"Find matching journalists ({journalist_count} in database) →" if journalist_count else "Find matching journalists →"
 
     if st.button(journalist_label, use_container_width=True):
         # Build a story context summary for the journalist matcher
@@ -540,7 +539,7 @@ if "last_pr_pack" in st.session_state:
     )
 
     st.download_button(
-        "📥 Download PR Pack",
+        "Download PR Pack",
         data=full_pack,
         file_name=f"riot_pr_pack_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
         mime="text/plain",

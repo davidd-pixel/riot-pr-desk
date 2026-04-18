@@ -6,7 +6,7 @@ Search, filter, add, import and get AI-powered match suggestions.
 import streamlit as st
 import pandas as pd
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.journalist_db import (
     get_all,
     add_journalist,
@@ -26,14 +26,14 @@ from services.journalist_history import log_contact, get_history, get_recent_con
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="Journalist Database | Riot PR Desk", page_icon="📇", layout="wide")
+st.set_page_config(page_title="Journalist Database | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
-st.title("📇 Journalist Database")
+st.title("Journalist Database")
 st.caption("Manage your press contacts, import lists and find the best journalists for every story.")
 
 # ---------------------------------------------------------------------------
@@ -60,12 +60,12 @@ def _render_tags(tags: list) -> str:
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-tab_contacts, tab_add, tab_discover, tab_ai, tab_history = st.tabs(["All Contacts", "Add / Import", "🔍 AI Discover", "AI Match", "📞 Contact History"])
+tab_contacts, tab_add, tab_discover, tab_ai, tab_history = st.tabs(["All Contacts", "Add / Import", "AI Discover", "AI Match", "Contact History"])
 
 # ============================= TAB 1: ALL CONTACTS ========================
 with tab_contacts:
     # -- Search & filter row --
-    search_query = st.text_input("🔍 Search journalists", placeholder="Name, publication, beat, tag...", key="j_search")
+    search_query = st.text_input("Search journalists", placeholder="Name, publication, beat, tag...", key="j_search")
 
     col_type, col_beat = st.columns(2)
     with col_type:
@@ -99,13 +99,9 @@ with tab_contacts:
             for j in journalists:
                 grouped[j.get("type", "Other")].append(j)
 
-            type_icons = {"Trade": "📰", "National": "🗞️", "Regional": "📍", "Consumer": "🛍️",
-                          "Broadcast": "📺", "Freelance": "✍️", "Online": "🌐", "Other": "📋"}
-
             for type_name in TYPE_OPTIONS + ["Other"]:
                 if type_name in grouped:
-                    icon = type_icons.get(type_name, "📋")
-                    st.markdown(f"### {icon} {type_name} ({len(grouped[type_name])})")
+                    st.markdown(f"### {type_name} ({len(grouped[type_name])})")
                     for j in grouped[type_name]:
                         label_parts = [f"**{j.get('name', 'Unnamed')}**", j.get("publication", ""), j.get("job_title", "")]
                         label = " | ".join(p for p in label_parts if p)
@@ -153,11 +149,11 @@ with tab_contacts:
                 jid = j["id"]
 
                 with btn_col1:
-                    if st.button("✏️ Edit", key=f"edit_{jid}"):
+                    if st.button("Edit", key=f"edit_{jid}"):
                         st.session_state[f"editing_{jid}"] = True
 
                 with btn_col2:
-                    if st.button("🗑️ Delete", key=f"del_{jid}", type="secondary"):
+                    if st.button("Delete", key=f"del_{jid}", type="secondary"):
                         delete_journalist(jid)
                         st.success(f"Deleted {j.get('name', '')}.")
                         st.rerun()
@@ -166,11 +162,11 @@ with tab_contacts:
                 history = get_history(jid)
                 summary = get_contact_summary(jid)
                 if summary["total_contacts"] > 0:
-                    st.caption(f"📞 {summary['total_contacts']} contacts logged | Last: {summary['last_contact_date'][:10] if summary['last_contact_date'] else 'never'} | Response rate: {summary['response_rate']}%")
+                    st.caption(f"{summary['total_contacts']} contacts logged | Last: {summary['last_contact_date'][:10] if summary['last_contact_date'] else 'never'} | Response rate: {summary['response_rate']}%")
 
                 # --- Recent articles section ---
                 art_key = f"j_articles_{jid}"
-                if st.button("📰 Fetch recent articles", key=f"j_fetch_art_{jid}", help="Search Google News for recent bylines"):
+                if st.button("Fetch recent articles", key=f"j_fetch_art_{jid}", help="Search Google News for recent bylines"):
                     with st.spinner(f"Searching for recent articles by {j.get('name', '')}..."):
                         try:
                             from services.news_monitor import _search_gnews
@@ -200,7 +196,7 @@ with tab_contacts:
                                 st.caption(f"• {title} — {pub_date}")
 
                 # Log contact button
-                with st.expander("📞 Log a contact", expanded=False):
+                with st.expander("Log a contact", expanded=False):
                     with st.form(key=f"log_contact_{jid}"):
                         lc_col1, lc_col2 = st.columns(2)
                         with lc_col1:
@@ -216,10 +212,10 @@ with tab_contacts:
 
                 # Show recent history
                 if history:
-                    outcome_icons = {"responded": "✅", "coverage_landed": "🏆", "declined": "❌", "no_response": "⏳", "": "📝"}
+                    outcome_icons = {"responded": "Responded", "coverage_landed": "Coverage landed", "declined": "Declined", "no_response": "No response", "": ""}
                     for h in history[:3]:  # Show last 3
-                        icon = outcome_icons.get(h.get("outcome", ""), "📝")
-                        st.caption(f"{icon} **{h['contact_type'].title()}** — {h.get('subject', '')} — {h['logged_at'][:10]}")
+                        outcome_label = outcome_icons.get(h.get("outcome", ""), h.get("outcome", ""))
+                        st.caption(f"**{h['contact_type'].title()}** — {h.get('subject', '')} — {h['logged_at'][:10]}{' — ' + outcome_label if outcome_label else ''}")
                     if len(history) > 3:
                         st.caption(f"...and {len(history)-3} more. See Contact History tab for full log.")
 
@@ -344,7 +340,7 @@ with tab_add:
 
 # ======================== TAB 3: AI DISCOVER ==============================
 with tab_discover:
-    st.subheader("🔍 AI Journalist Discovery")
+    st.subheader("AI Journalist Discovery")
     st.markdown(
         "Tell the AI what beat or topic you need journalists for and it will research and suggest "
         "real contacts you can add to your database. **Review each suggestion before accepting.**"
@@ -423,7 +419,7 @@ with tab_discover:
                 except Exception as e:
                     st.error(f"Discovery failed: {e}")
 
-        if st.button("🔍 Discover Journalists", type="primary", use_container_width=True, disabled=not discover_topic):
+        if st.button("Discover Journalists", type="primary", use_container_width=True, disabled=not discover_topic):
             _run_discovery(discover_topic)
 
         # Show results
@@ -442,11 +438,11 @@ with tab_discover:
                     accept_key = f"disc_accepted_{k}"
 
                     if accept_key in st.session_state:
-                        st.caption(f"✅ **{sug.get('name', '?')}** — Added to database")
+                        st.caption(f"**{sug.get('name', '?')}** — Added to database")
                         continue
 
                     if f"disc_skipped_{k}" in st.session_state:
-                        st.caption(f"⏭️ **{sug.get('name', '?')}** — Skipped")
+                        st.caption(f"**{sug.get('name', '?')}** — Skipped")
                         continue
 
                     with st.expander(
@@ -468,7 +464,7 @@ with tab_discover:
 
                         bc1, bc2, bc3 = st.columns([1, 1, 4])
                         with bc1:
-                            if st.button("✅ Accept", key=f"disc_add_{k}", use_container_width=True, type="primary"):
+                            if st.button("Accept", key=f"disc_add_{k}", use_container_width=True, type="primary"):
                                 add_journalist({
                                     "name": sug.get("name", ""),
                                     "email": sug.get("email", ""),
@@ -486,7 +482,7 @@ with tab_discover:
                                 st.session_state[accept_key] = True
                                 st.rerun()
                         with bc2:
-                            if st.button("⏭️ Skip", key=f"disc_skip_{k}", use_container_width=True):
+                            if st.button("Skip", key=f"disc_skip_{k}", use_container_width=True):
                                 st.session_state[f"disc_skipped_{k}"] = True
                                 st.rerun()
 
@@ -496,7 +492,7 @@ with tab_discover:
                              and f"disc_skipped_{k}" not in st.session_state]
                 if remaining:
                     st.divider()
-                    if st.button(f"✅ Accept all remaining ({len(remaining)})", use_container_width=True):
+                    if st.button(f"Accept all remaining ({len(remaining)})", use_container_width=True):
                         for k in remaining:
                             sug = suggestions[k]
                             add_journalist({
@@ -522,13 +518,13 @@ with tab_discover:
                 st.markdown("**Want more?** Run another round to find journalists the AI missed.")
                 dm_col1, dm_col2 = st.columns(2)
                 with dm_col1:
-                    if st.button("🔍 Discover More (same topic)", use_container_width=True):
+                    if st.button("Discover More (same topic)", use_container_width=True):
                         st.session_state["_append_mode"] = True
                         _run_discovery(topic + " — find additional journalists NOT already listed. Go deeper into specialist, freelance and regional contacts.")
                         st.rerun()
                 with dm_col2:
                     more_topic = st.text_input("Or refine the search:", key="discover_more_topic", placeholder="e.g. 'vaping trade press editors specifically'")
-                    if more_topic and st.button("🔍 Discover", key="disc_more_btn"):
+                    if more_topic and st.button("Discover", key="disc_more_btn"):
                         st.session_state["_append_mode"] = True
                         _run_discovery(more_topic)
                         st.rerun()
@@ -596,7 +592,7 @@ with tab_ai:
 
 # ======================== TAB 5: CONTACT HISTORY ==========================
 with tab_history:
-    st.markdown("### 📞 Contact History & Pitch Analytics")
+    st.markdown("### Contact History & Pitch Analytics")
     st.caption("Track every interaction with journalists and measure what's working.")
 
     # --- Analytics section ---
@@ -624,14 +620,11 @@ with tab_history:
             st.info("No contact history yet. Log interactions from the All Contacts tab.")
         else:
             st.caption(f"Showing {len(recent_all)} interactions in the last 60 days.")
-            # Show as a table
-            outcome_icons = {"responded": "✅", "coverage_landed": "🏆", "declined": "❌", "no_response": "⏳", "": "📝"}
 
             for h in recent_all[:50]:
                 j = get_by_id(h.get("journalist_id", ""))
                 j_name = j["name"] if j else "Unknown journalist"
                 j_pub = j.get("publication", "") if j else ""
-                icon = outcome_icons.get(h.get("outcome", ""), "📝")
 
                 col1, col2, col3 = st.columns([3, 2, 1])
                 with col1:
@@ -639,7 +632,7 @@ with tab_history:
                 with col2:
                     st.caption(f"{h['contact_type'].title()} · {h['logged_at'][:10]}")
                 with col3:
-                    st.caption(f"{icon} {h.get('outcome', '').replace('_', ' ').title() or 'Logged'}")
+                    st.caption(f"{h.get('outcome', '').replace('_', ' ').title() or 'Logged'}")
 
     with sub_per_journalist:
         all_journalists = get_all()
@@ -672,10 +665,8 @@ with tab_history:
                             st.metric("Coverage landed", summary["coverage_count"])
 
                         history = get_history(j["id"])
-                        outcome_icons = {"responded": "✅", "coverage_landed": "🏆", "declined": "❌", "no_response": "⏳", "": "📝"}
                         for h in history:
-                            icon = outcome_icons.get(h.get("outcome", ""), "📝")
-                            st.caption(f"{icon} **{h['contact_type'].title()}** — {h.get('subject', '-')} — {h['logged_at'][:10]} — {h.get('notes', '')}")
+                            st.caption(f"**{h['contact_type'].title()}** — {h.get('subject', '-')} — {h['logged_at'][:10]} — {h.get('notes', '')}")
 
     with sub_analytics:
         if not analytics.get("total_contacts"):
@@ -702,5 +693,4 @@ with tab_history:
             if breakdown:
                 st.markdown("**Outcome breakdown:**")
                 for outcome, count in breakdown.items():
-                    icon = {"responded": "✅", "coverage_landed": "🏆", "declined": "❌", "no_response": "⏳"}.get(outcome, "📝")
-                    st.caption(f"{icon} {outcome.replace('_', ' ').title()}: {count}")
+                    st.caption(f"{outcome.replace('_', ' ').title()}: {count}")

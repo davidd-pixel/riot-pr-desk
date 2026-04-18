@@ -6,7 +6,7 @@ import datetime
 
 import streamlit as st
 
-from utils.styles import apply_global_styles, render_sidebar
+from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.ai_engine import refine_text_sync
 from services.google_docs_export import export_pr_pack_to_docs, is_configured as gdocs_configured
 from services.pr_library import (
@@ -33,7 +33,7 @@ from config.spokespeople import get_spokesperson_names
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="PR Library | Riot PR Desk", page_icon="📂", layout="wide")
+st.set_page_config(page_title="PR Library | Riot PR Desk", page_icon=get_page_icon(), layout="wide")
 apply_global_styles()
 render_sidebar()
 
@@ -42,11 +42,11 @@ render_sidebar()
 # ---------------------------------------------------------------------------
 
 STATUS_BADGES = {
-    "draft": "⚪ Draft",
-    "under_review": "🔄 Under Review",
-    "approved": "🟢 Approved",
-    "pitched": "🔵 Pitched",
-    "covered": "🏆 Covered",
+    "draft": "Draft",
+    "under_review": "Under Review",
+    "approved": "Approved",
+    "pitched": "Pitched",
+    "covered": "Covered",
 }
 
 
@@ -89,7 +89,7 @@ def _pack_download_text(pack):
 # ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
-st.title("📂 PR Library")
+st.title("PR Library")
 st.markdown("Browse, search and manage your saved PR packs. Log coverage and track pack performance over time.")
 st.divider()
 
@@ -116,7 +116,7 @@ search_col, status_col, position_col, spk_col = st.columns([3, 1.5, 1.5, 1.5])
 
 with search_col:
     lib_query = st.text_input(
-        "🔍 Search packs",
+        "Search packs",
         placeholder="Title, content, section text…",
         key="lib_search_query",
         label_visibility="collapsed",
@@ -210,7 +210,7 @@ if not packs:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("✍️ Create your first PR pack →", type="primary", use_container_width=True):
+        if st.button("Create your first PR pack →", type="primary", use_container_width=True):
             st.switch_page("pages/2_pr_generator.py")
     st.stop()
 
@@ -222,7 +222,7 @@ st.caption(f"**{len(packs)}** pack{'s' if len(packs) != 1 else ''} found")
 for pack in packs:
     pack_id = pack["id"]
     status = pack.get("status", "draft")
-    badge = STATUS_BADGES.get(status, "⚪ Draft")
+    badge = STATUS_BADGES.get(status, "Draft")
     title = pack.get("title", "Untitled Pack")
     created = _format_date(pack.get("created_at", ""))
     position = pack.get("position_name", "—")
@@ -251,16 +251,16 @@ for pack in packs:
 
         # --- Meta row ---
         meta_col1, meta_col2, meta_col3, meta_col4 = st.columns(4)
-        meta_col1.caption(f"📅 {created}")
-        meta_col2.caption(f"🏛️ {position}")
-        meta_col3.caption(f"🎤 {spokesperson}")
-        meta_col4.caption(f"📰 {coverage_count} coverage hit{'s' if coverage_count != 1 else ''}")
+        meta_col1.caption(f"{created}")
+        meta_col2.caption(f"{position}")
+        meta_col3.caption(f"{spokesperson}")
+        meta_col4.caption(f"{coverage_count} coverage hit{'s' if coverage_count != 1 else ''}")
 
         st.divider()
 
         # --- Tabs ---
         tab_content, tab_coverage, tab_actions, tab_history = st.tabs(
-            ["📄 Content", "📰 Coverage", "⚙️ Actions", "🕐 History"]
+            ["Content", "Coverage", "Actions", "History"]
         )
 
         # =========================================================
@@ -282,7 +282,7 @@ for pack in packs:
                 if has_unsaved:
                     save_col, discard_col = st.columns(2)
                     with save_col:
-                        if st.button("💾 Save all edits to library", key=f"lib_save_edits_{pack_id}", type="primary", use_container_width=True):
+                        if st.button("Save all edits...", key=f"lib_save_edits_{pack_id}", type="primary", use_container_width=True):
                             from services.pr_library import get_pack as _get_pack
                             live = _get_pack(pack_id)
                             if live:
@@ -304,7 +304,7 @@ for pack in packs:
                                 st.success("Edits saved to library.")
                                 st.rerun()
                     with discard_col:
-                        if st.button("✕ Discard edits", key=f"lib_discard_edits_{pack_id}", use_container_width=True):
+                        if st.button("Discard edits", key=f"lib_discard_edits_{pack_id}", use_container_width=True):
                             st.session_state.pop(edits_key, None)
                             st.rerun()
                     st.divider()
@@ -323,7 +323,7 @@ for pack in packs:
                 for section_name, content in sections.items():
                     # Show edited version if available
                     display_content = st.session_state[edits_key].get(section_name, content)
-                    edited_flag = "  ✏️" if section_name in st.session_state[edits_key] else ""
+                    edited_flag = "  (edited)" if section_name in st.session_state[edits_key] else ""
 
                     with st.expander(f"**{section_name}**{edited_flag}", expanded=False):
                         st.markdown(display_content)
@@ -336,7 +336,7 @@ for pack in packs:
                         ref_col, _ = st.columns([1, 2])
                         with ref_col:
                             if st.button(
-                                "✏️ Refine with AI" if not st.session_state.get(refine_toggle_key) else "✕ Close editor",
+                                "Refine with AI" if not st.session_state.get(refine_toggle_key) else "Close editor",
                                 key=f"lib_refine_toggle_{safe_key}",
                                 use_container_width=True,
                             ):
@@ -345,7 +345,7 @@ for pack in packs:
 
                         if st.session_state.get(refine_toggle_key):
                             st.markdown("""<div style="background:#111;border:1px solid #E8192C33;border-radius:4px;padding:0.75rem 1rem 0.5rem 1rem;margin-top:0.5rem">""", unsafe_allow_html=True)
-                            st.caption("✏️ **AI EDIT** — Give an instruction:")
+                            st.caption("**AI EDIT** — Give an instruction:")
 
                             qp_col1, qp_col2 = st.columns([3, 1])
                             with qp_col1:
@@ -389,7 +389,7 @@ for pack in packs:
 
             st.divider()
             if st.button(
-                "✍️ Re-edit in Generator →",
+                "Re-edit in Generator →",
                 key=f"lib_regen_{pack_id}",
                 use_container_width=True,
             ):
@@ -425,12 +425,9 @@ for pack in packs:
 
                 for idx, cov in enumerate(coverage_list):
                     logged = _format_date(cov.get("logged_at", ""))
-                    sentiment_icon = {"positive": "🟢", "neutral": "🟡", "negative": "🔴"}.get(
-                        cov.get("sentiment", "neutral"), "🟡"
-                    )
                     st.markdown(
                         f"**{cov.get('publication', '—')}** — {cov.get('journalist', '—')}  "
-                        f"| {sentiment_icon} {cov.get('sentiment', '—').title()}  "
+                        f"| {cov.get('sentiment', '—').title()}  "
                         f"| Reach: {cov.get('reach', '—'):,}  "
                         f"| Logged: {logged}"
                     )
@@ -516,7 +513,7 @@ for pack in packs:
                 safe_title = "".join(c if c.isalnum() or c in " _-" else "_" for c in title[:40]).strip()
                 filename = f"riot_pr_{safe_title}_{pack_id}.txt"
                 st.download_button(
-                    "📥 Download pack as .txt",
+                    "Download pack as .txt",
                     data=download_text,
                     file_name=filename,
                     mime="text/plain",
@@ -530,7 +527,7 @@ for pack in packs:
                     docx_bytes = export_pr_pack_to_docx(pack)
                     safe_title_w = "".join(c if c.isalnum() or c in " _-" else "_" for c in title[:40]).strip()
                     st.download_button(
-                        "📝 Export as Word (.docx)",
+                        "Export as Word (.docx)",
                         data=docx_bytes,
                         file_name=f"riot_pr_{safe_title_w}_{pack_id}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -576,7 +573,7 @@ for pack in packs:
             comment_type = st.selectbox(
                 "Comment type",
                 ["note", "approval", "change_request"],
-                format_func=lambda x: {"note": "📝 Note", "approval": "✅ Approval", "change_request": "🔄 Change request"}[x],
+                format_func=lambda x: {"note": "Note", "approval": "Approval", "change_request": "Change request"}[x],
                 key=f"lib_comment_type_{pack_id}",
             )
             comment_text = st.text_area(
@@ -585,7 +582,7 @@ for pack in packs:
                 key=f"lib_comment_{pack_id}",
                 placeholder="e.g. 'Approved — send to The Grocer' or 'Change the headline — too corporate'",
             )
-            if st.button("💬 Add comment", key=f"lib_comment_btn_{pack_id}", use_container_width=True):
+            if st.button("Add comment", key=f"lib_comment_btn_{pack_id}", use_container_width=True):
                 if comment_text.strip():
                     author = reviewer_input.strip() or "Team"
                     add_comment(pack_id, author, comment_text.strip(), comment_type)
@@ -607,11 +604,9 @@ for pack in packs:
             existing_comments = pack.get("comments", [])
             if existing_comments:
                 st.caption(f"{len(existing_comments)} comment(s):")
-                type_icons = {"note": "📝", "approval": "✅", "change_request": "🔄"}
                 for c in existing_comments[:5]:
-                    icon = type_icons.get(c.get("type", "note"), "📝")
                     ts = c.get("created_at", "")[:16].replace("T", " ")
-                    st.markdown(f"{icon} **{c.get('author', '?')}** — {c.get('text', '')}")
+                    st.markdown(f"**{c.get('author', '?')}** — {c.get('text', '')}")
                     st.caption(ts)
 
             st.divider()
@@ -626,7 +621,7 @@ for pack in packs:
 
                 with gdocs_col1:
                     if st.button(
-                        "📄 Export to Google Docs",
+                        "Export to Google Docs",
                         key=f"lib_gdocs_btn_{pack_id}",
                         use_container_width=True,
                         type="primary",
@@ -643,7 +638,7 @@ for pack in packs:
                     if gdocs_key in st.session_state:
                         doc_url = st.session_state[gdocs_key]
                         st.success("Doc created!")
-                        st.markdown(f"[📄 Open in Google Docs →]({doc_url})")
+                        st.markdown(f"[Open in Google Docs →]({doc_url})")
                     elif gdocs_err_key in st.session_state:
                         st.error(f"Export failed: {st.session_state[gdocs_err_key]}")
 
@@ -654,7 +649,7 @@ for pack in packs:
 
             with dup_col:
                 if st.button(
-                    "📋 Duplicate pack",
+                    "Duplicate pack",
                     key=f"lib_dup_{pack_id}",
                     use_container_width=True,
                 ):
@@ -671,7 +666,7 @@ for pack in packs:
                     confirm_col1, confirm_col2 = st.columns(2)
                     with confirm_col1:
                         if st.button(
-                            "🗑️ Yes, delete",
+                            "Yes, delete",
                             key=f"lib_del_confirm_{pack_id}",
                             type="primary",
                             use_container_width=True,
@@ -690,7 +685,7 @@ for pack in packs:
                             st.rerun()
                 else:
                     if st.button(
-                        "🗑️ Delete pack",
+                        "Delete pack",
                         key=f"lib_del_{pack_id}",
                         use_container_width=True,
                     ):
@@ -715,7 +710,7 @@ for pack in packs:
                     v_sections = v.get("sections", {})
 
                     with st.expander(
-                        f"📸 Version {v_id[:6]} — {saved_at}" + (f" — *{note}*" if note else ""),
+                        f"Version {v_id[:6]} — {saved_at}" + (f" — *{note}*" if note else ""),
                         expanded=False
                     ):
                         st.caption(f"Contains {len(v_sections)} sections: {', '.join(v_sections.keys())}")
@@ -728,7 +723,7 @@ for pack in packs:
                         v_col1, v_col2 = st.columns(2)
                         with v_col1:
                             if st.button(
-                                "♻️ Restore this version",
+                                "Restore this version",
                                 key=f"lib_restore_{pack_id}_{v_id}",
                                 use_container_width=True,
                                 help="Replace current pack content with this version"
@@ -743,7 +738,7 @@ for pack in packs:
                                 for name, content in v_sections.items()
                             )
                             st.download_button(
-                                "📥 Download version",
+                                "Download version",
                                 data=v_text,
                                 file_name=f"riot_pr_v{v_id[:6]}_{pack_id}.txt",
                                 mime="text/plain",
