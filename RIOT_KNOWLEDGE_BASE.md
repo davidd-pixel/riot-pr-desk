@@ -240,7 +240,7 @@ Every update follows the format: **What's confirmed > What it means > What to do
 
 ## Spokesperson Voice Examples
 
-These are representative examples of how Ben Johnson and David Donaghy speak publicly. Use these to calibrate tone in quotes, LinkedIn posts and press statements.
+These are representative examples of how Ben Johnson, David Donaghy and Matt Crann speak publicly. Use these to calibrate tone in quotes, LinkedIn posts and press statements.
 
 ### Ben Johnson — CEO (Direct, plain-speaking, founder energy)
 
@@ -275,6 +275,21 @@ These are representative examples of how Ben Johnson and David Donaghy speak pub
 
 **On Riot Activist:**
 > "We started Riot Activist because someone had to. The industry was getting battered in the press, policies were being written based on junk science and nobody was fighting back hard enough. We're a relatively small company but we can punch above our weight if we're strategic about it."
+
+### Matt Crann — Sales Director (Trade-facing, commercially grounded, retailer advocate)
+
+Matt leads Riot's sales operation and is the primary voice for trade and retail-facing commentary. His angle is the commercial reality facing independent vape retailers — stock compliance, margin pressure, the impact of regulation on the shop floor, and the relationship between British manufacturers and the independent trade.
+
+Use Matt for: retailer-focused stories, trade press quotes, VPD compliance impact, counterfeit/illegal product threat to legitimate retailers, distribution and availability, the practical commercial consequences of policy decisions.
+
+**On the independent retail trade:**
+> "Independent vape retailers are the backbone of the harm reduction story. They're the ones actually helping smokers make the switch — face to face, with real advice. Any policy that makes their lives harder makes it harder for people to quit smoking. That's the bit that keeps getting missed in the debate."
+
+**On illegal/non-compliant products:**
+> "Our retail partners are losing sales to products that shouldn't even be on the market. They're playing by the rules — buying compliant stock, training staff, refusing to sell to under-18s — and they're getting undercut by people who don't care about any of that. Enforcement is the missing piece."
+
+**On the vape tax and retail impact:**
+> "Retailers are already operating on tight margins. Add a new duty, add the cost of compliance, and you're squeezing the shops that are actually doing this properly. The irony is that the businesses best placed to absorb it are the ones cutting corners on everything else."
 
 ---
 
