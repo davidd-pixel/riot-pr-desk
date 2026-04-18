@@ -67,6 +67,20 @@ except Exception:
     upcoming = []
 
 # ---------------------------------------------------------------------------
+# Morning briefing (cached 4 hours — runs fast if cache is fresh)
+# ---------------------------------------------------------------------------
+briefing_opps = []
+briefing_meta = {}
+briefing_error = None
+
+try:
+    from services.autonomous_engine import run_daily_briefing, get_briefing_meta
+    briefing_opps = run_daily_briefing()
+    briefing_meta = get_briefing_meta()
+except Exception as e:
+    briefing_error = str(e)
+
+# ---------------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------------
 
@@ -97,6 +111,124 @@ with m4:
 st.divider()
 
 # ---------------------------------------------------------------------------
+# Today's Opportunities — morning briefing strip
+# ---------------------------------------------------------------------------
+
+if briefing_opps or briefing_meta:
+    opp_count = len(briefing_opps)
+    gen_at = briefing_meta.get("generated_at", "")
+    if gen_at:
+        try:
+            from datetime import datetime, timezone
+            dt = datetime.fromisoformat(gen_at)
+            # Convert to local time
+            local_dt = dt.astimezone()
+            time_str = local_dt.strftime("%H:%M")
+        except Exception:
+            time_str = gen_at[11:16]
+    else:
+        time_str = ""
+
+    # Header row
+    opp_hdr_left, opp_hdr_right = st.columns([6, 2])
+    with opp_hdr_left:
+        meta_suffix = f"&nbsp;&middot;&nbsp;analysed at {time_str}" if time_str else ""
+        count_label = f"{opp_count} opportunit{'ies' if opp_count != 1 else 'y'} found{meta_suffix}"
+        st.markdown(
+            f'<div style="display:flex;align-items:baseline;gap:0.75rem;margin-bottom:0.5rem">'
+            f'<span style="font-family:PPFormula,sans-serif;font-weight:900;font-size:1rem;'
+            f'text-transform:uppercase;letter-spacing:0.04em;color:#FFFFFF">Today\'s Opportunities</span>'
+            f'<span style="font-size:0.72rem;color:#666">{count_label}</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+    with opp_hdr_right:
+        if st.button("Open Inbox →", key="dash_inbox_link", use_container_width=True, type="primary"):
+            st.switch_page("pages/17_inbox.py")
+
+    if not briefing_opps:
+        st.markdown(
+            '<p style="color:#555;font-size:0.85rem;margin-bottom:0.75rem">'
+            'No high-relevance opportunities found in today\'s news. '
+            'Check back later or <a href="/pages/17_inbox.py" style="color:#E8192C">open the Inbox</a>.</p>',
+            unsafe_allow_html=True,
+        )
+    else:
+        # Show up to 3 opportunities in a horizontal strip
+        opp_cols = st.columns(min(len(briefing_opps), 3))
+        for i, opp in enumerate(briefing_opps[:3]):
+            with opp_cols[i]:
+                score = opp.get("relevance_score", 0)
+                if score >= 8:
+                    score_colour = "#E8192C"
+                elif score >= 6:
+                    score_colour = "#fbbf24"
+                else:
+                    score_colour = "#60a5fa"
+
+                opp_id = opp.get("id", "")
+                title_text = opp.get("story_title", "")[:70]
+                source_text = opp.get("story_source", "")
+                angle_text = opp.get("riot_angle", "")[:120]
+
+                # Pre-build all parts
+                score_badge = (
+                    f'<span style="background:{score_colour}22;border:1px solid {score_colour}55;'
+                    f'color:{score_colour};font-size:0.62rem;font-weight:700;padding:1px 7px;'
+                    f'border-radius:2px;text-transform:uppercase;letter-spacing:0.06em">'
+                    f'{score}/10</span>'
+                )
+                card_html = (
+                    f'<div style="background:#111;border:1px solid #1A1A1A;border-top:2px solid {score_colour};'
+                    f'border-radius:3px;padding:0.75rem;height:100%">'
+                    f'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.35rem">'
+                    f'<span style="font-size:0.7rem;color:#555;text-transform:uppercase;letter-spacing:0.06em">{source_text}</span>'
+                    f'{score_badge}'
+                    f'</div>'
+                    f'<div style="font-family:PPFormula,sans-serif;font-weight:700;font-size:0.82rem;'
+                    f'color:#FFFFFF;margin-bottom:0.4rem;line-height:1.3">{title_text}</div>'
+                    f'<div style="font-size:0.75rem;color:#999;line-height:1.4">{angle_text}</div>'
+                    f'</div>'
+                )
+                st.markdown(card_html, unsafe_allow_html=True)
+
+                # Approve / Skip buttons
+                btn_approve, btn_skip = st.columns(2)
+                with btn_approve:
+                    approve_key = f"dash_approve_{opp_id}"
+                    if st.button("Approve", key=approve_key, use_container_width=True, type="primary"):
+                        st.session_state[f"dash_approving_{opp_id}"] = True
+                        st.rerun()
+                with btn_skip:
+                    skip_key = f"dash_skip_{opp_id}"
+                    if st.button("Skip", key=skip_key, use_container_width=True):
+                        try:
+                            from services.opportunity_tracker import update_opportunity_status
+                            update_opportunity_status(opp_id, "skipped")
+                            st.rerun()
+                        except Exception:
+                            pass
+
+                # Handle approve — trigger auto-generation
+                if st.session_state.get(f"dash_approving_{opp_id}"):
+                    with st.spinner("Generating PR pack…"):
+                        try:
+                            from services.autonomous_engine import auto_generate_pack
+                            pack_id = auto_generate_pack(opp_id)
+                            st.session_state.pop(f"dash_approving_{opp_id}", None)
+                            st.success("Pack generated! Check your Inbox.")
+                            st.rerun()
+                        except Exception as ex:
+                            st.error(f"Generation failed: {ex}")
+                            st.session_state.pop(f"dash_approving_{opp_id}", None)
+
+        if len(briefing_opps) > 3:
+            extra = len(briefing_opps) - 3
+            st.caption(f"+{extra} more in Inbox")
+
+    st.divider()
+
+# ---------------------------------------------------------------------------
 # Main grid — Recent activity (left) | Upcoming + Actions (right)
 # ---------------------------------------------------------------------------
 
@@ -117,10 +249,11 @@ with col_left:
             st.switch_page("pages/2_pr_generator.py")
     else:
         STATUS_COLOURS = {
-            "draft":    ("#888",    "Draft"),
-            "approved": ("#4ade80", "Approved"),
-            "pitched":  ("#60a5fa", "Pitched"),
-            "covered":  ("#E8192C", "Covered"),
+            "draft":        ("#888",    "Draft"),
+            "under_review": ("#fbbf24", "Under Review"),
+            "approved":     ("#4ade80", "Approved"),
+            "pitched":      ("#60a5fa", "Pitched"),
+            "covered":      ("#E8192C", "Covered"),
         }
 
         for pack in recent_packs:
@@ -208,7 +341,10 @@ with col_right:
     st.markdown("#### Quick Actions")
 
     # Primary action — full width
-    if st.button("Monitor Today's News", use_container_width=True, type="primary"):
+    if st.button("Open Inbox", use_container_width=True, type="primary", key="qa_inbox"):
+        st.switch_page("pages/17_inbox.py")
+
+    if st.button("Monitor Today's News", use_container_width=True, key="qa_news"):
         st.switch_page("pages/1_news_desk.py")
 
     # Secondary actions — 2-column grid

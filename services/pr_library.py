@@ -105,6 +105,8 @@ def save_pack(input_content, sections, position_name, spokesperson_key,
         "reviewer": "",
         "comments": [],
         "versions": [],
+        "suggested_journalists": [],   # populated by autonomous_engine.auto_match_journalists()
+        "pitches_sent": False,         # set True once user has sent pitches
     }
 
     records.append(pack)
@@ -215,6 +217,29 @@ def update_pack_status(pack_id, new_status):
     for i, pack in enumerate(records):
         if pack.get("id") == pack_id:
             records[i]["status"] = new_status
+            _save(records)
+            return records[i]
+    raise ValueError(f"Pack '{pack_id}' not found.")
+
+
+def update_suggested_journalists(pack_id: str, journalists: list) -> dict:
+    """Store AI-matched journalists on a pack. Returns updated pack."""
+    records = _load()
+    for i, pack in enumerate(records):
+        if pack.get("id") == pack_id:
+            records[i]["suggested_journalists"] = journalists
+            _save(records)
+            return records[i]
+    raise ValueError(f"Pack '{pack_id}' not found.")
+
+
+def mark_pitches_sent(pack_id: str) -> dict:
+    """Mark that pitches have been sent for this pack."""
+    records = _load()
+    for i, pack in enumerate(records):
+        if pack.get("id") == pack_id:
+            records[i]["pitches_sent"] = True
+            records[i]["status"] = "pitched"
             _save(records)
             return records[i]
     raise ValueError(f"Pack '{pack_id}' not found.")

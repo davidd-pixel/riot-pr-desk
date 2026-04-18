@@ -608,6 +608,14 @@ def render_sidebar():
         st.divider()
 
         st.markdown('<p class="section-header">Workflow</p>', unsafe_allow_html=True)
+        # Inbox badge — show pending item count if > 0
+        try:
+            from services.opportunity_tracker import get_inbox_count
+            _inbox_n = get_inbox_count()
+            _inbox_label = f"Inbox  ({_inbox_n})" if _inbox_n > 0 else "Inbox"
+        except Exception:
+            _inbox_label = "Inbox"
+        st.page_link("pages/17_inbox.py",           label=_inbox_label,       icon=":material/inbox:")
         st.page_link("pages/1_news_desk.py",        label="News Desk",        icon=":material/newspaper:")
         st.page_link("pages/4_news_jacking.py",     label="News-Jacking",     icon=":material/bolt:")
         st.page_link("pages/2_pr_generator.py",     label="PR Generator",     icon=":material/edit_note:")

@@ -644,6 +644,88 @@ for pack in packs:
 
             st.divider()
 
+            # --- Pitch sending (approved packs with suggested journalists) ---
+            if status == "approved" and pack.get("suggested_journalists"):
+                journalists = pack.get("suggested_journalists", [])
+                pitches_sent = pack.get("pitches_sent", False)
+
+                st.markdown("**Send Pitches**")
+
+                if pitches_sent:
+                    st.success("Pitches already sent for this pack.")
+                elif journalists:
+                    st.caption(f"{len(journalists)} journalists matched by AI. Click to open pre-filled email:")
+                    st.write("")
+
+                    try:
+                        from services.autonomous_engine import build_mailto_link
+                        for j in journalists:
+                            j_name = j.get("name", "")
+                            j_pub = j.get("publication", "")
+                            j_email = j.get("email", "")
+                            j_reasoning = j.get("reasoning", "")
+                            mailto = build_mailto_link(j, pack)
+
+                            mailto_html = (
+                                f'<a href="{mailto}" style="display:inline-block;background:#E8192C;'
+                                f'color:#FFF;font-family:PPFormula,sans-serif;font-weight:700;'
+                                f'font-size:0.78rem;letter-spacing:0.06em;text-transform:uppercase;'
+                                f'padding:7px 16px;border-radius:3px;text-decoration:none;margin:3px 4px 3px 0">'
+                                f'Send to {j_name} ({j_pub})</a>'
+                            ) if mailto else ""
+
+                            no_email_note = (
+                                f'<span style="font-size:0.72rem;color:#555">No email on file for {j_name}</span>'
+                            ) if not mailto else ""
+
+                            st.markdown(
+                                f'<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem">'
+                                f'<div style="flex:1">'
+                                f'<span style="font-size:0.82rem;color:#CCC">{j_name}</span>'
+                                f'<span style="font-size:0.72rem;color:#555"> &middot; {j_pub}</span>'
+                                f'</div>'
+                                f'{mailto_html}{no_email_note}'
+                                f'</div>'
+                                f'<div style="font-size:0.72rem;color:#555;font-style:italic;'
+                                f'margin-bottom:0.4rem;margin-left:0.25rem">{j_reasoning}</div>',
+                                unsafe_allow_html=True,
+                            )
+                    except Exception as _pe:
+                        st.caption(f"Pitch links unavailable: {_pe}")
+
+                    st.write("")
+                    if st.button("Mark pitches as sent", key=f"lib_mark_sent_{pack_id}", use_container_width=True):
+                        try:
+                            from services.pr_library import mark_pitches_sent
+                            from services.journalist_history import log_contact
+                            mark_pitches_sent(pack_id)
+                            for j in journalists:
+                                try:
+                                    log_contact(
+                                        journalist_id=j.get("id", ""),
+                                        contact_type="pitch",
+                                        subject=f"Pitch sent for: {title}",
+                                        pack_id=pack_id,
+                                    )
+                                except Exception:
+                                    pass
+                            st.success("Marked as pitched.")
+                            st.rerun()
+                        except Exception as _me:
+                            st.error(f"Error: {_me}")
+                else:
+                    if st.button("Match journalists with AI", key=f"lib_match_j_{pack_id}", use_container_width=True):
+                        with st.spinner("Matching journalists…"):
+                            try:
+                                from services.autonomous_engine import auto_match_journalists
+                                auto_match_journalists(pack_id)
+                                st.success("Journalists matched.")
+                                st.rerun()
+                            except Exception as _mex:
+                                st.error(f"Matching failed: {_mex}")
+
+                st.divider()
+
             # --- Duplicate ---
             dup_col, del_col = st.columns(2)
 
