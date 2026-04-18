@@ -62,7 +62,7 @@ except Exception:
 
 try:
     from services.cultural_calendar import get_upcoming_events
-    upcoming = get_upcoming_events(days_ahead=14)
+    upcoming = get_upcoming_events(days_ahead=30)
 except Exception:
     upcoming = []
 
@@ -139,35 +139,29 @@ with col_left:
             position = pack.get("position_name", "")
             coverage_hits = len(pack.get("coverage", []))
 
+            # Pre-build meta line to avoid inline conditionals inside HTML f-string
+            meta_parts = [date_display]
+            if position:
+                meta_parts.append(position)
+            if coverage_hits:
+                s = "s" if coverage_hits != 1 else ""
+                meta_parts.append(
+                    f'<span style="color:#E8192C">{coverage_hits} coverage hit{s}</span>'
+                )
+            meta_line = "&nbsp;&middot;&nbsp;".join(meta_parts)
+
             st.markdown(
-                f"""
-                <div style="
-                    border-left: 3px solid {colour};
-                    padding: 0.55rem 0.75rem;
-                    margin-bottom: 0.4rem;
-                    background: #111;
-                    border-radius: 0 3px 3px 0;
-                ">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
-                        <span style="font-family:'PPFormula',sans-serif;font-weight:900;
-                                     font-size:0.88rem;color:#FFFFFF;letter-spacing:0.02em">
-                            {title}
-                        </span>
-                        <span style="
-                            background:{colour}22;border:1px solid {colour}66;
-                            color:{colour};font-size:0.65rem;font-weight:700;
-                            padding:1px 8px;border-radius:2px;white-space:nowrap;
-                            font-family:'PPFormula',sans-serif;letter-spacing:0.08em;
-                            text-transform:uppercase
-                        ">{label}</span>
-                    </div>
-                    <div style="font-size:0.75rem;color:#666;margin-top:3px">
-                        {date_display}
-                        {"&nbsp;·&nbsp;" + position if position else ""}
-                        {"&nbsp;·&nbsp;<span style='color:#E8192C'>" + str(coverage_hits) + " coverage hit" + ("s" if coverage_hits != 1 else "") + "</span>" if coverage_hits else ""}
-                    </div>
-                </div>
-                """,
+                f'<div style="border-left:3px solid {colour};padding:0.55rem 0.75rem;'
+                f'margin-bottom:0.4rem;background:#111;border-radius:0 3px 3px 0">'
+                f'<div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">'
+                f'<span style="font-family:PPFormula,sans-serif;font-weight:900;font-size:0.88rem;'
+                f'color:#FFFFFF;letter-spacing:0.02em">{title}</span>'
+                f'<span style="background:{colour}22;border:1px solid {colour}66;color:{colour};'
+                f'font-size:0.65rem;font-weight:700;padding:1px 8px;border-radius:2px;'
+                f'white-space:nowrap;text-transform:uppercase">{label}</span>'
+                f'</div>'
+                f'<div style="font-size:0.75rem;color:#666;margin-top:3px">{meta_line}</div>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
 
@@ -183,7 +177,7 @@ with col_right:
 
     if not upcoming:
         st.markdown(
-            '<p style="color:#666;font-size:0.85rem">Nothing in the next 14 days.</p>',
+            '<p style="color:#666;font-size:0.85rem">Nothing in the next 30 days.</p>',
             unsafe_allow_html=True,
         )
     else:
@@ -195,17 +189,13 @@ with col_right:
             except Exception:
                 date_fmt = raw
             cat = event.get("category", "")
+            meta = date_fmt + ("&nbsp;&middot;&nbsp;" + cat if cat else "")
+            name = event.get("name", "")
             st.markdown(
-                f"""
-                <div style="padding:0.4rem 0;border-bottom:1px solid #1A1A1A">
-                    <div style="font-size:0.85rem;color:#E0E0E0;font-weight:600">
-                        {event['name']}
-                    </div>
-                    <div style="font-size:0.72rem;color:#666;margin-top:2px">
-                        {date_fmt}{("&nbsp;·&nbsp;" + cat) if cat else ""}
-                    </div>
-                </div>
-                """,
+                f'<div style="padding:0.4rem 0;border-bottom:1px solid #1A1A1A">'
+                f'<div style="font-size:0.85rem;color:#E0E0E0;font-weight:600">{name}</div>'
+                f'<div style="font-size:0.72rem;color:#666;margin-top:2px">{meta}</div>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
         if len(upcoming) > 4:
