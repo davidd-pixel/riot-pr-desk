@@ -130,24 +130,32 @@ def run_daily_briefing(force: bool = False) -> list:
     if not force and _cache_is_fresh():
         return get_pending_opportunities()
 
-    # Fetch news — combine vape-specific feeds with general trending
+    # Fetch news — all four feeds combined and deduped
     articles = []
     try:
-        from services.news_monitor import fetch_uk_vape_news, fetch_global_vape_news, fetch_trending_news
-        vape_uk = [a for a in fetch_uk_vape_news(page_size=10) if "error" not in a]
-        vape_global = [a for a in fetch_global_vape_news(page_size=10) if "error" not in a]
-        trending = [a for a in fetch_trending_news(page_size=15) if "error" not in a]
-        # Combine, deduplicate by title
+        from services.news_monitor import (
+            fetch_uk_vape_news, fetch_global_vape_news,
+            fetch_trending_news, fetch_social_viral_news,
+        )
+        feeds = [
+            fetch_uk_vape_news(page_size=10),
+            fetch_global_vape_news(page_size=10),
+            fetch_trending_news(page_size=15),
+            fetch_social_viral_news(page_size=10),
+        ]
         seen = set()
-        for a in vape_uk + vape_global + trending:
-            t = a.get("title", "").lower()[:60]
-            if t and t not in seen:
-                seen.add(t)
-                articles.append(a)
+        for feed in feeds:
+            for a in feed:
+                if "error" in a:
+                    continue
+                t = a.get("title", "").lower()[:60]
+                if t and t not in seen:
+                    seen.add(t)
+                    articles.append(a)
     except Exception as e:
         print(f"News fetch error: {e}")
 
-    print(f"Fetched {len(articles)} articles from news sources ({len([a for a in articles])} total)")
+    print(f"Fetched {len(articles)} articles across all feeds")
 
     if not articles:
         _save_cache({"generated_at": datetime.now(timezone.utc).isoformat(), "count": 0})
