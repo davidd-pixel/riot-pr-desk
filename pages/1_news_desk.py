@@ -83,6 +83,9 @@ def _render_articles(articles, key_prefix):
             with c3:
                 if st.button("📝 Create Blog →", key=f"{key_prefix}_blog_{i}", use_container_width=True):
                     st.session_state["blog_topic"] = f"{formatted['title']}\n\n{formatted['description']}"
+                    st.session_state["blog_suggest_on_load"] = True
+                    for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
+                        st.session_state.pop(_k, None)
                     st.switch_page("pages/16_blog_writer.py")
 
             # Voting

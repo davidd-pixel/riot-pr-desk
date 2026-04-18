@@ -5,6 +5,8 @@ Write SEO-optimised blog posts for rioteliquid.com/blogs/news.
 
 import datetime
 import io
+import json
+import re
 import streamlit as st
 
 from services.ai_engine import is_configured as ai_configured, generate_stream, refine_text_sync, generate
@@ -48,6 +50,25 @@ if not ai_configured():
 
 STATUS_BADGES = {"draft": "⚪ Draft", "ready": "✅ Ready", "published": "🌐 Published"}
 
+BLOG_TYPE_OPTIONS = [
+    "Industry Commentary",
+    "Harm Reduction",
+    "Product Education",
+    "Campaign Story",
+    "Behind The Scenes",
+    "News-Jack",
+    "Opinion / Thought Leadership",
+]
+BLOG_TYPE_DESCRIPTIONS = {
+    "Industry Commentary": "Riot's take on regulatory news, policy, industry trends",
+    "Harm Reduction": "Educational content about switching from smoking, nicotine science",
+    "Product Education": "How devices work, flavour guides, choosing the right product",
+    "Campaign Story": "Telling the story behind a Riot Activist campaign or stunt",
+    "Behind The Scenes": "British manufacturing, company culture, team stories",
+    "News-Jack": "Riot's opinion piece pegged to a trending news story",
+    "Opinion / Thought Leadership": "Riot's perspective on a big issue",
+}
+
 
 # ---------------------------------------------------------------------------
 # Section parser
@@ -81,6 +102,57 @@ def _parse_blog(raw: str) -> dict:
     if not sections:
         sections["Full Response"] = raw
     return sections
+
+
+# ---------------------------------------------------------------------------
+# AI suggestion helper
+# ---------------------------------------------------------------------------
+
+def _generate_blog_suggestions(topic: str) -> dict:
+    """Ask the AI to recommend blog type, primary keyword and secondary keywords for a topic.
+
+    Returns a dict with keys: blog_type, primary_keyword, secondary_keywords, rationale.
+    Returns an empty dict on any failure (UI falls back to manual mode gracefully).
+    """
+    prompt = f"""You are an SEO and content strategy expert for Riot Labs — a British vape brand based in Norwich.
+
+Riot makes premium e-liquids and vape devices at its UK factory. The brand is activist, direct and irreverent.
+Its blog lives at rioteliquid.com/blogs/news and targets: adult vapers, people switching from smoking, and
+industry observers. SEO is critical — posts rank on Google for real search queries.
+
+A story has come through the news desk. Analyse it and recommend the optimal blog settings.
+
+STORY / TOPIC:
+{topic[:2000]}
+
+Respond with ONLY valid JSON — no markdown fences, no commentary, nothing else:
+{{
+  "blog_type": "one of: Industry Commentary | Harm Reduction | Product Education | Campaign Story | Behind The Scenes | News-Jack | Opinion / Thought Leadership",
+  "primary_keyword": "the single highest-value SEO phrase for this topic (what UK people actually type into Google)",
+  "secondary_keywords": ["phrase 2", "phrase 3", "phrase 4", "phrase 5", "phrase 6"],
+  "rationale": "1-2 sentences: why this blog type fits, and why these keywords have the best search intent"
+}}
+
+Rules:
+- Breaking news or trend stories → News-Jack
+- Regulatory/policy topics → Industry Commentary
+- Educational content about switching → Harm Reduction
+- Product features/guides → Product Education
+- Primary keyword must be conversational and specific (e.g. "vaping UK law 2025" not "vaping regulatory landscape")
+- All keywords should be what real people search on Google UK — long-tail is fine
+- Secondary keywords should cover different search intents (e.g. questions, comparisons, local variants)
+- Keep rationale under 40 words — punchy and practical"""
+
+    try:
+        raw = generate(prompt)
+        # Strip any accidental markdown fencing
+        clean = re.sub(r"```(?:json)?", "", raw).strip()
+        match = re.search(r"\{[\s\S]*\}", clean)
+        if match:
+            return json.loads(match.group())
+        return {}
+    except Exception:
+        return {}
 
 
 # ---------------------------------------------------------------------------
@@ -162,12 +234,11 @@ tab_write, tab_library = st.tabs(["✍️ Write", "📚 Blog Library"])
 
 with tab_write:
 
+    # ── Capture load-trigger before any widgets render ───────────────────────
+    _trigger_suggest = st.session_state.pop("blog_suggest_on_load", False)
+
     # ── Step 1: Topic ────────────────────────────────────────────────────────
     st.markdown("### Step 1 — Topic")
-
-    # Handle quick-start seeds written into session state
-    if "blog_topic" in st.session_state and st.session_state.get("_blog_topic_prefill"):
-        del st.session_state["_blog_topic_prefill"]
 
     topic = st.text_area(
         "What's the blog about?",
@@ -203,59 +274,141 @@ with tab_write:
         with col:
             if st.button(label, key=f"blog_qs_{label}", use_container_width=True):
                 st.session_state["blog_topic"] = value
+                for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
+                    st.session_state.pop(_k, None)
                 st.rerun()
 
-    st.divider()
+    # Clear stale suggestions if the topic has changed since they were generated
+    _sugg_for = st.session_state.get("blog_suggestions_for_topic", "")
+    if "blog_suggestions" in st.session_state and _sugg_for and topic.strip() != _sugg_for:
+        for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
+            st.session_state.pop(_k, None)
 
-    # ── Step 2: Blog Type ────────────────────────────────────────────────────
-    st.markdown("### Step 2 — Blog Type")
-
-    blog_type_options = [
-        "Industry Commentary",
-        "Harm Reduction",
-        "Product Education",
-        "Campaign Story",
-        "Behind The Scenes",
-        "News-Jack",
-        "Opinion / Thought Leadership",
-    ]
-    blog_type_descriptions = {
-        "Industry Commentary": "Riot's take on regulatory news, policy, industry trends",
-        "Harm Reduction": "Educational content about switching from smoking, nicotine science",
-        "Product Education": "How devices work, flavour guides, choosing the right product",
-        "Campaign Story": "Telling the story behind a Riot Activist campaign or stunt",
-        "Behind The Scenes": "British manufacturing, company culture, team stories",
-        "News-Jack": "Riot's opinion piece pegged to a trending news story",
-        "Opinion / Thought Leadership": "Riot's perspective on a big issue",
-    }
-    blog_type = st.selectbox(
-        "Blog type",
-        options=blog_type_options,
-        format_func=lambda t: f"{t} — {blog_type_descriptions[t]}",
-        key="blog_blog_type",
-    )
+    # Auto-suggest (triggered by News Desk or manual button below)
+    if _trigger_suggest and topic.strip() and "blog_suggestions" not in st.session_state:
+        with st.spinner("🤖 Analysing story and suggesting the best blog settings..."):
+            _sugg_result = _generate_blog_suggestions(topic.strip())
+        st.session_state["blog_suggestions"] = _sugg_result
+        st.session_state["blog_suggestions_for_topic"] = topic.strip()
 
     st.divider()
 
-    # ── Step 3: SEO ─────────────────────────────────────────────────────────
-    st.markdown("### Step 3 — SEO Keywords")
+    # ── Steps 2 & 3: Blog Settings ───────────────────────────────────────────
+    _has_suggestions = bool(st.session_state.get("blog_suggestions"))
 
-    primary_keyword = st.text_input(
-        "Primary keyword",
-        key="blog_primary_keyword",
-        placeholder="e.g. disposable vape ban UK",
-    )
-    secondary_keywords_input = st.text_input(
-        "Secondary keywords (comma-separated)",
-        key="blog_secondary_keywords",
-        placeholder="e.g. vaping regulations, e-cigarette, quit smoking",
-    )
-    st.caption("💡 Use terms people actually search. Think 'how to stop smoking with a vape' not 'cessation journey'.")
+    if _has_suggestions:
+        sugg = st.session_state["blog_suggestions"]
+
+        # Pre-populate widget session state keys from suggestions (once only)
+        if not st.session_state.get("blog_suggestions_applied"):
+            sugg_type = sugg.get("blog_type", "")
+            if sugg_type in BLOG_TYPE_OPTIONS:
+                st.session_state["blog_blog_type"] = sugg_type
+            pk = sugg.get("primary_keyword", "")
+            if pk:
+                st.session_state["blog_primary_keyword"] = pk
+            sk = sugg.get("secondary_keywords", [])
+            if sk:
+                st.session_state["blog_secondary_keywords"] = (
+                    ", ".join(sk) if isinstance(sk, list) else str(sk)
+                )
+            st.session_state["blog_suggestions_applied"] = True
+
+        # AI rationale callout
+        if sugg.get("rationale"):
+            st.info(f"🤖 **AI Analysis:** {sugg['rationale']}")
+
+        st.markdown("### 🎯 Blog Settings — AI Suggested")
+        st.caption(
+            "The AI has analysed the story and pre-filled these settings. "
+            "Review each field and edit anything before generating."
+        )
+
+        smart_c1, smart_c2 = st.columns(2)
+        with smart_c1:
+            blog_type = st.selectbox(
+                "Blog type",
+                options=BLOG_TYPE_OPTIONS,
+                format_func=lambda t: f"{t} — {BLOG_TYPE_DESCRIPTIONS[t]}",
+                key="blog_blog_type",
+            )
+        with smart_c2:
+            primary_keyword = st.text_input(
+                "Primary keyword",
+                key="blog_primary_keyword",
+                placeholder="e.g. disposable vape ban UK",
+            )
+
+        secondary_keywords_input = st.text_input(
+            "Secondary keywords (comma-separated)",
+            key="blog_secondary_keywords",
+            placeholder="e.g. vaping regulations, e-cigarette, quit smoking",
+        )
+        st.caption(
+            "💡 Use terms people actually search — "
+            "'how to quit smoking with a vape', not 'cessation journey'."
+        )
+
+        reanalyse_c, manual_c = st.columns(2)
+        with reanalyse_c:
+            if topic.strip() and st.button(
+                "🔄 Re-analyse story", use_container_width=True, key="blog_reanalyse"
+            ):
+                for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
+                    st.session_state.pop(_k, None)
+                st.session_state["blog_suggest_on_load"] = True
+                st.rerun()
+        with manual_c:
+            if st.button("✏️ Switch to manual mode", use_container_width=True, key="blog_to_manual"):
+                for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
+                    st.session_state.pop(_k, None)
+                st.rerun()
+
+    else:
+        # Manual mode — no AI suggestions yet
+        if topic.strip():
+            sugg_btn_col, _ = st.columns([2, 3])
+            with sugg_btn_col:
+                if st.button(
+                    "🤖 Suggest blog type & keywords →",
+                    type="secondary",
+                    use_container_width=True,
+                    key="blog_manual_suggest_btn",
+                ):
+                    st.session_state["blog_suggest_on_load"] = True
+                    st.rerun()
+
+        st.markdown("### Step 2 — Blog Type")
+        blog_type = st.selectbox(
+            "Blog type",
+            options=BLOG_TYPE_OPTIONS,
+            format_func=lambda t: f"{t} — {BLOG_TYPE_DESCRIPTIONS[t]}",
+            key="blog_blog_type",
+        )
+
+        st.divider()
+
+        st.markdown("### Step 3 — SEO Keywords")
+        primary_keyword = st.text_input(
+            "Primary keyword",
+            key="blog_primary_keyword",
+            placeholder="e.g. disposable vape ban UK",
+        )
+        secondary_keywords_input = st.text_input(
+            "Secondary keywords (comma-separated)",
+            key="blog_secondary_keywords",
+            placeholder="e.g. vaping regulations, e-cigarette, quit smoking",
+        )
+        st.caption(
+            "💡 Use terms people actually search — "
+            "'how to stop smoking with a vape', not 'cessation journey'."
+        )
 
     st.divider()
 
-    # ── Step 4: Tone & Length ────────────────────────────────────────────────
-    st.markdown("### Step 4 — Tone & Length")
+    # ── Tone & Length ─────────────────────────────────────────────────────────
+    _tone_step_label = "### Step 2 — Tone & Length" if _has_suggestions else "### Step 4 — Tone & Length"
+    st.markdown(_tone_step_label)
 
     tone_col, length_col = st.columns(2)
     with tone_col:
