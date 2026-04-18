@@ -70,7 +70,7 @@ def _render_articles(articles, key_prefix):
                 st.markdown(f"[Read full article →]({formatted['url']})")
 
             # Action buttons
-            c1, c2, c3, c4 = st.columns([2, 2, 1, 1])
+            c1, c2, c3, c4, c5 = st.columns([2, 2, 2, 1, 1])
             with c1:
                 if ai_configured() and st.button("🔍 Analyse", key=f"{key_prefix}_tri_{i}", use_container_width=True):
                     with st.spinner("Analysing..."):
@@ -80,16 +80,20 @@ def _render_articles(articles, key_prefix):
                 if st.button("✍️ Create PR Pack →", key=f"{key_prefix}_gen_{i}", use_container_width=True):
                     st.session_state["pr_input"] = f"{formatted['title']}\n\n{formatted['description']}"
                     st.switch_page("pages/2_pr_generator.py")
+            with c3:
+                if st.button("📝 Create Blog →", key=f"{key_prefix}_blog_{i}", use_container_width=True):
+                    st.session_state["blog_topic"] = f"{formatted['title']}\n\n{formatted['description']}"
+                    st.switch_page("pages/16_blog_writer.py")
 
             # Voting
             vote_key = f"{key_prefix}_v_{i}"
-            with c3:
+            with c4:
                 if vote_key not in st.session_state:
                     if st.button("👍", key=f"{key_prefix}_up_{i}", use_container_width=True):
                         record_vote(formatted["title"], "up", "news_story")
                         st.session_state[vote_key] = "up"
                         st.rerun()
-            with c4:
+            with c5:
                 if vote_key not in st.session_state:
                     if st.button("👎", key=f"{key_prefix}_dn_{i}", use_container_width=True):
                         record_vote(formatted["title"], "down", "news_story")
