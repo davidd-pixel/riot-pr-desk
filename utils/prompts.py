@@ -423,3 +423,88 @@ Next 3 steps to move from crisis management to positive narrative. What story do
 
 Be direct. Be fast. Flag anything where you need more information from the Riot team before responding.
 """
+
+BLOG_PROMPT = """Write an SEO-optimised blog post for Riot Labs' website (rioteliquid.com/blogs/news).
+
+## BLOG BRIEF
+Topic: {topic}
+Content type: {blog_type}
+Primary keyword (must rank for this): {primary_keyword}
+Secondary keywords (weave in naturally): {secondary_keywords}
+Target length: {word_count}
+Tone: {tone_dial}
+
+## SEO RULES — FOLLOW THESE EXACTLY
+- Primary keyword must appear in: the title, the first 100 words, at least 2 H2 headings, and naturally throughout the body (~2-3% density — not stuffed)
+- Secondary keywords woven in naturally — never forced
+- All paragraphs max 3-4 lines for readability and dwell time
+- Use numbers in headings where natural ("5 reasons...", "Why 4 million UK adults...")
+- Title tag max 60 characters
+- Meta description max 160 characters — must include primary keyword and a clear reason to click
+- URL slug: lowercase, hyphenated, keyword-first
+
+## BRAND VOICE
+Apply Riot's brand voice throughout:
+- Inspiring not abrasive. Confident not cocky. Expert not a bore.
+- No corporate waffle — be specific and concrete
+- Show, don't tell — use data and specifics
+- Short sentences, active voice
+- FORBIDDEN: "we are delighted/pleased/excited", "world-class", "industry-leading", "leveraging", "holistic approach", "the vaping revolution", "empowering smokers"
+- Only use verified Riot statistics (95% less harmful than smoking, 4 million UK vapers who have quit smoking, British-manufactured)
+
+## REQUIRED OUTPUTS
+Generate all 5 sections with EXACTLY these headers:
+
+### 1. SEO PACKAGE
+**Title tag:** [max 60 chars — primary keyword near start]
+**Meta description:** [max 160 chars — include primary keyword + compelling CTA]
+**URL slug:** [keyword-first-lowercase-hyphenated]
+**Primary keyword:** {primary_keyword}
+**Secondary keywords with search intent:**
+- [keyword] — [what someone searching this wants to find]
+- [repeat for 4-5 secondary keywords]
+
+### 2. BLOG POST
+[Full {word_count} blog post with this structure:]
+# [H1 — matches title tag or close variant, primary keyword included]
+
+[Hook intro paragraph — grab attention, establish why this matters NOW, include primary keyword in first 100 words]
+
+## [H2 — keyword-rich subheading]
+[Body section — 150-200 words, evidence-based, short paragraphs]
+
+## [H2 — keyword-rich subheading]
+[Body section]
+
+## [H2 — keyword-rich subheading]
+[Body section]
+
+[Additional H2 sections as needed to reach word count target]
+
+## [Conclusion H2]
+[Conclusion with clear CTA — link to Riot products, newsletter, related post. End with Riot's brand conviction.]
+
+---
+*About Riot Labs: Riot Labs is a British vape manufacturer on a mission to help smokers make the switch to a less harmful alternative. Made in Britain. rioteliquid.com*
+
+### 3. IMAGE SUGGESTIONS
+For each major section, provide:
+**[Section name / placement]**
+- Image: [specific description of ideal photo, graphic or illustration]
+- Alt text: [keyword-optimised alt text, max 125 chars]
+- File name: [seo-friendly-filename.jpg]
+
+[Repeat for each section — aim for 4-6 image suggestions total]
+
+### 4. INTERNAL LINKS
+[3-5 suggestions for linking to other Riot pages:]
+- **Anchor text:** "[exact link text]" → Link to: [page description e.g. RIOT CONNEX product page] — Place: [where in the article]
+
+### 5. SOCIAL PROMOTION
+**Twitter/X:** [Under 280 chars — punchy, includes a hook. No hashtag spam — max 2.]
+**LinkedIn:** [2-3 sentences — more considered, thought leadership angle. Can be slightly longer.]
+**Instagram caption:** [Engaging, brand-voice, 1-2 sentences + 5-8 relevant hashtags]
+
+---
+IMPORTANT: Format each section header EXACTLY as shown above (e.g. "### 1. SEO PACKAGE") so the parser can find them. Do not add extra headers or change the numbering.
+"""

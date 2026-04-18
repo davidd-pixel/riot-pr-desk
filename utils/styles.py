@@ -583,6 +583,9 @@ def render_sidebar():
         st.page_link("pages/9_competitors.py",  label="Competitor Monitor", icon="🔍")
         st.page_link("pages/15_regulators.py",  label="Regulatory Radar",   icon="⚖️")
 
+        st.markdown('<p class="section-header">Content</p>', unsafe_allow_html=True)
+        st.page_link("pages/16_blog_writer.py", label="Blog Writer", icon="📝")
+
         st.markdown('<p class="section-header">Tools</p>', unsafe_allow_html=True)
         st.page_link("pages/6_journalists.py",  label="Journalist Database", icon="📇")
         st.page_link("pages/8_media_lists.py",  label="Media Lists",         icon="📋")
