@@ -8,6 +8,33 @@ import base64
 import os
 import streamlit as st
 
+# ---------------------------------------------------------------------------
+# Secrets bootstrap — runs on every page since every page imports this module.
+# On Streamlit Cloud, API keys live in st.secrets (not os.environ).
+# Sync them once so all os.getenv() calls work everywhere.
+# ---------------------------------------------------------------------------
+def _sync_secrets():
+    try:
+        for _k, _v in st.secrets.items():
+            if isinstance(_v, str) and _k not in os.environ:
+                os.environ[_k] = _v
+    except Exception:
+        pass
+
+    # Handle Google service account JSON stored as a secret string
+    _sa_content = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT", "")
+    if _sa_content and not os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON"):
+        import tempfile, json as _json
+        try:
+            _tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+            _json.dump(_json.loads(_sa_content), _tmp)
+            _tmp.close()
+            os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"] = _tmp.name
+        except Exception:
+            pass
+
+_sync_secrets()
+
 _ASSET_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 _FONT_DIR = os.path.join(_ASSET_DIR, "fonts")
 
