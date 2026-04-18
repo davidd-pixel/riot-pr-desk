@@ -175,7 +175,7 @@ def _build_blog_docx(sections: dict, blog_title: str) -> bytes:
     doc.add_heading(blog_title or "Blog Post", 1)
 
     meta = doc.add_paragraph(
-        f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}  |  "
+        f"Generated: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}  |  "
         "Status: DRAFT — Requires approval before publishing"
     )
     meta.runs[0].font.size = Pt(9)
@@ -702,7 +702,7 @@ with tab_write:
         # Build full plain text export
         full_text = (
             f"RIOT PR DESK — BLOG WRITER (DRAFT)\n"
-            f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+            f"Generated: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
             f"{'=' * 60}\n\n"
         )
         full_text += "\n\n".join(
@@ -774,6 +774,7 @@ with tab_write:
                         try:
                             update_blog_status(_saved_id, "published")
                             st.session_state["blog_current_status"] = "published"
+                            st.session_state.pop(f"blog_lib_status_{_saved_id}", None)
                             st.rerun()
                         except Exception as e:
                             st.error(f"Update failed: {e}")
@@ -786,6 +787,7 @@ with tab_write:
                         try:
                             update_blog_status(_saved_id, "draft")
                             st.session_state["blog_current_status"] = "draft"
+                            st.session_state.pop(f"blog_lib_status_{_saved_id}", None)
                             st.rerun()
                         except Exception as e:
                             st.error(f"Update failed: {e}")
@@ -801,6 +803,7 @@ with tab_write:
                     try:
                         update_blog_status(_saved_id, "ready")
                         st.session_state["blog_current_status"] = "ready"
+                        st.session_state.pop(f"blog_lib_status_{_saved_id}", None)
                         st.rerun()
                     except Exception as e:
                         st.error(f"Approval failed: {e}")
@@ -887,7 +890,11 @@ with tab_library:
             title = blog.get("title", "Untitled")
             status = blog.get("status", "draft")
             created_raw = blog.get("created_at", "")
-            created_display = created_raw[:10] if created_raw else "Unknown date"
+            try:
+                _y, _m, _d = created_raw[:10].split("-")
+                created_display = f"{_d}/{_m}/{_y}"
+            except Exception:
+                created_display = created_raw[:10] if created_raw else "Unknown date"
             badge = STATUS_BADGES.get(status, "⚪ Draft")
 
             with st.expander(
@@ -915,7 +922,6 @@ with tab_library:
                         for sec_name, sec_content in blog_sections.items():
                             st.markdown(f"**{sec_name}**")
                             st.markdown(sec_content)
-                            st.code(sec_content, language=None)
                             st.divider()
 
                 with actions_tab:
@@ -935,7 +941,7 @@ with tab_library:
                         ):
                             try:
                                 update_blog_status(blog_id, new_status)
-                                st.success(f"Status updated to {new_status}.")
+                                st.session_state.pop(f"blog_lib_status_{blog_id}", None)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Update failed: {e}")
@@ -948,7 +954,7 @@ with tab_library:
                             ):
                                 try:
                                     update_blog_status(blog_id, "published")
-                                    st.success("Marked as published.")
+                                    st.session_state.pop(f"blog_lib_status_{blog_id}", None)
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"Update failed: {e}")
