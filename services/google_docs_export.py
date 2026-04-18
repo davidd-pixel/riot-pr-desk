@@ -267,6 +267,7 @@ def _build_doc_requests(pack: dict) -> list:
         "Retailer WhatsApp Comms",
         "Consumer Social Media Comms",
         "Internal Briefing",
+        "Creative Brief",
     ]
     # Use section_order to sort, then append any extras
     ordered_keys = [k for k in section_order if k in sections]

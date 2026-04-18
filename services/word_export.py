@@ -64,6 +64,7 @@ def export_pr_pack_to_docx(pack: dict) -> bytes:
     section_order = [
         "Press Release", "Journalist Pitch Email", "LinkedIn Post",
         "Retailer WhatsApp Comms", "Consumer Social Media Comms", "Internal Briefing",
+        "Creative Brief",
     ]
     sections = pack.get("sections", {})
     ordered_keys = [k for k in section_order if k in sections]

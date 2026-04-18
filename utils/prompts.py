@@ -167,6 +167,35 @@ A brief for Riot's internal teams covering:
 - Anticipated questions and suggested answers
 If not relevant, write: NOT APPLICABLE — [reason]
 
+### 7. CREATIVE BRIEF
+Generate this section whenever the story requires any creative asset to land — for example: news-jacks (most need a visual to sell the story into media), press releases announcing a campaign, product launch or stunt, LinkedIn or social posts that need a designed graphic, or any story where imagery is central to the angle. If the story is a pure comment/quote piece that needs no creative execution, write: NOT APPLICABLE — [reason]
+
+If applicable, complete the brief in this EXACT format (fill in every field based on the story and the rest of this pack):
+
+**BRIEF DETAILS**
+
+**Name of task:** [Naming convention: Brand · Territory · Deliverable — e.g. "Riot · UK · Press Image", "Riot · UK · Social GFX", "Riot · UK · Campaign Poster", "Riot · UK · News-Jack Visual"]
+
+**Brief type:** [Choose the most appropriate and explain why in one sentence:]
+- Creative Request — you are not certain of the creative direction; allocate time for concept exploration
+- Execution Request — you know exactly what is needed; execute to brief with no deviation
+
+**Purpose of the task:** Why are we being asked to do this? What does the creative need to achieve? Keep to 2–3 sentences. Be specific about the PR goal this asset supports.
+
+**Required output:** Clearly define every deliverable, including format and dimensions/aspect ratio for each:
+- [Deliverable 1 — e.g. Hero press image, 1200×628px, JPG, for OG/social sharing]
+- [Deliverable 2 — e.g. Instagram portrait crop, 1080×1350px, JPG]
+- [Deliverable 3 — e.g. Square social card, 1080×1080px, JPG, for X/Facebook]
+- [Add or remove deliverables as the story demands]
+
+**Supporting materials:** Everything the creative team needs to execute — pull directly from this pack:
+- Key copy/headline from the press release
+- Specific quotes to consider featuring
+- Product(s) or asset(s) to be shown
+- Visual references or creative direction
+- Tone: [summarise the visual tone in 3–5 adjectives consistent with Riot brand]
+- Brand notes: Bold Riot red (#E8192C), clean typography, activist energy — never corporate, never soft
+
 ---
 ## QUALITY RULES (apply to ALL sections)
 - **Forbidden phrases:** NEVER use: "we are delighted/pleased/excited to announce", "world-class", "best-in-class", "industry-leading", "going forward", "leveraging", "synergies", "holistic approach", "robust solutions", "stakeholders" (say retailers/consumers/journalists instead), "journey" (unless literal), "community" (use sparingly), "the vaping revolution", "empowering smokers"

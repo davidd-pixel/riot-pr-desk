@@ -92,6 +92,7 @@ def _parse_pr_pack(raw_response):
         "4. RETAILER WHATSAPP": "Retailer WhatsApp Comms",
         "5. CONSUMER SOCIAL": "Consumer Social Media Comms",
         "6. INTERNAL BRIEFING": "Internal Briefing",
+        "7. CREATIVE BRIEF": "Creative Brief",
     }
 
     for line in raw_response.split("\n"):

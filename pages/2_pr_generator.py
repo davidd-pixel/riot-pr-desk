@@ -241,7 +241,7 @@ if generate_clicked and input_content.strip():
         st.error(f"Generation failed: {e}")
 
 # --- Display stored PR pack ---
-CONDITIONAL_SECTIONS = {"Retailer WhatsApp Comms", "Consumer Social Media Comms", "Internal Briefing"}
+CONDITIONAL_SECTIONS = {"Retailer WhatsApp Comms", "Consumer Social Media Comms", "Internal Briefing", "Creative Brief"}
 
 if "last_pr_pack" in st.session_state:
     sections = st.session_state["last_pr_pack"]
