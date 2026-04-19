@@ -172,14 +172,31 @@ def run_daily_briefing(force: bool = False) -> list:
     try:
         from services.news_monitor import (
             fetch_uk_vape_news, fetch_global_vape_news,
-            fetch_trending_news, fetch_social_viral_news,
+            fetch_trending_news,
         )
         _add_articles(fetch_uk_vape_news(page_size=10))
         _add_articles(fetch_global_vape_news(page_size=10))
         _add_articles(fetch_trending_news(page_size=15))
-        _add_articles(fetch_social_viral_news(page_size=10))
     except Exception as e:
         print(f"News feed error: {e}")
+
+    # Real X / Twitter data (if X_BEARER_TOKEN is configured)
+    try:
+        from services.x_monitor import (
+            fetch_vaping_tweets, fetch_competitor_tweets,
+            fetch_riot_mentions, fetch_nicotine_health_tweets,
+            is_configured as x_is_configured,
+        )
+        if x_is_configured():
+            _add_articles(fetch_vaping_tweets(max_results=15))
+            _add_articles(fetch_competitor_tweets(max_results=10))
+            _add_articles(fetch_riot_mentions(max_results=10))
+            _add_articles(fetch_nicotine_health_tweets(max_results=10))
+            print("[X] Social data fetched from X API")
+        else:
+            print("[X] X_BEARER_TOKEN not set — skipping X social feed")
+    except Exception as e:
+        print(f"[X] fetch error: {e}")
 
     try:
         from services.competitor_monitor import fetch_all_competitor_news
@@ -689,6 +706,7 @@ if __name__ == "__main__":
         smtp_pass = os.getenv("SMTP_PASSWORD", "")
         news_key = os.getenv("NEWSCATCHER_API_KEY", "")
         ai_key = os.getenv("ANTHROPIC_API_KEY", "")
+        x_token = os.getenv("X_BEARER_TOKEN", "")
 
         print("=== Riot PR Desk — Daily Briefing ===")
         print(f"DIGEST_EMAIL_TO : {'SET' if to_email else 'MISSING'} ({to_email})")
@@ -696,6 +714,7 @@ if __name__ == "__main__":
         print(f"SMTP_PASSWORD   : {'SET' if smtp_pass else 'MISSING'}")
         print(f"NEWSCATCHER_KEY : {'SET' if news_key else 'MISSING'}")
         print(f"ANTHROPIC_KEY   : {'SET' if ai_key else 'MISSING'}")
+        print(f"X_BEARER_TOKEN  : {'SET (X social feed active)' if x_token else 'MISSING (social feed disabled — Google News only)'}")
 
         if not to_email:
             print("ERROR: DIGEST_EMAIL_TO not set")

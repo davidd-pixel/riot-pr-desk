@@ -35,3 +35,4 @@ jobs:
           SMTP_PASSWORD:                       ${{ secrets.SMTP_PASSWORD }}
           GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT }}
           GOOGLE_DRIVE_FOLDER_ID:              ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          X_BEARER_TOKEN:                      ${{ secrets.X_BEARER_TOKEN }}
