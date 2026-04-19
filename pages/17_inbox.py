@@ -24,7 +24,6 @@ render_sidebar()
 # ---------------------------------------------------------------------------
 
 st.title("Inbox")
-st.caption("Your daily approval queue — review opportunities, content and media lists.")
 st.divider()
 
 # ---------------------------------------------------------------------------
@@ -75,25 +74,12 @@ if total_items == 0:
     )
     st.stop()
 
-# Show counts summary
-cnt_parts = []
-if pending_opps:
-    cnt_parts.append(f"**{len(pending_opps)}** opportunit{'ies' if len(pending_opps) != 1 else 'y'} to review")
-if under_review_packs:
-    cnt_parts.append(f"**{len(under_review_packs)}** pack{'s' if len(under_review_packs) != 1 else ''} awaiting approval")
-if media_pending_packs:
-    cnt_parts.append(f"**{len(media_pending_packs)}** media list{'s' if len(media_pending_packs) != 1 else ''} to confirm")
-st.markdown("  &middot;  ".join(cnt_parts))
-st.write("")
-
-
 # ===========================================================================
 # SECTION A — Opportunities Awaiting Direction
 # ===========================================================================
 
 if pending_opps:
-    st.markdown("### A — Opportunities Awaiting Direction")
-    st.caption("Stories the AI has ranked as relevant to Riot. Approve to generate content instantly.")
+    st.markdown("### Opportunities Awaiting Direction")
     st.write("")
 
     # Render cards grouped by type — insert a section header before the first card of each type
@@ -245,8 +231,7 @@ except Exception:
     auto_blogs = []
 
 if under_review_packs or auto_blogs:
-    st.markdown("### B — Content Awaiting Approval")
-    st.caption("AI-generated PR packs and blog drafts ready for your review.")
+    st.markdown("### Content Awaiting Approval")
     st.write("")
 
     for pack in under_review_packs:
@@ -491,7 +476,7 @@ if under_review_packs or auto_blogs:
 # ===========================================================================
 
 if media_pending_packs:
-    st.markdown("### C — Media Lists Awaiting Approval")
+    st.markdown("### Media Lists Awaiting Approval")
     st.caption("AI-matched journalists for approved packs. Confirm the list, add notes, then send pitches.")
     st.write("")
 
