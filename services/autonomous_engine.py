@@ -94,10 +94,13 @@ TASK:
 2. Suggest Riot's specific PR angle for this story (1-2 sentences, concrete and punchy)
 3. Choose the single best position from the list above
 4. Write one line explaining why it matters for Riot right now
-5. Classify the best opportunity type:
-   - "pr_commentary" — story demands a press release or formal Riot statement (regulation, product safety, tax)
-   - "newsjacking" — trending story Riot can piggyback with a reactive quote or comment
-   - "blog" — story is best explored in a longer-form blog post (education, harm reduction explainer, consumer trend)
+5. Identify ALL opportunity types this story could generate for Riot (can be more than one):
+   - "pr_commentary" — story demands a press release or formal Riot statement (regulation, product safety, tax, science)
+   - "newsjacking" — trending story Riot can piggyback with a reactive quote or comment (celebrity, viral, mainstream news)
+   - "blog" — story could fuel a longer-form blog post (education, harm reduction explainer, consumer trend, myth-busting, how-to)
+
+Be generous with "blog" — most vaping/health/regulation stories have blog potential.
+If a story is strong enough for PR commentary it almost certainly also warrants a blog post.
 
 Return ONLY valid JSON in this exact format:
 {{
@@ -105,16 +108,22 @@ Return ONLY valid JSON in this exact format:
   "riot_angle": "<1-2 sentence PR angle>",
   "suggested_position": "<exact position name from list>",
   "why_it_matters": "<one line>",
-  "opportunity_type": "pr_commentary|newsjacking|blog"
-}}"""
+  "opportunity_types": ["pr_commentary", "blog"]
+}}
+
+opportunity_types must be a JSON array containing one or more of: "pr_commentary", "newsjacking", "blog"."""
 
     try:
         result = generate_json(prompt)
         if isinstance(result, dict) and "relevance_score" in result:
-            # Validate opportunity_type
+            # Normalise to list
             valid_types = {"pr_commentary", "newsjacking", "blog"}
-            if result.get("opportunity_type") not in valid_types:
-                result["opportunity_type"] = "pr_commentary"
+            raw_types = result.get("opportunity_types") or result.get("opportunity_type")
+            if isinstance(raw_types, str):
+                raw_types = [raw_types]
+            if not isinstance(raw_types, list):
+                raw_types = ["pr_commentary"]
+            result["opportunity_types"] = [t for t in raw_types if t in valid_types] or ["pr_commentary"]
             return result
         return {"error": "Invalid AI response format"}
     except Exception as e:
@@ -220,27 +229,29 @@ def run_daily_briefing(force: bool = False) -> list:
             continue
 
         score = analysis.get("relevance_score", 0)
-        print(f"    → Score: {score}/10 — {analysis.get('riot_angle','')[:60]}")
+        print(f"    → Score: {score}/10 types={analysis.get('opportunity_types')} — {analysis.get('riot_angle','')[:50]}")
         if score < 4:  # only surface genuinely relevant stories
             continue
 
         source = article.get("source", {})
         source_name = source.get("name", "") if isinstance(source, dict) else str(source)
 
-        save_opportunity(
-            story_title=title,
-            story_url=article.get("url", ""),
-            story_source=source_name,
-            riot_angle=analysis.get("riot_angle", ""),
-            relevance_score=score,
-            suggested_position=analysis.get("suggested_position", ""),
-            why_it_matters=analysis.get("why_it_matters", ""),
-            opportunity_type=analysis.get("opportunity_type", "pr_commentary"),
-        )
+        # Create a separate opportunity for each type the AI identified
+        for opp_type in analysis.get("opportunity_types", ["pr_commentary"]):
+            save_opportunity(
+                story_title=title,
+                story_url=article.get("url", ""),
+                story_source=source_name,
+                riot_angle=analysis.get("riot_angle", ""),
+                relevance_score=score,
+                suggested_position=analysis.get("suggested_position", ""),
+                why_it_matters=analysis.get("why_it_matters", ""),
+                opportunity_type=opp_type,
+            )
         analysed.append(analysis)
         new_count += 1
 
-        if new_count >= 5:  # surface at most 5 new opportunities per run
+        if new_count >= 8:  # surface at most 8 stories per run (each may spawn multiple opps)
             break
 
     _save_cache({
