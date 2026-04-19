@@ -59,6 +59,7 @@ def save_opportunity(
     relevance_score: int,
     suggested_position: str,
     why_it_matters: str = "",
+    opportunity_type: str = "pr_commentary",  # pr_commentary | newsjacking | blog
 ) -> dict:
     """Save a new opportunity. Returns the saved record."""
     records = _load()
@@ -74,6 +75,7 @@ def save_opportunity(
         "relevance_score": relevance_score,
         "suggested_position": suggested_position,
         "why_it_matters": why_it_matters,
+        "opportunity_type": opportunity_type,
         "status": "pending",
         "pack_id": None,
         "custom_angle": None,  # set when user edits the angle before approving

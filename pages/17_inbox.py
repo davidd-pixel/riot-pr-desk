@@ -93,11 +93,20 @@ st.write("")
 
 if pending_opps:
     st.markdown("### A — Opportunities Awaiting Direction")
-    st.caption("Stories the AI has ranked as relevant to Riot. Approve to generate a full PR pack instantly.")
+    st.caption("Stories the AI has ranked as relevant to Riot. Approve to generate content instantly.")
     st.write("")
+
+    # Render cards grouped by type — insert a section header before the first card of each type
+    _last_type = None
+    _type_labels = {
+        "pr_commentary": ("PR / News Commentary", "#E8192C", "Approve & Generate Pack"),
+        "newsjacking":   ("News-Jacking",         "#fbbf24", "Approve & Generate Pack"),
+        "blog":          ("Blog Opportunities",   "#60a5fa", "Approve & Generate Blog"),
+    }
 
     for opp in pending_opps:
         opp_id = opp.get("id", "")
+        opp_type = opp.get("opportunity_type", "pr_commentary")
         score = opp.get("relevance_score", 0)
         title = opp.get("story_title", "Untitled")
         source = opp.get("story_source", "")
@@ -105,6 +114,21 @@ if pending_opps:
         position = opp.get("suggested_position", "")
         why = opp.get("why_it_matters", "")
         story_url = opp.get("story_url", "")
+
+        # Section header when type changes
+        if opp_type != _last_type:
+            _last_type = opp_type
+            sec_label, sec_colour, _ = _type_labels.get(opp_type, ("", "#888", ""))
+            if sec_label:
+                st.markdown(
+                    f'<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;'
+                    f'text-transform:uppercase;color:{sec_colour};border-bottom:1px solid #1A1A1A;'
+                    f'padding-bottom:0.3rem;margin:1rem 0 0.75rem 0">'
+                    f'{sec_label}</div>',
+                    unsafe_allow_html=True,
+                )
+
+        _, _, approve_btn_label = _type_labels.get(opp_type, ("", "#888", "Approve & Generate Pack"))
 
         if score >= 8:
             score_colour = "#E8192C"
@@ -150,7 +174,7 @@ if pending_opps:
         btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
 
         with btn_col1:
-            if st.button("Approve & Generate Pack", key=f"inbox_approve_{opp_id}", type="primary", use_container_width=True):
+            if st.button(approve_btn_label, key=f"inbox_approve_{opp_id}", type="primary", use_container_width=True):
                 st.session_state[approving_key] = {"custom_angle": None}
                 st.rerun()
 
@@ -211,9 +235,18 @@ if pending_opps:
 # SECTION B — Content Awaiting Approval
 # ===========================================================================
 
-if under_review_packs:
+try:
+    from services.blog_library import get_all_blogs
+    auto_blogs = [
+        b for b in get_all_blogs()
+        if b.get("status") == "draft" and "auto-generated" in b.get("tags", [])
+    ]
+except Exception:
+    auto_blogs = []
+
+if under_review_packs or auto_blogs:
     st.markdown("### B — Content Awaiting Approval")
-    st.caption("AI-generated PR packs ready for your review. Approve to move to media outreach, or send for revision.")
+    st.caption("AI-generated PR packs and blog drafts ready for your review.")
     st.write("")
 
     for pack in under_review_packs:
@@ -387,6 +420,68 @@ if under_review_packs:
                         st.error(f"Revision failed: {ex}")
 
         st.write("")
+
+    # --- Auto-generated blog drafts ---
+    if auto_blogs:
+        st.markdown(
+            '<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;'
+            'text-transform:uppercase;color:#60a5fa;border-bottom:1px solid #1A1A1A;'
+            'padding-bottom:0.3rem;margin:1rem 0 0.75rem 0">Blog Drafts</div>',
+            unsafe_allow_html=True,
+        )
+        for blog in auto_blogs:
+            blog_id = blog.get("id", "")
+            blog_title = blog.get("title", "Untitled")
+            blog_created = blog.get("created_at", "")[:16].replace("T", " ")
+
+            st.markdown(
+                f'<div style="background:#111;border:1px solid #60a5fa33;border-top:2px solid #60a5fa;'
+                f'border-radius:3px;padding:0.75rem 1rem;margin-bottom:0.5rem">'
+                f'<div style="font-family:PPFormula,sans-serif;font-weight:700;font-size:0.92rem;'
+                f'color:#FFFFFF;margin-bottom:0.2rem">{blog_title}</div>'
+                f'<div style="font-size:0.72rem;color:#666">Blog draft · Generated {blog_created}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+            blog_post = blog.get("sections", {}).get("Blog Post", "")
+            with st.expander("Preview blog post", expanded=False):
+                if blog_post:
+                    st.markdown(blog_post)
+                else:
+                    st.caption("No blog post section found.")
+
+            blog_col1, blog_col2, blog_col3 = st.columns([2, 2, 2])
+            with blog_col1:
+                if st.button("Approve Blog", key=f"inbox_approve_blog_{blog_id}", type="primary", use_container_width=True):
+                    try:
+                        from services.blog_library import update_blog_status
+                        update_blog_status(blog_id, "ready")
+                        st.success("Blog approved and marked as ready to publish.")
+                        st.rerun()
+                    except Exception as ex:
+                        st.error(f"Error: {ex}")
+            with blog_col2:
+                if st.button("Pass", key=f"inbox_pass_blog_{blog_id}", use_container_width=True):
+                    try:
+                        from services.blog_library import update_blog_status
+                        update_blog_status(blog_id, "draft")
+                        # Remove auto-generated tag so it leaves the inbox
+                        from services.blog_library import _load as _blog_load, _save as _blog_save
+                        recs = _blog_load()
+                        for r in recs:
+                            if r["id"] == blog_id:
+                                r["tags"] = [t for t in r.get("tags", []) if t != "auto-generated"]
+                                break
+                        _blog_save(recs)
+                        st.rerun()
+                    except Exception as ex:
+                        st.error(f"Error: {ex}")
+            with blog_col3:
+                if st.button("Open in Blog Writer", key=f"inbox_open_blog_{blog_id}", use_container_width=True):
+                    st.switch_page("pages/16_blog_writer.py")
+
+            st.write("")
 
     st.divider()
 

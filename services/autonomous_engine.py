@@ -53,8 +53,9 @@ def _cache_is_fresh() -> bool:
 
 def analyse_story_for_riot(article: dict) -> dict:
     """
-    Ask the AI to score a news story for Riot relevance and suggest an angle.
-    Returns: {relevance_score, riot_angle, suggested_position, why_it_matters}
+    Ask the AI to score a news story for Riot relevance, suggest an angle,
+    and classify the opportunity type.
+    Returns: {relevance_score, riot_angle, suggested_position, why_it_matters, opportunity_type}
     or {"error": "..."} on failure.
     """
     from services.ai_engine import generate_json
@@ -93,18 +94,27 @@ TASK:
 2. Suggest Riot's specific PR angle for this story (1-2 sentences, concrete and punchy)
 3. Choose the single best position from the list above
 4. Write one line explaining why it matters for Riot right now
+5. Classify the best opportunity type:
+   - "pr_commentary" — story demands a press release or formal Riot statement (regulation, product safety, tax)
+   - "newsjacking" — trending story Riot can piggyback with a reactive quote or comment
+   - "blog" — story is best explored in a longer-form blog post (education, harm reduction explainer, consumer trend)
 
 Return ONLY valid JSON in this exact format:
 {{
   "relevance_score": <integer 1-10>,
   "riot_angle": "<1-2 sentence PR angle>",
   "suggested_position": "<exact position name from list>",
-  "why_it_matters": "<one line>"
+  "why_it_matters": "<one line>",
+  "opportunity_type": "pr_commentary|newsjacking|blog"
 }}"""
 
     try:
         result = generate_json(prompt)
         if isinstance(result, dict) and "relevance_score" in result:
+            # Validate opportunity_type
+            valid_types = {"pr_commentary", "newsjacking", "blog"}
+            if result.get("opportunity_type") not in valid_types:
+                result["opportunity_type"] = "pr_commentary"
             return result
         return {"error": "Invalid AI response format"}
     except Exception as e:
@@ -124,36 +134,67 @@ def run_daily_briefing(force: bool = False) -> list:
     """
     from services.opportunity_tracker import (
         save_opportunity, get_all_opportunities, get_pending_opportunities,
+        update_opportunity_status,
     )
 
     # Return cached pending opportunities if cache is fresh
     if not force and _cache_is_fresh():
         return get_pending_opportunities()
 
-    # Fetch news — all four feeds combined and deduped
+    # On a forced run (GitHub Actions / manual), clear old pending opps so
+    # inbox count matches the email exactly
+    if force:
+        for old in get_pending_opportunities():
+            update_opportunity_status(old["id"], "skipped")
+
+    # Fetch news — all feeds: vape-specific, trending, social, competitors, regulatory
     articles = []
+    seen_titles: set = set()
+
+    def _add_articles(feed: list):
+        for a in feed:
+            if "error" in a:
+                continue
+            t = a.get("title", "").lower()[:60]
+            if t and t not in seen_titles:
+                seen_titles.add(t)
+                articles.append(a)
+
     try:
         from services.news_monitor import (
             fetch_uk_vape_news, fetch_global_vape_news,
             fetch_trending_news, fetch_social_viral_news,
         )
-        feeds = [
-            fetch_uk_vape_news(page_size=10),
-            fetch_global_vape_news(page_size=10),
-            fetch_trending_news(page_size=15),
-            fetch_social_viral_news(page_size=10),
-        ]
-        seen = set()
-        for feed in feeds:
-            for a in feed:
-                if "error" in a:
-                    continue
-                t = a.get("title", "").lower()[:60]
-                if t and t not in seen:
-                    seen.add(t)
-                    articles.append(a)
+        _add_articles(fetch_uk_vape_news(page_size=10))
+        _add_articles(fetch_global_vape_news(page_size=10))
+        _add_articles(fetch_trending_news(page_size=15))
+        _add_articles(fetch_social_viral_news(page_size=10))
     except Exception as e:
-        print(f"News fetch error: {e}")
+        print(f"News feed error: {e}")
+
+    try:
+        from services.competitor_monitor import fetch_all_competitor_news
+        comp_data = fetch_all_competitor_news(page_size=5)
+        for comp_name, comp_articles in comp_data.items():
+            for a in comp_articles:
+                a.setdefault("source", {})
+                if isinstance(a.get("source"), dict):
+                    a["source"]["name"] = a["source"].get("name") or comp_name
+                _add_articles([a])
+    except Exception as e:
+        print(f"Competitor feed error: {e}")
+
+    try:
+        from services.regulator_monitor import get_all_regulator_news
+        reg_data = get_all_regulator_news(page_size=5)
+        for reg_name, reg_articles in reg_data.items():
+            for a in reg_articles:
+                a.setdefault("source", {})
+                if isinstance(a.get("source"), dict):
+                    a["source"]["name"] = a["source"].get("name") or reg_name
+                _add_articles([a])
+    except Exception as e:
+        print(f"Regulatory feed error: {e}")
 
     print(f"Fetched {len(articles)} articles across all feeds")
 
@@ -194,6 +235,7 @@ def run_daily_briefing(force: bool = False) -> list:
             relevance_score=score,
             suggested_position=analysis.get("suggested_position", ""),
             why_it_matters=analysis.get("why_it_matters", ""),
+            opportunity_type=analysis.get("opportunity_type", "pr_commentary"),
         )
         analysed.append(analysis)
         new_count += 1
@@ -223,10 +265,86 @@ def get_briefing_meta() -> dict:
 # Auto pack generation
 # ---------------------------------------------------------------------------
 
+def auto_generate_blog(opportunity_id: str, custom_angle: str = None) -> str:
+    """
+    Generate a blog post from an approved blog opportunity.
+    Saves to blog_library with status 'draft'. Returns blog_id.
+    """
+    from services.opportunity_tracker import get_opportunity, update_opportunity_status
+    from services.ai_engine import generate
+    from services.blog_library import save_blog
+    from utils.prompts import BLOG_PROMPT
+
+    opp = get_opportunity(opportunity_id)
+    if not opp:
+        raise ValueError(f"Opportunity {opportunity_id} not found")
+
+    update_opportunity_status(opportunity_id, "generating")
+
+    angle = custom_angle or opp.get("riot_angle", "")
+    topic = f"{opp['story_title']} — {angle}"
+
+    prompt = BLOG_PROMPT.format(
+        topic=topic,
+        blog_type="News Response / Commentary",
+        primary_keyword="vaping",
+        secondary_keywords="vape tax, harm reduction, UK vapers, e-cigarettes, quit smoking",
+        word_count="700-900 words",
+        tone_dial="Confident and direct — Riot's challenger brand voice",
+    )
+
+    try:
+        content = generate(prompt)
+    except Exception as e:
+        update_opportunity_status(opportunity_id, "pending")
+        raise RuntimeError(f"Blog generation failed: {e}")
+
+    # Parse into sections using the numbered headers
+    import re
+    section_map = {
+        "SEO Package": "",
+        "Blog Post": "",
+        "Image Suggestions": "",
+        "External Links": "",
+        "Social Promotion": "",
+    }
+    current = None
+    buffer = []
+    for line in content.splitlines():
+        header_match = re.match(r"###\s*\d+\.\s*(.*)", line)
+        if header_match:
+            if current and buffer:
+                section_map[current] = "\n".join(buffer).strip()
+            raw = header_match.group(1).strip().upper()
+            for key in section_map:
+                if key.upper() in raw:
+                    current = key
+                    buffer = []
+                    break
+        elif current:
+            buffer.append(line)
+    if current and buffer:
+        section_map[current] = "\n".join(buffer).strip()
+
+    blog = save_blog(
+        topic=opp["story_title"][:120],
+        sections=section_map,
+        blog_type="news_response",
+        primary_keyword="vaping",
+        secondary_keywords=["vape tax", "harm reduction", "UK vapers"],
+        title=opp["story_title"][:80],
+        tags=["auto-generated", "news-response"],
+    )
+
+    update_opportunity_status(opportunity_id, "generated", pack_id=blog["id"])
+    return blog["id"]
+
+
 def auto_generate_pack(opportunity_id: str, custom_angle: str = None) -> str:
     """
-    Generate a full PR pack from an approved opportunity.
-    Returns the new pack_id.
+    Generate a PR pack (or blog for blog-type ops) from an approved opportunity.
+    Routes to auto_generate_blog() for blog opportunities.
+    Returns the new pack_id / blog_id.
     """
     from services.opportunity_tracker import get_opportunity, update_opportunity_status
     from services.content_generator import generate_pr_pack
@@ -236,10 +354,19 @@ def auto_generate_pack(opportunity_id: str, custom_angle: str = None) -> str:
     if not opp:
         raise ValueError(f"Opportunity {opportunity_id} not found")
 
+    # Route blog opportunities to the blog generator
+    if opp.get("opportunity_type") == "blog":
+        return auto_generate_blog(opportunity_id, custom_angle=custom_angle)
+
     update_opportunity_status(opportunity_id, "generating")
 
     angle = custom_angle or opp.get("riot_angle", "")
     position = opp.get("suggested_position", "Harm Reduction")
+    opp_type = opp.get("opportunity_type", "pr_commentary")
+
+    # Newsjacking gets a more reactive tone and audience
+    tone = "Conversational" if opp_type == "newsjacking" else "Professional"
+    audience = "National Media" if opp_type == "newsjacking" else "Trade Media"
 
     input_content = (
         f"{opp['story_title']}\n\n"
@@ -248,13 +375,12 @@ def auto_generate_pack(opportunity_id: str, custom_angle: str = None) -> str:
         f"Original story: {opp.get('story_url', '')}"
     )
 
-    # Default to sensible settings for autonomous generation
     sections = generate_pr_pack(
         input_content=input_content,
         position_name=position,
         spokesperson_key="CEO",
-        audience_key="Trade Media",
-        tone_key="Conversational",
+        audience_key=audience,
+        tone_key=tone,
     )
 
     pack = save_pack(
@@ -262,13 +388,12 @@ def auto_generate_pack(opportunity_id: str, custom_angle: str = None) -> str:
         sections=sections,
         position_name=position,
         spokesperson_key="CEO",
-        audience_key="Trade Media",
-        tone_key="Conversational",
+        audience_key=audience,
+        tone_key=tone,
         title=opp["story_title"][:80],
-        tags=["auto-generated"],
+        tags=["auto-generated", opp_type],
     )
 
-    # Move status to under_review (awaiting David's approval)
     update_pack_status(pack["id"], "under_review")
     update_opportunity_status(opportunity_id, "generated", pack_id=pack["id"])
 
@@ -434,62 +559,87 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
     today = datetime.now().strftime("%A %d %B %Y")
     n = len(opportunities)
 
-    # Build plain text body
-    lines = [
-        f"RIOT PR DESK — Daily Briefing",
-        f"{today}",
-        "",
-        f"{n} opportunit{'ies' if n != 1 else 'y'} ready for your review." if n else "Quiet news day — nothing relevant surfaced today.",
-        "",
-        "=" * 60,
-        "",
-    ]
-    for i, opp in enumerate(opportunities[:5], 1):
-        lines += [
-            f"{i}. [{opp.get('relevance_score', 0)}/10] {opp.get('story_title', '')}",
-            f"   Source: {opp.get('story_source', '')}",
-            f"   Riot angle: {opp.get('riot_angle', '')}",
-            f"   Why it matters: {opp.get('why_it_matters', '')}",
-            "",
-        ]
-    lines += [
-        "Open the app to approve opportunities:",
-        "https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app",
-        "",
-        "—",
-        "Riot PR Desk · Auto-generated · Do not reply",
-    ]
+    # Split by type
+    pr_opps   = [o for o in opportunities if o.get("opportunity_type") == "pr_commentary"]
+    nj_opps   = [o for o in opportunities if o.get("opportunity_type") == "newsjacking"]
+    blog_opps = [o for o in opportunities if o.get("opportunity_type") == "blog"]
 
-    # Build HTML body
-    opp_html = ""
-    for opp in opportunities[:5]:
-        score = opp.get("relevance_score", 0)
-        colour = "#E8192C" if score >= 8 else "#fbbf24" if score >= 6 else "#60a5fa"
-        opp_html += f"""
-        <div style="border-left:3px solid {colour};padding:10px 16px;margin-bottom:12px;background:#111;border-radius:0 4px 4px 0">
-          <div style="font-size:13px;font-weight:700;color:#fff">{opp.get('story_title','')}</div>
-          <div style="font-size:11px;color:#888;margin-top:2px">{opp.get('story_source','')} &middot; Relevance {score}/10</div>
-          <div style="font-size:12px;color:#E0E0E0;margin-top:6px">{opp.get('riot_angle','')}</div>
-          <div style="font-size:11px;color:#999;margin-top:4px;font-style:italic">{opp.get('why_it_matters','')}</div>
-        </div>"""
+    def _opp_cards_html(opps):
+        html = ""
+        for opp in opps:
+            score = opp.get("relevance_score", 0)
+            colour = "#E8192C" if score >= 8 else "#fbbf24" if score >= 6 else "#60a5fa"
+            html += (
+                f'<div style="border-left:3px solid {colour};padding:10px 16px;'
+                f'margin-bottom:10px;background:#111;border-radius:0 4px 4px 0">'
+                f'<div style="font-size:13px;font-weight:700;color:#fff">{opp.get("story_title","")}</div>'
+                f'<div style="font-size:11px;color:#888;margin-top:2px">'
+                f'{opp.get("story_source","")} &middot; Relevance {score}/10</div>'
+                f'<div style="font-size:12px;color:#E0E0E0;margin-top:6px">{opp.get("riot_angle","")}</div>'
+                f'<div style="font-size:11px;color:#999;margin-top:4px;font-style:italic">{opp.get("why_it_matters","")}</div>'
+                f'</div>'
+            )
+        return html
 
-    html_body = f"""
-    <div style="font-family:Arial,sans-serif;background:#0A0A0A;color:#E0E0E0;padding:24px;max-width:600px">
-      <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#E8192C;font-weight:700;margin-bottom:4px">Riot PR Desk</div>
-      <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Daily Briefing</div>
-      <div style="font-size:12px;color:#666;margin-bottom:20px">{today}</div>
-      <div style="font-size:13px;color:#aaa;margin-bottom:16px">{len(opportunities)} opportunit{'ies' if len(opportunities) != 1 else 'y'} ready for review:</div>
-      {opp_html}
-      <div style="margin-top:20px">
-        <a href="https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox" style="background:#E8192C;color:#fff;padding:10px 20px;text-decoration:none;font-weight:700;font-size:13px;border-radius:3px;display:inline-block">
-          Open Inbox →
-        </a>
-      </div>
-      <div style="margin-top:20px;font-size:10px;color:#444">Riot PR Desk · Auto-generated daily briefing</div>
-    </div>"""
+    def _section_html(label, colour, opps):
+        if not opps:
+            return ""
+        count = len(opps)
+        return (
+            f'<div style="margin-bottom:20px">'
+            f'<div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;'
+            f'color:{colour};border-bottom:1px solid #222;padding-bottom:6px;margin-bottom:10px">'
+            f'{label} &nbsp;·&nbsp; {count} stor{"ies" if count != 1 else "y"}</div>'
+            f'{_opp_cards_html(opps)}'
+            f'</div>'
+        )
+
+    section_html = (
+        _section_html("PR / News Commentary", "#E8192C", pr_opps) +
+        _section_html("News-Jacking", "#fbbf24", nj_opps) +
+        _section_html("Blog Opportunities", "#60a5fa", blog_opps)
+    )
+
+    summary = f"{n} opportunit{'ies' if n != 1 else 'y'} ready for review" if n else "Quiet news day"
+    if n:
+        parts = []
+        if pr_opps:   parts.append(f"{len(pr_opps)} PR")
+        if nj_opps:   parts.append(f"{len(nj_opps)} newsjacking")
+        if blog_opps: parts.append(f"{len(blog_opps)} blog")
+        summary += f" ({', '.join(parts)})"
+
+    html_body = (
+        f'<div style="font-family:Arial,sans-serif;background:#0A0A0A;color:#E0E0E0;padding:24px;max-width:600px">'
+        f'<div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#E8192C;font-weight:700;margin-bottom:4px">Riot PR Desk</div>'
+        f'<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Daily Briefing</div>'
+        f'<div style="font-size:12px;color:#666;margin-bottom:4px">{today}</div>'
+        f'<div style="font-size:13px;color:#aaa;margin-bottom:20px">{summary}</div>'
+        f'{section_html}'
+        f'<div style="margin-top:20px">'
+        f'<a href="https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox" '
+        f'style="background:#E8192C;color:#fff;padding:10px 20px;text-decoration:none;'
+        f'font-weight:700;font-size:13px;border-radius:3px;display:inline-block">Open Inbox →</a>'
+        f'</div>'
+        f'<div style="margin-top:16px;font-size:10px;color:#444">Riot PR Desk · Auto-generated daily briefing</div>'
+        f'</div>'
+    )
+
+    # Plain text fallback
+    lines = ["RIOT PR DESK — Daily Briefing", today, "", summary, ""]
+    for label, opps in [("PR / NEWS COMMENTARY", pr_opps), ("NEWS-JACKING", nj_opps), ("BLOG", blog_opps)]:
+        if opps:
+            lines += [f"── {label} ──", ""]
+            for opp in opps:
+                lines += [
+                    f"[{opp.get('relevance_score',0)}/10] {opp.get('story_title','')}",
+                    f"  {opp.get('story_source','')}",
+                    f"  Angle: {opp.get('riot_angle','')}",
+                    "",
+                ]
+    lines += ["Open Inbox: https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox", "", "—", "Riot PR Desk · Auto-generated"]
 
     msg = MIMEMultipart("alternative")
-    subject_line = f"Riot PR Desk — {n} opportunit{'ies' if n != 1 else 'y'} · {today}" if n else f"Riot PR Desk — Quiet news day · {today}"
+    subject_line = f"Riot PR Desk — {summary} · {today}"
     msg["Subject"] = subject_line
     msg["From"] = smtp_user
     msg["To"] = to_email
