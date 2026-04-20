@@ -82,137 +82,142 @@ if pending_opps:
     st.markdown("### Opportunities Awaiting Direction")
     st.write("")
 
-    # Render cards grouped by type — insert a section header before the first card of each type
-    _last_type = None
     _type_labels = {
         "pr_commentary": ("PR / News Commentary", "#E8192C", "Approve & Generate Pack"),
         "newsjacking":   ("News-Jacking",         "#fbbf24", "Approve & Generate Pack"),
         "blog":          ("Blog Opportunities",   "#60a5fa", "Approve & Generate Blog"),
     }
 
+    # Group opportunities by type — preserves relevance ordering within each group
+    _groups = {t: [] for t in _type_labels}
     for opp in pending_opps:
-        opp_id = opp.get("id", "")
-        opp_type = opp.get("opportunity_type", "pr_commentary")
-        score = opp.get("relevance_score", 0)
-        title = opp.get("story_title", "Untitled")
-        source = opp.get("story_source", "")
-        angle = opp.get("riot_angle", "")
-        position = opp.get("suggested_position", "")
-        why = opp.get("why_it_matters", "")
-        story_url = opp.get("story_url", "")
+        t = opp.get("opportunity_type", "pr_commentary")
+        if t in _groups:
+            _groups[t].append(opp)
 
-        # Section header when type changes
-        if opp_type != _last_type:
-            _last_type = opp_type
-            sec_label, sec_colour, _ = _type_labels.get(opp_type, ("", "#888", ""))
-            if sec_label:
-                st.markdown(
-                    f'<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;'
-                    f'text-transform:uppercase;color:{sec_colour};border-bottom:1px solid #1A1A1A;'
-                    f'padding-bottom:0.3rem;margin:1rem 0 0.75rem 0">'
-                    f'{sec_label}</div>',
-                    unsafe_allow_html=True,
-                )
+    for opp_type, group_opps in _groups.items():
+        if not group_opps:
+            continue
 
-        _, _, approve_btn_label = _type_labels.get(opp_type, ("", "#888", "Approve & Generate Pack"))
-
-        if score >= 8:
-            score_colour = "#E8192C"
-        elif score >= 6:
-            score_colour = "#fbbf24"
-        else:
-            score_colour = "#60a5fa"
-
-        score_badge = (
-            f'<span style="background:{score_colour}22;border:1px solid {score_colour}55;'
-            f'color:{score_colour};font-size:0.65rem;font-weight:700;padding:2px 8px;'
-            f'border-radius:2px;text-transform:uppercase;letter-spacing:0.06em">'
-            f'Relevance {score}/10</span>'
-        )
-        position_badge = (
-            f'<span style="background:#ffffff11;border:1px solid #333;color:#aaa;'
-            f'font-size:0.65rem;padding:2px 8px;border-radius:2px">{position}</span>'
-        ) if position else ""
-
-        url_link = f'<a href="{story_url}" target="_blank" style="color:#555;font-size:0.7rem;text-decoration:none">Read story →</a>' if story_url else ""
-
+        sec_label, sec_colour, approve_btn_label = _type_labels[opp_type]
         st.markdown(
-            f'<div style="background:#111;border:1px solid #222;border-left:3px solid {score_colour};'
-            f'border-radius:0 3px 3px 0;padding:1rem 1.25rem;margin-bottom:0.25rem">'
-            f'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.4rem">'
-            f'<span style="font-family:PPFormula,sans-serif;font-weight:700;font-size:0.92rem;'
-            f'color:#FFFFFF;line-height:1.3">{title}</span>'
-            f'<div style="display:flex;gap:0.4rem;flex-shrink:0">{score_badge}{position_badge}</div>'
-            f'</div>'
-            f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.5rem">{source} &nbsp;{url_link}</div>'
-            f'<div style="font-size:0.82rem;color:#CCC;line-height:1.5;margin-bottom:0.3rem">'
-            f'<strong style="color:#888;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Riot angle</strong><br>'
-            f'{angle}</div>'
-            f'<div style="font-size:0.75rem;color:#666;font-style:italic">{why}</div>'
-            f'</div>',
+            f'<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;'
+            f'text-transform:uppercase;color:{sec_colour};border-bottom:1px solid #1A1A1A;'
+            f'padding-bottom:0.3rem;margin:1.25rem 0 0.75rem 0">'
+            f'{sec_label} &nbsp;·&nbsp; {len(group_opps)}</div>',
             unsafe_allow_html=True,
         )
 
-        # Action row
-        edit_key = f"inbox_edit_angle_{opp_id}"
-        approving_key = f"inbox_approving_{opp_id}"
+        for opp in group_opps:
+            opp_id = opp.get("id", "")
+            score = opp.get("relevance_score", 0)
+            title = opp.get("story_title", "Untitled")
+            source = opp.get("story_source", "")
+            angle = opp.get("riot_angle", "")
+            position = opp.get("suggested_position", "")
+            why = opp.get("why_it_matters", "")
+            story_url = opp.get("story_url", "")
 
-        btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
+            if score >= 8:
+                score_colour = "#E8192C"
+            elif score >= 6:
+                score_colour = "#fbbf24"
+            else:
+                score_colour = "#60a5fa"
 
-        with btn_col1:
-            if st.button(approve_btn_label, key=f"inbox_approve_{opp_id}", type="primary", use_container_width=True):
-                st.session_state[approving_key] = {"custom_angle": None}
-                st.rerun()
+            score_badge = (
+                f'<span style="background:{score_colour}22;border:1px solid {score_colour}55;'
+                f'color:{score_colour};font-size:0.65rem;font-weight:700;padding:2px 8px;'
+                f'border-radius:2px;text-transform:uppercase;letter-spacing:0.06em">'
+                f'Relevance {score}/10</span>'
+            )
+            position_badge = (
+                f'<span style="background:#ffffff11;border:1px solid #333;color:#aaa;'
+                f'font-size:0.65rem;padding:2px 8px;border-radius:2px">{position}</span>'
+            ) if position else ""
 
-        with btn_col2:
-            if st.button(
-                "Close editor" if st.session_state.get(edit_key) else "Edit angle first",
-                key=f"inbox_edit_toggle_{opp_id}",
-                use_container_width=True,
-            ):
-                st.session_state[edit_key] = not st.session_state.get(edit_key, False)
-                st.rerun()
+            url_link = (
+                f'<a href="{story_url}" target="_blank" style="color:#555;font-size:0.7rem;'
+                f'text-decoration:none">Read story →</a>'
+            ) if story_url else ""
 
-        with btn_col3:
-            if st.button("Skip", key=f"inbox_skip_{opp_id}", use_container_width=True):
-                update_opportunity_status(opp_id, "skipped")
-                st.rerun()
+            st.markdown(
+                f'<div style="background:#111;border:1px solid #222;border-left:3px solid {score_colour};'
+                f'border-radius:0 3px 3px 0;padding:1rem 1.25rem;margin-bottom:0.25rem">'
+                f'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.4rem">'
+                f'<span style="font-family:PPFormula,sans-serif;font-weight:700;font-size:0.92rem;'
+                f'color:#FFFFFF;line-height:1.3">{title}</span>'
+                f'<div style="display:flex;gap:0.4rem;flex-shrink:0">{score_badge}{position_badge}</div>'
+                f'</div>'
+                f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.5rem">{source} &nbsp;{url_link}</div>'
+                f'<div style="font-size:0.82rem;color:#CCC;line-height:1.5;margin-bottom:0.3rem">'
+                f'<strong style="color:#888;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Riot angle</strong><br>'
+                f'{angle}</div>'
+                f'<div style="font-size:0.75rem;color:#666;font-style:italic">{why}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
-        # Angle editor
-        if st.session_state.get(edit_key):
-            with st.container():
-                custom_angle = st.text_area(
-                    "Edit Riot angle",
-                    value=angle,
-                    key=f"inbox_angle_text_{opp_id}",
-                    height=80,
-                    label_visibility="collapsed",
-                )
+            # Action row
+            edit_key = f"inbox_edit_angle_{opp_id}"
+            approving_key = f"inbox_approving_{opp_id}"
+
+            btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
+
+            with btn_col1:
+                if st.button(approve_btn_label, key=f"inbox_approve_{opp_id}", type="primary", use_container_width=True):
+                    st.session_state[approving_key] = {"custom_angle": None}
+                    st.rerun()
+
+            with btn_col2:
                 if st.button(
-                    "Approve with this angle",
-                    key=f"inbox_approve_custom_{opp_id}",
-                    type="primary",
+                    "Close editor" if st.session_state.get(edit_key) else "Edit angle first",
+                    key=f"inbox_edit_toggle_{opp_id}",
                     use_container_width=True,
                 ):
-                    st.session_state[approving_key] = {"custom_angle": custom_angle.strip()}
-                    st.session_state.pop(edit_key, None)
+                    st.session_state[edit_key] = not st.session_state.get(edit_key, False)
                     st.rerun()
 
-        # Trigger generation
-        if st.session_state.get(approving_key):
-            custom = st.session_state[approving_key].get("custom_angle")
-            with st.spinner("Generating PR pack — this takes about 30 seconds…"):
-                try:
-                    from services.autonomous_engine import auto_generate_pack
-                    pack_id = auto_generate_pack(opp_id, custom_angle=custom)
-                    st.session_state.pop(approving_key, None)
-                    st.success(f"PR pack generated and saved to library. Scroll to Section B to review it.")
+            with btn_col3:
+                if st.button("Skip", key=f"inbox_skip_{opp_id}", use_container_width=True):
+                    update_opportunity_status(opp_id, "skipped")
                     st.rerun()
-                except Exception as ex:
-                    st.session_state.pop(approving_key, None)
-                    st.error(f"Generation failed: {ex}")
 
-        st.write("")
+            # Angle editor
+            if st.session_state.get(edit_key):
+                with st.container():
+                    custom_angle = st.text_area(
+                        "Edit Riot angle",
+                        value=angle,
+                        key=f"inbox_angle_text_{opp_id}",
+                        height=80,
+                        label_visibility="collapsed",
+                    )
+                    if st.button(
+                        "Approve with this angle",
+                        key=f"inbox_approve_custom_{opp_id}",
+                        type="primary",
+                        use_container_width=True,
+                    ):
+                        st.session_state[approving_key] = {"custom_angle": custom_angle.strip()}
+                        st.session_state.pop(edit_key, None)
+                        st.rerun()
+
+            # Trigger generation
+            if st.session_state.get(approving_key):
+                custom = st.session_state[approving_key].get("custom_angle")
+                with st.spinner("Generating PR pack — this takes about 30 seconds…"):
+                    try:
+                        from services.autonomous_engine import auto_generate_pack
+                        pack_id = auto_generate_pack(opp_id, custom_angle=custom)
+                        st.session_state.pop(approving_key, None)
+                        st.success("PR pack generated and saved to library. Scroll down to review it.")
+                        st.rerun()
+                    except Exception as ex:
+                        st.session_state.pop(approving_key, None)
+                        st.error(f"Generation failed: {ex}")
+
+            st.write("")
 
     st.divider()
 
