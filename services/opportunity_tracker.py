@@ -60,6 +60,8 @@ def save_opportunity(
     suggested_position: str,
     why_it_matters: str = "",
     opportunity_type: str = "pr_commentary",  # pr_commentary | newsjacking | blog
+    newsjacking_concept: str = "",  # concrete creative execution idea (newsjacking only)
+    newsjacking_format: str = "",   # e.g. "Reactive press quote", "Social post" (newsjacking only)
 ) -> dict:
     """Save a new opportunity. Returns the saved record."""
     records = _load()
@@ -76,6 +78,8 @@ def save_opportunity(
         "suggested_position": suggested_position,
         "why_it_matters": why_it_matters,
         "opportunity_type": opportunity_type,
+        "newsjacking_concept": newsjacking_concept,
+        "newsjacking_format": newsjacking_format,
         "status": "pending",
         "pack_id": None,
         "custom_angle": None,  # set when user edits the angle before approving

@@ -108,7 +108,15 @@ if pending_opps:
             unsafe_allow_html=True,
         )
 
+        _MAX_PER_SECTION = 10
+        _shown = 0
         for opp in group_opps:
+            if _shown >= _MAX_PER_SECTION:
+                _remaining = len(group_opps) - _MAX_PER_SECTION
+                st.caption(f"+{_remaining} more — skip some above to surface them")
+                break
+            _shown += 1
+
             opp_id = opp.get("id", "")
             score = opp.get("relevance_score", 0)
             title = opp.get("story_title", "Untitled")
@@ -117,6 +125,8 @@ if pending_opps:
             position = opp.get("suggested_position", "")
             why = opp.get("why_it_matters", "")
             story_url = opp.get("story_url", "")
+            nj_concept = opp.get("newsjacking_concept", "")
+            nj_format = opp.get("newsjacking_format", "")
 
             if score >= 8:
                 score_colour = "#E8192C"
@@ -141,6 +151,37 @@ if pending_opps:
                 f'text-decoration:none">Read story →</a>'
             ) if story_url else ""
 
+            # Build the card body — newsjacking gets a richer creative brief panel
+            if opp_type == "newsjacking" and nj_concept:
+                format_badge = (
+                    f'<span style="background:#fbbf2422;border:1px solid #fbbf2466;color:#fbbf24;'
+                    f'font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:2px;'
+                    f'text-transform:uppercase;letter-spacing:0.06em">{nj_format}</span> '
+                ) if nj_format else ""
+                card_body = (
+                    f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.6rem">{source} &nbsp;{url_link}</div>'
+                    # The idea — most prominent element
+                    f'<div style="background:#1A1400;border:1px solid #fbbf2433;border-radius:3px;'
+                    f'padding:0.6rem 0.8rem;margin-bottom:0.5rem">'
+                    f'<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;'
+                    f'color:#fbbf24;margin-bottom:0.3rem">The Idea &nbsp;{format_badge}</div>'
+                    f'<div style="font-size:0.82rem;color:#F0E0A0;line-height:1.5">{nj_concept}</div>'
+                    f'</div>'
+                    # Angle as secondary context
+                    f'<div style="font-size:0.78rem;color:#888;line-height:1.4;margin-bottom:0.2rem">'
+                    f'<strong style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em">Message</strong>'
+                    f'&nbsp; {angle}</div>'
+                    f'<div style="font-size:0.72rem;color:#555;font-style:italic">{why}</div>'
+                )
+            else:
+                card_body = (
+                    f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.5rem">{source} &nbsp;{url_link}</div>'
+                    f'<div style="font-size:0.82rem;color:#CCC;line-height:1.5;margin-bottom:0.3rem">'
+                    f'<strong style="color:#888;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Riot angle</strong><br>'
+                    f'{angle}</div>'
+                    f'<div style="font-size:0.75rem;color:#666;font-style:italic">{why}</div>'
+                )
+
             st.markdown(
                 f'<div style="background:#111;border:1px solid #222;border-left:3px solid {score_colour};'
                 f'border-radius:0 3px 3px 0;padding:1rem 1.25rem;margin-bottom:0.25rem">'
@@ -149,11 +190,7 @@ if pending_opps:
                 f'color:#FFFFFF;line-height:1.3">{title}</span>'
                 f'<div style="display:flex;gap:0.4rem;flex-shrink:0">{score_badge}{position_badge}</div>'
                 f'</div>'
-                f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.5rem">{source} &nbsp;{url_link}</div>'
-                f'<div style="font-size:0.82rem;color:#CCC;line-height:1.5;margin-bottom:0.3rem">'
-                f'<strong style="color:#888;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Riot angle</strong><br>'
-                f'{angle}</div>'
-                f'<div style="font-size:0.75rem;color:#666;font-style:italic">{why}</div>'
+                f'{card_body}'
                 f'</div>',
                 unsafe_allow_html=True,
             )

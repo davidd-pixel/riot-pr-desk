@@ -98,6 +98,9 @@ TASK:
    - "pr_commentary" — story demands a press release or formal Riot statement (regulation, product safety, tax, science)
    - "newsjacking" — trending story Riot can piggyback with a reactive quote or comment (celebrity, viral, mainstream news)
    - "blog" — story could fuel a longer-form blog post (education, harm reduction explainer, consumer trend, myth-busting, how-to)
+6. If "newsjacking" is one of the types, provide:
+   - newsjacking_concept: the specific creative execution idea — what would Riot actually DO with this story? (2-3 sentences. Be concrete: describe the hook, the format, how it would land. E.g. "Riot releases a tongue-in-cheek social post mocking the irony of a celebrity vaping scandal while the government bans disposables. Include a punchy one-liner from the CEO and a call-out to the 4m UK vapers who've already made their choice.")
+   - newsjacking_format: one of "Reactive press quote", "Social post", "Social post + press quote", "Stunt / activation", "Reactive video", "CEO comment to media"
 
 Be generous with "blog" — most vaping/health/regulation stories have blog potential.
 If a story is strong enough for PR commentary it almost certainly also warrants a blog post.
@@ -108,7 +111,9 @@ Return ONLY valid JSON in this exact format:
   "riot_angle": "<1-2 sentence PR angle>",
   "suggested_position": "<exact position name from list>",
   "why_it_matters": "<one line>",
-  "opportunity_types": ["pr_commentary", "blog"]
+  "opportunity_types": ["pr_commentary", "blog"],
+  "newsjacking_concept": "<concrete creative idea — only populated if newsjacking is in opportunity_types, otherwise empty string>",
+  "newsjacking_format": "<format — only populated if newsjacking is in opportunity_types, otherwise empty string>"
 }}
 
 opportunity_types must be a JSON array containing one or more of: "pr_commentary", "newsjacking", "blog"."""
@@ -264,6 +269,8 @@ def run_daily_briefing(force: bool = False) -> list:
                 suggested_position=analysis.get("suggested_position", ""),
                 why_it_matters=analysis.get("why_it_matters", ""),
                 opportunity_type=opp_type,
+                newsjacking_concept=analysis.get("newsjacking_concept", "") if opp_type == "newsjacking" else "",
+                newsjacking_format=analysis.get("newsjacking_format", "") if opp_type == "newsjacking" else "",
             )
         analysed.append(analysis)
         new_count += 1
