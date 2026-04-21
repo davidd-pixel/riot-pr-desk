@@ -95,6 +95,78 @@ def export_pr_pack_to_docs(pack: dict) -> dict:
     return {"doc_id": doc_id, "doc_url": doc_url, "title": doc_title}
 
 
+def export_text_to_docs(title: str, body: str, label: str = "DRAFT") -> dict:
+    """
+    Export arbitrary title + body text to a Google Doc. Used by pages that
+    don't have a structured pack/blog dict (quote generator, crisis comms,
+    story ladder, etc.). Returns {'doc_id', 'doc_url', 'title'}.
+    """
+    docs_service = _get_docs_service()
+    drive_service = _get_drive_service()
+    folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
+
+    today = datetime.now().strftime("%d/%m/%Y")
+    doc_title = f"[{label}] {title} — {today}"
+
+    file_metadata = {
+        "name": doc_title,
+        "mimeType": "application/vnd.google-apps.document",
+        "parents": [folder_id] if folder_id else [],
+    }
+    doc_file = drive_service.files().create(body=file_metadata, fields="id,webViewLink").execute()
+    doc_id = doc_file["id"]
+    doc_url = doc_file["webViewLink"]
+
+    requests = []
+    insert_ops = [
+        ("RIOT PR DESK\n", "title"),
+        (f"{title}\n", "heading1"),
+        (f"Generated: {today}\n\n", "normal_small"),
+        (f"{body}\n", "normal"),
+    ]
+
+    current_index = 1
+    text_ranges = []
+    for text, style_hint in insert_ops:
+        requests.append({
+            "insertText": {"location": {"index": current_index}, "text": text}
+        })
+        text_ranges.append((current_index, current_index + len(text), style_hint))
+        current_index += len(text)
+
+    for start, end, style_hint in text_ranges:
+        if style_hint == "title":
+            requests.append({"updateParagraphStyle": {
+                "range": {"startIndex": start, "endIndex": end},
+                "paragraphStyle": {"namedStyleType": "TITLE"},
+                "fields": "namedStyleType",
+            }})
+        elif style_hint == "heading1":
+            requests.append({"updateParagraphStyle": {
+                "range": {"startIndex": start, "endIndex": end},
+                "paragraphStyle": {"namedStyleType": "HEADING_1"},
+                "fields": "namedStyleType",
+            }})
+        elif style_hint == "normal_small":
+            requests.append({"updateTextStyle": {
+                "range": {"startIndex": start, "endIndex": end},
+                "textStyle": {
+                    "fontSize": {"magnitude": 9, "unit": "PT"},
+                    "foregroundColor": {"color": {"rgbColor": {
+                        "red": 0.5, "green": 0.5, "blue": 0.5,
+                    }}},
+                },
+                "fields": "fontSize,foregroundColor",
+            }})
+
+    if requests:
+        docs_service.documents().batchUpdate(
+            documentId=doc_id, body={"requests": requests}
+        ).execute()
+
+    return {"doc_id": doc_id, "doc_url": doc_url, "title": doc_title}
+
+
 def export_blog_to_docs(blog: dict) -> dict:
     """
     Export a blog library record to a formatted Google Doc.

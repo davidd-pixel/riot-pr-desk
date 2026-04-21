@@ -528,20 +528,19 @@ if "last_pr_pack" in st.session_state:
         if not (name in CONDITIONAL_SECTIONS and content.strip().upper().startswith("NOT APPLICABLE"))
     }
 
-    full_pack = "\n\n".join(
-        f"{'=' * 60}\n{name}\n{'=' * 60}\n\n{content}"
-        for name, content in export_sections.items()
-    )
-    full_pack = (
-        f"RIOT PR DESK — PR PACK (DRAFT)\n"
-        f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
-        f"{'=' * 60}\n\n{full_pack}"
-    )
-
-    st.download_button(
-        "Download PR Pack",
-        data=full_pack,
-        file_name=f"riot_pr_pack_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-        mime="text/plain",
-        use_container_width=True,
-    )
+    if st.button("Send to Google Docs", use_container_width=True, key="pr_gen_to_gdocs"):
+        with st.spinner("Creating Google Doc…"):
+            try:
+                from services.google_docs_export import export_pr_pack_to_docs
+                pack_like = {
+                    "title": st.session_state.get("pr_pack_title", "PR Pack"),
+                    "created_at": datetime.datetime.now().isoformat(),
+                    "position_name": st.session_state.get("pr_position_key", ""),
+                    "spokesperson_key": st.session_state.get("pr_spokesperson_key", ""),
+                    "status": "draft",
+                    "sections": export_sections,
+                }
+                gd = export_pr_pack_to_docs(pack_like)
+                st.success(f"[Open in Google Docs →]({gd['doc_url']})")
+            except Exception as ex:
+                st.error(f"Google Docs export failed: {ex}")

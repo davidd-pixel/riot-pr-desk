@@ -507,38 +507,33 @@ for pack in packs:
                         st.success(f"Status updated to **{new_status}**.")
                         st.rerun()
 
-            # --- Download ---
-            with act_col2:
-                st.markdown("**Download pack**")
-                download_text = _pack_download_text(pack)
-                safe_title = "".join(c if c.isalnum() or c in " _-" else "_" for c in title[:40]).strip()
-                filename = f"riot_pr_{safe_title}_{pack_id}.txt"
-                st.download_button(
-                    "Download pack as .txt",
-                    data=download_text,
-                    file_name=filename,
-                    mime="text/plain",
-                    use_container_width=True,
-                    key=f"lib_download_{pack_id}",
-                )
+            # --- Send to Google Docs (moved up from its own section) ---
+            gdocs_key = f"lib_gdocs_url_{pack_id}"
+            gdocs_err_key = f"lib_gdocs_err_{pack_id}"
 
-                # Word export
-                try:
-                    from services.word_export import export_pr_pack_to_docx
-                    docx_bytes = export_pr_pack_to_docx(pack)
-                    safe_title_w = "".join(c if c.isalnum() or c in " _-" else "_" for c in title[:40]).strip()
-                    st.download_button(
-                        "Export as Word (.docx)",
-                        data=docx_bytes,
-                        file_name=f"riot_pr_{safe_title_w}_{pack_id}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            with act_col2:
+                st.markdown("**Send to Google Docs**")
+                if gdocs_configured():
+                    if st.button(
+                        "Send to Google Docs",
+                        key=f"lib_send_gdocs_top_{pack_id}",
                         use_container_width=True,
-                        key=f"lib_docx_{pack_id}",
-                    )
-                except ImportError:
-                    st.caption("Install python-docx for Word export: `pip install python-docx`")
-                except Exception as e:
-                    st.caption(f"Word export unavailable: {e}")
+                        type="primary",
+                    ):
+                        with st.spinner("Creating Google Doc…"):
+                            try:
+                                result = export_pr_pack_to_docs(pack)
+                                st.session_state[gdocs_key] = result["doc_url"]
+                                st.session_state.pop(gdocs_err_key, None)
+                            except Exception as e:
+                                st.session_state[gdocs_err_key] = str(e)
+
+                    if gdocs_key in st.session_state:
+                        st.markdown(f"[Open in Google Docs →]({st.session_state[gdocs_key]})")
+                    elif gdocs_err_key in st.session_state:
+                        st.error(f"Export failed: {st.session_state[gdocs_err_key]}")
+                else:
+                    st.caption("Google Docs export not configured.")
 
             st.divider()
 
@@ -609,39 +604,6 @@ for pack in packs:
                     ts = c.get("created_at", "")[:16].replace("T", " ")
                     st.markdown(f"**{c.get('author', '?')}** — {c.get('text', '')}")
                     st.caption(ts)
-
-            st.divider()
-
-            # --- Google Docs export ---
-            gdocs_key = f"lib_gdocs_url_{pack_id}"
-            gdocs_err_key = f"lib_gdocs_err_{pack_id}"
-
-            if gdocs_configured():
-                st.markdown("**Export to Google Docs**")
-                gdocs_col1, gdocs_col2 = st.columns([1, 1])
-
-                with gdocs_col1:
-                    if st.button(
-                        "Export to Google Docs",
-                        key=f"lib_gdocs_btn_{pack_id}",
-                        use_container_width=True,
-                        type="primary",
-                    ):
-                        with st.spinner("Creating Google Doc..."):
-                            try:
-                                result = export_pr_pack_to_docs(pack)
-                                st.session_state[gdocs_key] = result["doc_url"]
-                                st.session_state.pop(gdocs_err_key, None)
-                            except Exception as e:
-                                st.session_state[gdocs_err_key] = str(e)
-
-                with gdocs_col2:
-                    if gdocs_key in st.session_state:
-                        doc_url = st.session_state[gdocs_key]
-                        st.success("Doc created!")
-                        st.markdown(f"[Open in Google Docs →]({doc_url})")
-                    elif gdocs_err_key in st.session_state:
-                        st.error(f"Export failed: {st.session_state[gdocs_err_key]}")
 
             st.divider()
 
@@ -815,16 +777,21 @@ for pack in packs:
                                 st.success("Version restored.")
                                 st.rerun()
                         with v_col2:
-                            # Download this version
-                            v_text = "\n\n".join(
-                                f"{'='*50}\n{name}\n{'='*50}\n\n{content}"
-                                for name, content in v_sections.items()
-                            )
-                            st.download_button(
-                                "Download version",
-                                data=v_text,
-                                file_name=f"riot_pr_v{v_id[:6]}_{pack_id}.txt",
-                                mime="text/plain",
-                                key=f"lib_dl_ver_{pack_id}_{v_id}",
+                            # Send this version to Google Docs
+                            if st.button(
+                                "Send version to Google Docs",
+                                key=f"lib_gdocs_ver_{pack_id}_{v_id}",
                                 use_container_width=True,
-                            )
+                            ):
+                                with st.spinner("Creating Google Doc…"):
+                                    try:
+                                        from services.google_docs_export import export_pr_pack_to_docs
+                                        version_pack = {
+                                            **pack,
+                                            "title": f"{pack.get('title','Pack')} (v{v_id[:6]})",
+                                            "sections": v_sections,
+                                        }
+                                        gd = export_pr_pack_to_docs(version_pack)
+                                        st.markdown(f"[Open in Google Docs →]({gd['doc_url']})")
+                                    except Exception as ex:
+                                        st.error(f"Export failed: {ex}")

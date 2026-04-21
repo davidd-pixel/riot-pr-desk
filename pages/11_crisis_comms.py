@@ -135,19 +135,22 @@ if "crisis_last_result" in st.session_state:
             with st.expander(heading, expanded=True):
                 st.markdown(body)
 
-    # ── Download full pack ──
+    # ── Send to Google Docs ──
     st.divider()
-    download_text = (
-        f"RIOT PR DESK — CRISIS COMMS PACK (DRAFT)\n"
-        f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
-        f"Urgency: {urgency_ref}\n"
-        f"Situation: {situation_ref}\n"
-        f"{'=' * 60}\n\n{result}"
-    )
-    st.download_button(
-        "Download Crisis Pack (.txt)",
-        data=download_text,
-        file_name=f"riot_crisis_pack_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-        mime="text/plain",
-        use_container_width=True,
-    )
+    if st.button("Send to Google Docs", use_container_width=True, key="cc_to_gdocs"):
+        with st.spinner("Creating Google Doc…"):
+            try:
+                from services.google_docs_export import export_text_to_docs
+                body = (
+                    f"Urgency: {urgency_ref}\n"
+                    f"Situation: {situation_ref}\n\n"
+                    f"{result}"
+                )
+                gd = export_text_to_docs(
+                    title=f"Crisis Comms Pack — {urgency_ref or 'Urgent'}",
+                    body=body,
+                    label="CRISIS COMMS",
+                )
+                st.success(f"[Open in Google Docs →]({gd['doc_url']})")
+            except Exception as ex:
+                st.error(f"Google Docs export failed: {ex}")

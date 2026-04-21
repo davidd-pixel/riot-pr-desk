@@ -320,6 +320,7 @@ def run_daily_briefing(force: bool = False) -> list:
                 newsjacking_execution=analysis.get("newsjacking_execution", "") if is_nj else "",
                 newsjacking_format=analysis.get("newsjacking_format", "") if is_nj else "",
                 newsjacking_speed=analysis.get("newsjacking_speed", "") if is_nj else "",
+                story_published_at=article.get("publishedAt", ""),
             )
         analysed.append(analysis)
         new_count += 1
@@ -655,6 +656,8 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
     nj_opps   = [o for o in opportunities if o.get("opportunity_type") == "newsjacking"]
     blog_opps = [o for o in opportunities if o.get("opportunity_type") == "blog"]
 
+    from services.news_monitor import _format_uk_date as _fmt_uk
+
     def _opp_cards_html(opps):
         html = ""
         for opp in opps:
@@ -663,6 +666,11 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
             opp_type = opp.get("opportunity_type", "pr_commentary")
             nj_concept = opp.get("newsjacking_concept", "")
             nj_format = opp.get("newsjacking_format", "")
+            try:
+                pub_uk = _fmt_uk(opp.get("story_published_at", ""))
+            except Exception:
+                pub_uk = ""
+            meta_suffix = f" &middot; {pub_uk}" if pub_uk else ""
 
             # Newsjacking cards get the full creative brief panel to match inbox
             nj_hook = opp.get("newsjacking_hook", "")
@@ -719,7 +727,7 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
                 f'margin-bottom:10px;background:#111;border-radius:0 4px 4px 0">'
                 f'<div style="font-size:13px;font-weight:700;color:#fff">{opp.get("story_title","")}</div>'
                 f'<div style="font-size:11px;color:#888;margin-top:2px">'
-                f'{opp.get("story_source","")} &middot; Relevance {score}/10</div>'
+                f'{opp.get("story_source","")}{meta_suffix} &middot; Relevance {score}/10</div>'
                 f'{body}'
                 f'</div>'
             )
@@ -775,9 +783,16 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
             lines += [f"── {label} ──", ""]
             for opp in opps:
                 is_nj = opp.get("opportunity_type") == "newsjacking"
+                try:
+                    pub_uk = _fmt_uk(opp.get("story_published_at", ""))
+                except Exception:
+                    pub_uk = ""
+                source_line = opp.get('story_source','')
+                if pub_uk:
+                    source_line = f"{source_line} · {pub_uk}"
                 entry = [
                     f"[{opp.get('relevance_score',0)}/10] {opp.get('story_title','')}",
-                    f"  {opp.get('story_source','')}",
+                    f"  {source_line}",
                 ]
                 if is_nj and (opp.get("newsjacking_hook") or opp.get("newsjacking_concept")):
                     if opp.get("newsjacking_concept"):

@@ -140,19 +140,18 @@ with tab_ladder:
         col_dl, col_pr = st.columns(2)
 
         with col_dl:
-            download_text = (
-                f"RIOT PR DESK — STORY LADDER (DRAFT)\n"
-                f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
-                f"Campaign: {campaign_ref}\n"
-                f"{'=' * 60}\n\n{result}"
-            )
-            st.download_button(
-                "Download as .txt",
-                data=download_text,
-                file_name=f"riot_story_ladder_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-                mime="text/plain",
-                use_container_width=True,
-            )
+            if st.button("Send to Google Docs", use_container_width=True, key="sl_to_gdocs"):
+                with st.spinner("Creating Google Doc…"):
+                    try:
+                        from services.google_docs_export import export_text_to_docs
+                        gd = export_text_to_docs(
+                            title=f"Story Ladder — {campaign_ref or 'Riot campaign'}",
+                            body=result,
+                            label="STORY LADDER",
+                        )
+                        st.success(f"[Open in Google Docs →]({gd['doc_url']})")
+                    except Exception as ex:
+                        st.error(f"Google Docs export failed: {ex}")
 
         with col_pr:
             if st.button("Create PR Pack from this", use_container_width=True):

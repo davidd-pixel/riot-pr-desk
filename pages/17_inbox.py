@@ -131,6 +131,16 @@ if pending_opps:
             nj_format = opp.get("newsjacking_format", "")
             nj_speed = opp.get("newsjacking_speed", "")
 
+            # UK-format published date from original article
+            try:
+                from services.news_monitor import _format_uk_date
+                published_uk = _format_uk_date(opp.get("story_published_at", ""))
+            except Exception:
+                published_uk = ""
+            published_suffix = (
+                f' <span style="color:#888;font-size:0.72rem;margin-left:0.4rem">&middot; {published_uk}</span>'
+            ) if published_uk else ""
+
             if score >= 8:
                 score_colour = "#E8192C"
             elif score >= 6:
@@ -197,7 +207,7 @@ if pending_opps:
                 ) if nj_execution else ""
 
                 card_body = (
-                    f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.6rem">{source} &nbsp;{url_link}</div>'
+                    f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.6rem">{source}{published_suffix} &nbsp;{url_link}</div>'
                     # Full creative brief panel
                     f'<div style="background:#1A1400;border:1px solid #fbbf2433;border-radius:3px;'
                     f'padding:0.75rem 0.9rem;margin-bottom:0.5rem">'
@@ -214,7 +224,7 @@ if pending_opps:
                 )
             else:
                 card_body = (
-                    f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.5rem">{source} &nbsp;{url_link}</div>'
+                    f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.5rem">{source}{published_suffix} &nbsp;{url_link}</div>'
                     f'<div style="font-size:0.82rem;color:#CCC;line-height:1.5;margin-bottom:0.3rem">'
                     f'<strong style="color:#888;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Riot angle</strong><br>'
                     f'{angle}</div>'

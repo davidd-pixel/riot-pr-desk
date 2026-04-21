@@ -171,6 +171,13 @@ if briefing_opps or briefing_meta:
                 source_text = opp.get("story_source", "")
                 angle_text = opp.get("riot_angle", "")[:120]
 
+                # UK-format published date
+                try:
+                    from services.news_monitor import _format_uk_date
+                    published_uk = _format_uk_date(opp.get("story_published_at", ""))
+                except Exception:
+                    published_uk = ""
+
                 # Pre-build all parts
                 score_badge = (
                     f'<span style="background:{score_colour}22;border:1px solid {score_colour}55;'
@@ -178,11 +185,14 @@ if briefing_opps or briefing_meta:
                     f'border-radius:2px;text-transform:uppercase;letter-spacing:0.06em">'
                     f'{score}/10</span>'
                 )
+                meta_line = source_text
+                if published_uk:
+                    meta_line = f"{source_text} &middot; {published_uk}"
                 card_html = (
                     f'<div style="background:#111;border:1px solid #1A1A1A;border-top:2px solid {score_colour};'
                     f'border-radius:3px;padding:0.75rem;height:100%">'
                     f'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.35rem">'
-                    f'<span style="font-size:0.7rem;color:#555;text-transform:uppercase;letter-spacing:0.06em">{source_text}</span>'
+                    f'<span style="font-size:0.7rem;color:#555;text-transform:uppercase;letter-spacing:0.06em">{meta_line}</span>'
                     f'{score_badge}'
                     f'</div>'
                     f'<div style="font-family:PPFormula,sans-serif;font-weight:700;font-size:0.82rem;'

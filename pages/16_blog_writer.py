@@ -697,56 +697,42 @@ with tab_write:
         st.divider()
         st.markdown("### Export")
 
-        export_col1, export_col2, export_col3 = st.columns(3)
+        # Derive blog title from SEO Package if possible (used by Google Docs export)
+        seo_text = sections.get("SEO Package", "")
+        _blog_title = ""
+        for line in seo_text.splitlines():
+            ls = line.strip()
+            if ls.lower().startswith("**title tag:**"):
+                _blog_title = ls[len("**title tag:**"):].strip().strip("[]")
+                break
+            if ls.lower().startswith("title tag:"):
+                _blog_title = ls[len("title tag:"):].strip().strip("[]")
+                break
+        if not _blog_title:
+            _blog_title = stored_topic[:80]
 
-        # Build full plain text export
-        full_text = (
-            f"RIOT PR DESK — BLOG WRITER (DRAFT)\n"
-            f"Generated: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
-            f"{'=' * 60}\n\n"
-        )
-        full_text += "\n\n".join(
-            f"{'=' * 60}\n{name}\n{'=' * 60}\n\n{content}"
-            for name, content in sections.items()
-        )
+        send_col, status_col = st.columns([2, 1])
+        with send_col:
+            if st.button("Send to Google Docs", use_container_width=True, type="primary", key="blog_send_gdocs_top"):
+                with st.spinner("Creating Google Doc…"):
+                    try:
+                        blog_like = {
+                            "title": _blog_title,
+                            "created_at": datetime.datetime.now().isoformat(),
+                            "blog_type": st.session_state.get("blog_type_key", ""),
+                            "primary_keyword": st.session_state.get("blog_primary_kw", ""),
+                            "status": "draft",
+                            "sections": sections,
+                        }
+                        gd = export_blog_to_docs(blog_like)
+                        st.session_state["blog_gdocs_url"] = gd["doc_url"]
+                    except Exception as ex:
+                        st.error(f"Google Docs export failed: {ex}")
 
-        with export_col1:
-            st.download_button(
-                "Download .txt",
-                data=full_text,
-                file_name=f"riot_blog_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-                mime="text/plain",
-                use_container_width=True,
-            )
+            if st.session_state.get("blog_gdocs_url"):
+                st.markdown(f"[Open in Google Docs →]({st.session_state['blog_gdocs_url']})")
 
-        with export_col2:
-            try:
-                # Derive blog title from SEO Package if possible
-                seo_text = sections.get("SEO Package", "")
-                blog_title = ""
-                for line in seo_text.splitlines():
-                    ls = line.strip()
-                    if ls.lower().startswith("**title tag:**"):
-                        blog_title = ls[len("**title tag:**"):].strip().strip("[]")
-                        break
-                    if ls.lower().startswith("title tag:"):
-                        blog_title = ls[len("title tag:"):].strip().strip("[]")
-                        break
-                if not blog_title:
-                    blog_title = stored_topic[:80]
-
-                docx_bytes = _build_blog_docx(sections, blog_title)
-                st.download_button(
-                    "Download .docx",
-                    data=docx_bytes,
-                    file_name=f"riot_blog_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True,
-                )
-            except ImportError:
-                st.caption("Install python-docx for Word export.")
-
-        with export_col3:
+        with status_col:
             if "blog_saved_id" in st.session_state:
                 st.caption("Saved to Blog Library")
 
@@ -926,60 +912,34 @@ with tab_library:
 
                 with actions_tab:
 
-                    # ── Export ────────────────────────────────────────────────
+                    # ── Send to Google Docs ───────────────────────────────────
                     st.markdown("**Export**")
-                    exp_c1, exp_c2 = st.columns(2)
+                    _gdocs_key = f"lib_gdocs_url_{blog_id}"
+                    _gdocs_err_key = f"lib_gdocs_err_{blog_id}"
 
-                    # Word export
-                    with exp_c1:
-                        try:
-                            _safe = "".join(
-                                c if c.isalnum() or c in " _-" else "_"
-                                for c in title[:40]
-                            ).strip()
-                            _docx_bytes = _build_blog_docx(
-                                blog.get("sections", {}), title
+                    if gdocs_configured():
+                        if st.button(
+                            "Send to Google Docs",
+                            key=f"lib_gdocs_btn_{blog_id}",
+                            use_container_width=True,
+                            type="primary",
+                        ):
+                            with st.spinner("Creating Google Doc…"):
+                                try:
+                                    _result = export_blog_to_docs(blog)
+                                    st.session_state[_gdocs_key] = _result["doc_url"]
+                                    st.session_state.pop(_gdocs_err_key, None)
+                                except Exception as _e:
+                                    st.session_state[_gdocs_err_key] = str(_e)
+
+                        if _gdocs_key in st.session_state:
+                            st.markdown(
+                                f"[Open in Google Docs →]({st.session_state[_gdocs_key]})"
                             )
-                            st.download_button(
-                                "Download as Word",
-                                data=_docx_bytes,
-                                file_name=f"riot_blog_{_safe}_{blog_id}.docx",
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                use_container_width=True,
-                                key=f"lib_docx_{blog_id}",
-                            )
-                        except ImportError:
-                            st.caption("Install python-docx for Word export.")
-                        except Exception as _e:
-                            st.caption(f"Word export error: {_e}")
-
-                    # Google Docs export
-                    with exp_c2:
-                        _gdocs_key = f"lib_gdocs_url_{blog_id}"
-                        _gdocs_err_key = f"lib_gdocs_err_{blog_id}"
-
-                        if gdocs_configured():
-                            if st.button(
-                                "Send to Google Docs",
-                                key=f"lib_gdocs_btn_{blog_id}",
-                                use_container_width=True,
-                            ):
-                                with st.spinner("Creating Google Doc..."):
-                                    try:
-                                        _result = export_blog_to_docs(blog)
-                                        st.session_state[_gdocs_key] = _result["doc_url"]
-                                        st.session_state.pop(_gdocs_err_key, None)
-                                    except Exception as _e:
-                                        st.session_state[_gdocs_err_key] = str(_e)
-
-                            if _gdocs_key in st.session_state:
-                                st.markdown(
-                                    f"[Open in Google Docs →]({st.session_state[_gdocs_key]})"
-                                )
-                            elif _gdocs_err_key in st.session_state:
-                                st.error(f"Export failed: {st.session_state[_gdocs_err_key]}")
-                        else:
-                            st.caption("Google Docs not configured.")
+                        elif _gdocs_err_key in st.session_state:
+                            st.error(f"Export failed: {st.session_state[_gdocs_err_key]}")
+                    else:
+                        st.caption("Google Docs not configured.")
 
                     st.divider()
 

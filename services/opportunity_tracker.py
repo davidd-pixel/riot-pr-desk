@@ -66,6 +66,7 @@ def save_opportunity(
     newsjacking_execution: str = "",  # 2-3 sentence specific execution
     newsjacking_format: str = "",     # format (press quote, stunt, data piece etc)
     newsjacking_speed: str = "",      # urgency tier
+    story_published_at: str = "",     # ISO timestamp of the original article (from news feed)
 ) -> dict:
     """Save a new opportunity. Returns the saved record."""
     records = _load()
@@ -87,6 +88,7 @@ def save_opportunity(
         "newsjacking_execution": newsjacking_execution,
         "newsjacking_format": newsjacking_format,
         "newsjacking_speed": newsjacking_speed,
+        "story_published_at": story_published_at,
         "status": "pending",
         "pack_id": None,
         "custom_angle": None,  # set when user edits the angle before approving

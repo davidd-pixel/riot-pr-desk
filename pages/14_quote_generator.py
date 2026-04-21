@@ -328,24 +328,24 @@ if "generated_quotes" in st.session_state:
                     st.error(f"Could not save file: {e}")
 
         with dl_col:
-            # Download as plain text
-            dl_lines = [
-                "RIOT PR DESK — QUOTE OF THE WEEK",
-                f"Generated: {generated_label}",
-                f"Spokesperson: {sp}",
-                f"Topic: {topic}",
-                f"Tones: {', '.join(tone_list)}",
-                "=" * 60,
-                "",
-            ]
-            for i, q in enumerate(quotes, start=1):
-                dl_lines.append(f"{i}. {q}")
-                dl_lines.append("")
-
-            st.download_button(
-                "Download as .txt",
-                data="\n".join(dl_lines),
-                file_name=f"riot_quotes_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-                mime="text/plain",
-                use_container_width=True,
-            )
+            if st.button("Send to Google Docs", use_container_width=True, key="qg_to_gdocs"):
+                with st.spinner("Creating Google Doc…"):
+                    try:
+                        from services.google_docs_export import export_text_to_docs
+                        body_lines = [
+                            f"Spokesperson: {sp}",
+                            f"Topic: {topic}",
+                            f"Tones: {', '.join(tone_list)}",
+                            "",
+                        ]
+                        for i, q in enumerate(quotes, start=1):
+                            body_lines.append(f"{i}. {q}")
+                            body_lines.append("")
+                        gd = export_text_to_docs(
+                            title=f"Quote of the Week — {topic}",
+                            body="\n".join(body_lines),
+                            label="QUOTES",
+                        )
+                        st.success(f"[Open in Google Docs →]({gd['doc_url']})")
+                    except Exception as ex:
+                        st.error(f"Google Docs export failed: {ex}")
