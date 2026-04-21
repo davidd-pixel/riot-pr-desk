@@ -146,6 +146,35 @@ def expire_old_opportunities() -> int:
     return expired
 
 
+def trim_pending_to_top_n_per_type(n: int = 5) -> int:
+    """
+    For each opportunity_type (pr_commentary, newsjacking, blog), keep only
+    the top-N pending opportunities by relevance_score descending. Everything
+    beyond top-N is marked as 'skipped'. Returns the number of opps trimmed.
+
+    Called at the end of run_daily_briefing() to ensure the inbox and the
+    email digest see the same focused set of opps.
+    """
+    records = _load()
+    pending_by_type: dict = {}
+    for o in records:
+        if o.get("status") != "pending":
+            continue
+        t = o.get("opportunity_type", "pr_commentary")
+        pending_by_type.setdefault(t, []).append(o)
+
+    trimmed = 0
+    for opp_type, opps in pending_by_type.items():
+        opps.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
+        for overflow in opps[n:]:
+            overflow["status"] = "skipped"
+            trimmed += 1
+
+    if trimmed:
+        _save(records)
+    return trimmed
+
+
 def get_inbox_count() -> int:
     """Return total number of items across all inbox sections requiring attention."""
     from services.pr_library import get_all_packs

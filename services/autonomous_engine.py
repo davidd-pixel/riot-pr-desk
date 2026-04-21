@@ -86,6 +86,22 @@ Riot Labs is a UK-based independent vape brand (Riot Squad, Riot Bar Edition). K
 - 4 million UK vapers who deserve quality products
 - Regulation: supportive of sensible regulation, opposed to prohibitionist policies
 
+SCORE THESE LOW (1-3):
+Riot does NOT respond to tabloid horror stories. Score LOW when the story is:
+- A personal horror / medical terror tale
+  (e.g. "Vaping gave me black teeth", "Woman, 22, given 18 months to live
+   after vaping since 15", "My lungs collapsed from vaping")
+- About illicit, spiked, or counterfeit vapes
+  (e.g. "Thieves handing out vapes spiked with drugs", "Child hospitalised
+   by fake vape", "Drug-laced disposables seized")
+- A teen/underage scare narrative without wider policy context
+- Individual anecdotal injury claims without scientific or regulatory grounding
+- Sensationalist single-victim stories with no systemic or regulatory angle
+
+These stories are too frequent, too sensational, and conflate illicit products
+with the regulated market Riot operates in. Never score them above 3. Riot
+does not comment on individual horror stories.
+
 AVAILABLE POSITIONS:
 {positions_list}
 
@@ -164,10 +180,20 @@ def run_daily_briefing(force: bool = False) -> list:
     # Fetch news — all feeds: vape-specific, trending, social, competitors, regulatory
     articles = []
     seen_titles: set = set()
+    _credibility_skipped = 0
+
+    from services.source_credibility import is_credible
 
     def _add_articles(feed: list):
+        nonlocal _credibility_skipped
         for a in feed:
             if "error" in a:
+                continue
+            # Skip low-credibility sources before AI ever sees them
+            src = a.get("source", {})
+            src_name = src.get("name", "") if isinstance(src, dict) else str(src)
+            if not is_credible(src_name):
+                _credibility_skipped += 1
                 continue
             t = a.get("title", "").lower()[:60]
             if t and t not in seen_titles:
@@ -227,7 +253,8 @@ def run_daily_briefing(force: bool = False) -> list:
     except Exception as e:
         print(f"Regulatory feed error: {e}")
 
-    print(f"Fetched {len(articles)} articles across all feeds")
+    print(f"Fetched {len(articles)} articles across all feeds "
+          f"({_credibility_skipped} skipped as low-credibility sources)")
 
     if not articles:
         _save_cache({"generated_at": datetime.now(timezone.utc).isoformat(), "count": 0})
@@ -237,9 +264,10 @@ def run_daily_briefing(force: bool = False) -> list:
     existing = get_all_opportunities()
     seen_titles = {o.get("story_title", "").lower() for o in existing}
 
+    # Analyse up to 20 credible articles — we'll trim to 5-per-type afterwards
     new_count = 0
     analysed = []
-    for article in articles[:12]:  # cap to keep costs low
+    for article in articles[:20]:
         title = article.get("title", "")
         if not title or title.lower() in seen_titles:
             continue
@@ -275,8 +303,15 @@ def run_daily_briefing(force: bool = False) -> list:
         analysed.append(analysis)
         new_count += 1
 
-        if new_count >= 8:  # surface at most 8 stories per run (each may spawn multiple opps)
+        # 15 analyses gives plenty of candidates for 5-per-type cap (5×3=15)
+        if new_count >= 15:
             break
+
+    # Trim to top-5-per-type so inbox + email see the same focused set
+    from services.opportunity_tracker import trim_pending_to_top_n_per_type
+    trimmed = trim_pending_to_top_n_per_type(n=5)
+    if trimmed:
+        print(f"Trimmed {trimmed} lower-ranked opportunities to keep top-5 per type")
 
     _save_cache({
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -604,14 +639,42 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
         for opp in opps:
             score = opp.get("relevance_score", 0)
             colour = "#E8192C" if score >= 8 else "#fbbf24" if score >= 6 else "#60a5fa"
+            opp_type = opp.get("opportunity_type", "pr_commentary")
+            nj_concept = opp.get("newsjacking_concept", "")
+            nj_format = opp.get("newsjacking_format", "")
+
+            # Newsjacking cards get the amber "The Idea" panel to match inbox
+            if opp_type == "newsjacking" and nj_concept:
+                format_badge = (
+                    f'<span style="background:#fbbf2422;border:1px solid #fbbf2466;color:#fbbf24;'
+                    f'font-size:10px;font-weight:700;padding:1px 7px;border-radius:2px;'
+                    f'text-transform:uppercase;letter-spacing:0.06em;margin-left:4px">{nj_format}</span>'
+                ) if nj_format else ""
+                body = (
+                    f'<div style="background:#1A1400;border:1px solid #fbbf2433;border-radius:3px;'
+                    f'padding:8px 10px;margin-top:6px;margin-bottom:6px">'
+                    f'<div style="font-size:10px;font-weight:700;letter-spacing:0.1em;'
+                    f'text-transform:uppercase;color:#fbbf24;margin-bottom:4px">'
+                    f'The Idea{format_badge}</div>'
+                    f'<div style="font-size:12px;color:#F0E0A0;line-height:1.5">{nj_concept}</div>'
+                    f'</div>'
+                    f'<div style="font-size:11px;color:#888;margin-top:4px">'
+                    f'<strong style="color:#666">Message:</strong> {opp.get("riot_angle","")}</div>'
+                    f'<div style="font-size:11px;color:#999;margin-top:4px;font-style:italic">{opp.get("why_it_matters","")}</div>'
+                )
+            else:
+                body = (
+                    f'<div style="font-size:12px;color:#E0E0E0;margin-top:6px">{opp.get("riot_angle","")}</div>'
+                    f'<div style="font-size:11px;color:#999;margin-top:4px;font-style:italic">{opp.get("why_it_matters","")}</div>'
+                )
+
             html += (
                 f'<div style="border-left:3px solid {colour};padding:10px 16px;'
                 f'margin-bottom:10px;background:#111;border-radius:0 4px 4px 0">'
                 f'<div style="font-size:13px;font-weight:700;color:#fff">{opp.get("story_title","")}</div>'
                 f'<div style="font-size:11px;color:#888;margin-top:2px">'
                 f'{opp.get("story_source","")} &middot; Relevance {score}/10</div>'
-                f'<div style="font-size:12px;color:#E0E0E0;margin-top:6px">{opp.get("riot_angle","")}</div>'
-                f'<div style="font-size:11px;color:#999;margin-top:4px;font-style:italic">{opp.get("why_it_matters","")}</div>'
+                f'{body}'
                 f'</div>'
             )
         return html
@@ -665,12 +728,21 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
         if opps:
             lines += [f"── {label} ──", ""]
             for opp in opps:
-                lines += [
+                is_nj = opp.get("opportunity_type") == "newsjacking"
+                nj_concept = opp.get("newsjacking_concept", "") if is_nj else ""
+                nj_format = opp.get("newsjacking_format", "") if is_nj else ""
+                entry = [
                     f"[{opp.get('relevance_score',0)}/10] {opp.get('story_title','')}",
                     f"  {opp.get('story_source','')}",
-                    f"  Angle: {opp.get('riot_angle','')}",
-                    "",
                 ]
+                if is_nj and nj_concept:
+                    fmt_suffix = f" ({nj_format})" if nj_format else ""
+                    entry.append(f"  THE IDEA{fmt_suffix}: {nj_concept}")
+                    entry.append(f"  Message: {opp.get('riot_angle','')}")
+                else:
+                    entry.append(f"  Angle: {opp.get('riot_angle','')}")
+                entry.append("")
+                lines += entry
     lines += ["Open Inbox: https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox", "", "—", "Riot PR Desk · Auto-generated"]
 
     msg = MIMEMultipart("alternative")

@@ -108,7 +108,7 @@ if pending_opps:
             unsafe_allow_html=True,
         )
 
-        _MAX_PER_SECTION = 10
+        _MAX_PER_SECTION = 5
         _shown = 0
         for opp in group_opps:
             if _shown >= _MAX_PER_SECTION:
