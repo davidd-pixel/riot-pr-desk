@@ -114,9 +114,23 @@ TASK:
    - "pr_commentary" — story demands a press release or formal Riot statement (regulation, product safety, tax, science)
    - "newsjacking" — trending story Riot can piggyback with a reactive quote or comment (celebrity, viral, mainstream news)
    - "blog" — story could fuel a longer-form blog post (education, harm reduction explainer, consumer trend, myth-busting, how-to)
-6. If "newsjacking" is one of the types, provide:
-   - newsjacking_concept: the specific creative execution idea — what would Riot actually DO with this story? (2-3 sentences. Be concrete: describe the hook, the format, how it would land. E.g. "Riot releases a tongue-in-cheek social post mocking the irony of a celebrity vaping scandal while the government bans disposables. Include a punchy one-liner from the CEO and a call-out to the 4m UK vapers who've already made their choice.")
-   - newsjacking_format: one of "Reactive press quote", "Social post", "Social post + press quote", "Stunt / activation", "Reactive video", "CEO comment to media"
+6. If "newsjacking" is one of the types, you MUST provide a bold, specific creative brief — not a generic "post about it on social" suggestion. Riot has a strong news-jacking track record:
+     - **Heat Map** — data-led map of UK illegal vape hotspots (Daily Mail, regional press)
+     - **Ibiza Final Boss** — summer festival culture hijack (Mirror, Indy100)
+     - **Chief Misinformation Officer** — activist stunt responding to vaping junk science
+     - **Rishi's Vape Shop** — political satire tied to government policy
+     - **Welcome to Wroxham** — non-league football sponsorship (300k+ social views)
+     - **Countdown Vape Party** — disposable ban deadline stunt (Evening Standard, Daily Star)
+     - **Merry Quitmas** — Christmas campaign with East 17
+
+   Think Paddy Power meets Riot activist. Provide:
+   - newsjacking_hook: the creative connection between this story and Riot (1-2 sentences — what's the surprising, funny or sharp link?)
+   - newsjacking_execution: what Riot would actually DO. Be specific and concrete — a stunt? a data piece? a satirical product tie-in? a fake shopfront? a sponsored video? Describe the asset/activation in 2-3 sentences.
+   - newsjacking_format: one of "Reactive press quote", "Social stunt / activation", "Data piece / map", "Satirical product tie-in", "Reactive video", "CEO comment to media", "Full creative campaign"
+   - newsjacking_speed: one of "Immediate (24h)", "This week", "Can plan (2+ weeks)"
+   - newsjacking_concept: one-line title for the idea (e.g. "Riot's Disposable Ban Funeral", "The Big Vape Price Tracker")
+
+   NEVER output generic suggestions like "post a social comment" or "issue a CEO quote" — if that's all you can think of, this isn't a newsjacking opp; re-classify as pr_commentary instead.
 
 Be generous with "blog" — most vaping/health/regulation stories have blog potential.
 If a story is strong enough for PR commentary it almost certainly also warrants a blog post.
@@ -128,8 +142,11 @@ Return ONLY valid JSON in this exact format:
   "suggested_position": "<exact position name from list>",
   "why_it_matters": "<one line>",
   "opportunity_types": ["pr_commentary", "blog"],
-  "newsjacking_concept": "<concrete creative idea — only populated if newsjacking is in opportunity_types, otherwise empty string>",
-  "newsjacking_format": "<format — only populated if newsjacking is in opportunity_types, otherwise empty string>"
+  "newsjacking_concept": "<one-line title — only if newsjacking in opportunity_types>",
+  "newsjacking_hook": "<1-2 sentence creative connection — only if newsjacking>",
+  "newsjacking_execution": "<2-3 sentence specific execution — only if newsjacking>",
+  "newsjacking_format": "<format — only if newsjacking>",
+  "newsjacking_speed": "<Immediate (24h) / This week / Can plan (2+ weeks) — only if newsjacking>"
 }}
 
 opportunity_types must be a JSON array containing one or more of: "pr_commentary", "newsjacking", "blog"."""
@@ -288,6 +305,7 @@ def run_daily_briefing(force: bool = False) -> list:
 
         # Create a separate opportunity for each type the AI identified
         for opp_type in analysis.get("opportunity_types", ["pr_commentary"]):
+            is_nj = opp_type == "newsjacking"
             save_opportunity(
                 story_title=title,
                 story_url=article.get("url", ""),
@@ -297,8 +315,11 @@ def run_daily_briefing(force: bool = False) -> list:
                 suggested_position=analysis.get("suggested_position", ""),
                 why_it_matters=analysis.get("why_it_matters", ""),
                 opportunity_type=opp_type,
-                newsjacking_concept=analysis.get("newsjacking_concept", "") if opp_type == "newsjacking" else "",
-                newsjacking_format=analysis.get("newsjacking_format", "") if opp_type == "newsjacking" else "",
+                newsjacking_concept=analysis.get("newsjacking_concept", "") if is_nj else "",
+                newsjacking_hook=analysis.get("newsjacking_hook", "") if is_nj else "",
+                newsjacking_execution=analysis.get("newsjacking_execution", "") if is_nj else "",
+                newsjacking_format=analysis.get("newsjacking_format", "") if is_nj else "",
+                newsjacking_speed=analysis.get("newsjacking_speed", "") if is_nj else "",
             )
         analysed.append(analysis)
         new_count += 1
@@ -643,20 +664,45 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
             nj_concept = opp.get("newsjacking_concept", "")
             nj_format = opp.get("newsjacking_format", "")
 
-            # Newsjacking cards get the amber "The Idea" panel to match inbox
-            if opp_type == "newsjacking" and nj_concept:
-                format_badge = (
-                    f'<span style="background:#fbbf2422;border:1px solid #fbbf2466;color:#fbbf24;'
-                    f'font-size:10px;font-weight:700;padding:1px 7px;border-radius:2px;'
-                    f'text-transform:uppercase;letter-spacing:0.06em;margin-left:4px">{nj_format}</span>'
-                ) if nj_format else ""
+            # Newsjacking cards get the full creative brief panel to match inbox
+            nj_hook = opp.get("newsjacking_hook", "")
+            nj_execution = opp.get("newsjacking_execution", "")
+            nj_speed = opp.get("newsjacking_speed", "")
+            if opp_type == "newsjacking" and (nj_hook or nj_concept):
+                meta_badges = ""
+                if nj_format:
+                    meta_badges += (
+                        f'<span style="background:#fbbf2422;border:1px solid #fbbf2466;color:#fbbf24;'
+                        f'font-size:10px;font-weight:700;padding:1px 7px;border-radius:2px;'
+                        f'text-transform:uppercase;letter-spacing:0.06em;margin-right:4px">{nj_format}</span>'
+                    )
+                if nj_speed:
+                    speed_col = "#E8192C" if "Immediate" in nj_speed else "#fbbf24" if "This week" in nj_speed else "#60a5fa"
+                    meta_badges += (
+                        f'<span style="background:{speed_col}22;border:1px solid {speed_col}66;color:{speed_col};'
+                        f'font-size:10px;font-weight:700;padding:1px 7px;border-radius:2px;'
+                        f'text-transform:uppercase;letter-spacing:0.06em">{nj_speed}</span>'
+                    )
+                idea_title = (
+                    f'<div style="font-weight:900;font-size:14px;color:#fbbf24;margin-bottom:6px">{nj_concept}</div>'
+                ) if nj_concept else ""
+                hook_block = (
+                    f'<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:700;'
+                    f'letter-spacing:0.1em;text-transform:uppercase;color:#fbbf24;margin-bottom:2px">The Hook</div>'
+                    f'<div style="font-size:12px;color:#F0E0A0;line-height:1.5">{nj_hook}</div></div>'
+                ) if nj_hook else ""
+                exec_block = (
+                    f'<div><div style="font-size:10px;font-weight:700;letter-spacing:0.1em;'
+                    f'text-transform:uppercase;color:#fbbf24;margin-bottom:2px">The Execution</div>'
+                    f'<div style="font-size:12px;color:#F0E0A0;line-height:1.5">{nj_execution}</div></div>'
+                ) if nj_execution else ""
                 body = (
                     f'<div style="background:#1A1400;border:1px solid #fbbf2433;border-radius:3px;'
-                    f'padding:8px 10px;margin-top:6px;margin-bottom:6px">'
-                    f'<div style="font-size:10px;font-weight:700;letter-spacing:0.1em;'
-                    f'text-transform:uppercase;color:#fbbf24;margin-bottom:4px">'
-                    f'The Idea{format_badge}</div>'
-                    f'<div style="font-size:12px;color:#F0E0A0;line-height:1.5">{nj_concept}</div>'
+                    f'padding:10px 12px;margin-top:6px;margin-bottom:6px">'
+                    f'{idea_title}'
+                    f'<div style="margin-bottom:6px">{meta_badges}</div>'
+                    f'{hook_block}'
+                    f'{exec_block}'
                     f'</div>'
                     f'<div style="font-size:11px;color:#888;margin-top:4px">'
                     f'<strong style="color:#666">Message:</strong> {opp.get("riot_angle","")}</div>'
@@ -729,15 +775,22 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
             lines += [f"── {label} ──", ""]
             for opp in opps:
                 is_nj = opp.get("opportunity_type") == "newsjacking"
-                nj_concept = opp.get("newsjacking_concept", "") if is_nj else ""
-                nj_format = opp.get("newsjacking_format", "") if is_nj else ""
                 entry = [
                     f"[{opp.get('relevance_score',0)}/10] {opp.get('story_title','')}",
                     f"  {opp.get('story_source','')}",
                 ]
-                if is_nj and nj_concept:
-                    fmt_suffix = f" ({nj_format})" if nj_format else ""
-                    entry.append(f"  THE IDEA{fmt_suffix}: {nj_concept}")
+                if is_nj and (opp.get("newsjacking_hook") or opp.get("newsjacking_concept")):
+                    if opp.get("newsjacking_concept"):
+                        entry.append(f"  IDEA: {opp['newsjacking_concept']}")
+                    meta_parts = []
+                    if opp.get("newsjacking_format"): meta_parts.append(opp["newsjacking_format"])
+                    if opp.get("newsjacking_speed"):  meta_parts.append(opp["newsjacking_speed"])
+                    if meta_parts:
+                        entry.append(f"  ({' · '.join(meta_parts)})")
+                    if opp.get("newsjacking_hook"):
+                        entry.append(f"  Hook: {opp['newsjacking_hook']}")
+                    if opp.get("newsjacking_execution"):
+                        entry.append(f"  Execution: {opp['newsjacking_execution']}")
                     entry.append(f"  Message: {opp.get('riot_angle','')}")
                 else:
                     entry.append(f"  Angle: {opp.get('riot_angle','')}")

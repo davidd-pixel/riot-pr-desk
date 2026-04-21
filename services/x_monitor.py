@@ -16,7 +16,24 @@ Trending topics are NOT available at Free or Basic tier (endpoint deprecated).
 """
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+
+# Drop tweets older than this — real-time signal only
+_MAX_TWEET_AGE_DAYS = 7
+
+
+def _is_recent_tweet(tweet) -> bool:
+    """Return True if tweet is within the recency window."""
+    created = getattr(tweet, "created_at", None)
+    if created is None:
+        return False
+    try:
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - created) <= timedelta(days=_MAX_TWEET_AGE_DAYS)
+    except Exception:
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +120,7 @@ def fetch_vaping_tweets(max_results: int = 20) -> list:
         )
         if not resp.data:
             return []
-        return [_tweet_to_article(t) for t in resp.data]
+        return [_tweet_to_article(t) for t in resp.data if _is_recent_tweet(t)]
     except Exception as e:
         print(f"[X] fetch_vaping_tweets error: {e}")
         return []
@@ -136,7 +153,7 @@ def fetch_competitor_tweets(max_results: int = 10) -> list:
         )
         if not resp.data:
             return []
-        return [_tweet_to_article(t) for t in resp.data]
+        return [_tweet_to_article(t) for t in resp.data if _is_recent_tweet(t)]
     except Exception as e:
         print(f"[X] fetch_competitor_tweets error: {e}")
         return []
@@ -167,7 +184,7 @@ def fetch_riot_mentions(max_results: int = 10) -> list:
         )
         if not resp.data:
             return []
-        return [_tweet_to_article(t) for t in resp.data]
+        return [_tweet_to_article(t) for t in resp.data if _is_recent_tweet(t)]
     except Exception as e:
         print(f"[X] fetch_riot_mentions error: {e}")
         return []
@@ -198,7 +215,7 @@ def fetch_nicotine_health_tweets(max_results: int = 10) -> list:
         )
         if not resp.data:
             return []
-        return [_tweet_to_article(t) for t in resp.data]
+        return [_tweet_to_article(t) for t in resp.data if _is_recent_tweet(t)]
     except Exception as e:
         print(f"[X] fetch_nicotine_health_tweets error: {e}")
         return []

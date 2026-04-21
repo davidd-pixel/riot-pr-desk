@@ -60,8 +60,12 @@ def save_opportunity(
     suggested_position: str,
     why_it_matters: str = "",
     opportunity_type: str = "pr_commentary",  # pr_commentary | newsjacking | blog
-    newsjacking_concept: str = "",  # concrete creative execution idea (newsjacking only)
-    newsjacking_format: str = "",   # e.g. "Reactive press quote", "Social post" (newsjacking only)
+    # Newsjacking creative brief fields (only populated when opportunity_type == "newsjacking")
+    newsjacking_concept: str = "",    # one-line title for the idea
+    newsjacking_hook: str = "",       # 1-2 sentence creative connection
+    newsjacking_execution: str = "",  # 2-3 sentence specific execution
+    newsjacking_format: str = "",     # format (press quote, stunt, data piece etc)
+    newsjacking_speed: str = "",      # urgency tier
 ) -> dict:
     """Save a new opportunity. Returns the saved record."""
     records = _load()
@@ -79,7 +83,10 @@ def save_opportunity(
         "why_it_matters": why_it_matters,
         "opportunity_type": opportunity_type,
         "newsjacking_concept": newsjacking_concept,
+        "newsjacking_hook": newsjacking_hook,
+        "newsjacking_execution": newsjacking_execution,
         "newsjacking_format": newsjacking_format,
+        "newsjacking_speed": newsjacking_speed,
         "status": "pending",
         "pack_id": None,
         "custom_angle": None,  # set when user edits the angle before approving
@@ -148,14 +155,45 @@ def expire_old_opportunities() -> int:
 
 def trim_pending_to_top_n_per_type(n: int = 5) -> int:
     """
-    For each opportunity_type (pr_commentary, newsjacking, blog), keep only
-    the top-N pending opportunities by relevance_score descending. Everything
-    beyond top-N is marked as 'skipped'. Returns the number of opps trimmed.
+    Clean up pending opportunities so the inbox + email only show a focused
+    top-N per type. Does three things in order:
 
-    Called at the end of run_daily_briefing() to ensure the inbox and the
-    email digest see the same focused set of opps.
+    1. Marks pending opps from low-credibility sources as 'skipped'
+       (retroactively applies services.source_credibility — catches opps
+       that were created before the credibility filter existed).
+    2. Marks pending newsjacking opps with no newsjacking_hook as 'skipped'
+       (they were created before the richer prompt — we'd rather regenerate).
+    3. For each remaining pending opportunity_type, keeps the top N by
+       relevance_score and marks the rest as 'skipped'.
+
+    Returns the total count trimmed.
     """
+    try:
+        from services.source_credibility import is_credible
+    except ImportError:
+        def is_credible(_):  # type: ignore
+            return True
+
     records = _load()
+    trimmed = 0
+
+    # Pass 1 — drop low-credibility sources retroactively
+    for o in records:
+        if o.get("status") != "pending":
+            continue
+        if not is_credible(o.get("story_source", "")):
+            o["status"] = "skipped"
+            trimmed += 1
+
+    # Pass 2 — drop pre-prompt-upgrade newsjacking opps missing the richer hook
+    for o in records:
+        if o.get("status") != "pending":
+            continue
+        if o.get("opportunity_type") == "newsjacking" and not o.get("newsjacking_hook"):
+            o["status"] = "skipped"
+            trimmed += 1
+
+    # Pass 3 — cap each type at top-N by relevance score
     pending_by_type: dict = {}
     for o in records:
         if o.get("status") != "pending":
@@ -163,7 +201,6 @@ def trim_pending_to_top_n_per_type(n: int = 5) -> int:
         t = o.get("opportunity_type", "pr_commentary")
         pending_by_type.setdefault(t, []).append(o)
 
-    trimmed = 0
     for opp_type, opps in pending_by_type.items():
         opps.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
         for overflow in opps[n:]:

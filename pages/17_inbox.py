@@ -126,7 +126,10 @@ if pending_opps:
             why = opp.get("why_it_matters", "")
             story_url = opp.get("story_url", "")
             nj_concept = opp.get("newsjacking_concept", "")
+            nj_hook = opp.get("newsjacking_hook", "")
+            nj_execution = opp.get("newsjacking_execution", "")
             nj_format = opp.get("newsjacking_format", "")
+            nj_speed = opp.get("newsjacking_speed", "")
 
             if score >= 8:
                 score_colour = "#E8192C"
@@ -151,23 +154,59 @@ if pending_opps:
                 f'text-decoration:none">Read story →</a>'
             ) if story_url else ""
 
-            # Build the card body — newsjacking gets a richer creative brief panel
-            if opp_type == "newsjacking" and nj_concept:
-                format_badge = (
-                    f'<span style="background:#fbbf2422;border:1px solid #fbbf2466;color:#fbbf24;'
-                    f'font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:2px;'
-                    f'text-transform:uppercase;letter-spacing:0.06em">{nj_format}</span> '
-                ) if nj_format else ""
+            # Build the card body — newsjacking gets a full creative brief panel
+            if opp_type == "newsjacking" and (nj_hook or nj_concept):
+                # Format + Speed badges on the title row
+                meta_badges = ""
+                if nj_format:
+                    meta_badges += (
+                        f'<span style="background:#fbbf2422;border:1px solid #fbbf2466;color:#fbbf24;'
+                        f'font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:2px;'
+                        f'text-transform:uppercase;letter-spacing:0.06em;margin-right:4px">{nj_format}</span>'
+                    )
+                if nj_speed:
+                    speed_colour = "#E8192C" if "Immediate" in nj_speed else "#fbbf24" if "This week" in nj_speed else "#60a5fa"
+                    meta_badges += (
+                        f'<span style="background:{speed_colour}22;border:1px solid {speed_colour}66;color:{speed_colour};'
+                        f'font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:2px;'
+                        f'text-transform:uppercase;letter-spacing:0.06em">{nj_speed}</span>'
+                    )
+
+                # Idea title — bold headline for the concept
+                idea_title_html = (
+                    f'<div style="font-family:PPFormula,sans-serif;font-weight:900;font-size:0.95rem;'
+                    f'color:#fbbf24;margin-bottom:0.4rem">{nj_concept}</div>'
+                ) if nj_concept else ""
+
+                # Hook section
+                hook_html = (
+                    f'<div style="margin-bottom:0.5rem">'
+                    f'<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;'
+                    f'color:#fbbf24;margin-bottom:0.2rem">The Hook</div>'
+                    f'<div style="font-size:0.82rem;color:#F0E0A0;line-height:1.5">{nj_hook}</div>'
+                    f'</div>'
+                ) if nj_hook else ""
+
+                # Execution section
+                execution_html = (
+                    f'<div style="margin-bottom:0.2rem">'
+                    f'<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;'
+                    f'color:#fbbf24;margin-bottom:0.2rem">The Execution</div>'
+                    f'<div style="font-size:0.82rem;color:#F0E0A0;line-height:1.5">{nj_execution}</div>'
+                    f'</div>'
+                ) if nj_execution else ""
+
                 card_body = (
                     f'<div style="font-size:0.72rem;color:#555;margin-bottom:0.6rem">{source} &nbsp;{url_link}</div>'
-                    # The idea — most prominent element
+                    # Full creative brief panel
                     f'<div style="background:#1A1400;border:1px solid #fbbf2433;border-radius:3px;'
-                    f'padding:0.6rem 0.8rem;margin-bottom:0.5rem">'
-                    f'<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;'
-                    f'color:#fbbf24;margin-bottom:0.3rem">The Idea &nbsp;{format_badge}</div>'
-                    f'<div style="font-size:0.82rem;color:#F0E0A0;line-height:1.5">{nj_concept}</div>'
+                    f'padding:0.75rem 0.9rem;margin-bottom:0.5rem">'
+                    f'{idea_title_html}'
+                    f'<div style="margin-bottom:0.5rem">{meta_badges}</div>'
+                    f'{hook_html}'
+                    f'{execution_html}'
                     f'</div>'
-                    # Angle as secondary context
+                    # Angle + why as small secondary context
                     f'<div style="font-size:0.78rem;color:#888;line-height:1.4;margin-bottom:0.2rem">'
                     f'<strong style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em">Message</strong>'
                     f'&nbsp; {angle}</div>'

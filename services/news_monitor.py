@@ -7,7 +7,7 @@ Also supports fetching article text from URLs.
 import os
 import re
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.request import urlopen, Request
 from urllib.error import URLError
 from email.utils import parsedate_to_datetime
@@ -148,6 +148,55 @@ def _deduplicate(articles):
     return unique
 
 
+def _filter_recent(articles: list, max_age_days: int = 7) -> list:
+    """
+    Drop articles older than `max_age_days`. Articles with no/unparseable
+    publishedAt are dropped too — better to miss a story than surface stale news.
+    Used by all fetch_* functions to stop Google News resurfacing old content.
+    """
+    from datetime import timezone as _tz
+    cutoff = datetime.now(_tz.utc) - timedelta(days=max_age_days)
+    kept = []
+    for a in articles:
+        if "error" in a:
+            kept.append(a)
+            continue
+        raw = a.get("publishedAt", "")
+        if not raw:
+            continue
+        try:
+            dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=_tz.utc)
+            if dt >= cutoff:
+                kept.append(a)
+        except Exception:
+            continue
+    return kept
+
+
+def _filter_credible(articles: list) -> list:
+    """
+    Drop articles from low-credibility sources (Tier 3 per source_credibility).
+    Keeps errors so upstream callers can still log them.
+    """
+    try:
+        from services.source_credibility import is_credible
+    except ImportError:
+        return articles
+
+    kept = []
+    for a in articles:
+        if "error" in a:
+            kept.append(a)
+            continue
+        src = a.get("source", {})
+        src_name = src.get("name", "") if isinstance(src, dict) else str(src)
+        if is_credible(src_name):
+            kept.append(a)
+    return kept
+
+
 def _sort_by_date(articles: list) -> list:
     """Sort articles newest-first by publishedAt. Articles with no/unparseable date go last."""
     def _parse_dt(article):
@@ -170,25 +219,27 @@ def _sort_by_date(articles: list) -> list:
     return sorted(valid, key=_parse_dt, reverse=True) + errors
 
 
-def fetch_uk_vape_news(page_size=20):
+def fetch_uk_vape_news(page_size=20, max_age_days: int = 7):
     """Fetch UK vaping news via Google News search. Free and unlimited."""
     all_articles = []
     for query in UK_VAPE_SEARCHES:
         articles = _search_gnews(query, max_items=15)
         all_articles.extend([a for a in articles if "error" not in a])
-    return _sort_by_date(_deduplicate(all_articles))[:page_size]
+    filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
+    return _sort_by_date(_deduplicate(filtered))[:page_size]
 
 
-def fetch_global_vape_news(page_size=20):
+def fetch_global_vape_news(page_size=20, max_age_days: int = 7):
     """Fetch global vaping news via Google News search."""
     all_articles = []
     for query in GLOBAL_VAPE_SEARCHES:
         articles = _search_gnews(query, max_items=15)
         all_articles.extend([a for a in articles if "error" not in a])
-    return _sort_by_date(_deduplicate(all_articles))[:page_size]
+    filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
+    return _sort_by_date(_deduplicate(filtered))[:page_size]
 
 
-def fetch_trending_news(page_size=30, days_back=None):
+def fetch_trending_news(page_size=30, days_back=None, max_age_days: int = 7):
     """
     Fetch trending UK stories across entertainment, sport, business, health, science, tech.
     Free and unlimited via Google News RSS topic feeds.
@@ -210,7 +261,8 @@ def fetch_trending_news(page_size=30, days_back=None):
                 a["_category"] = topic_name
         all_articles.extend([a for a in articles if "error" not in a])
 
-    return _sort_by_date(_deduplicate(all_articles))[:page_size]
+    filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
+    return _sort_by_date(_deduplicate(filtered))[:page_size]
 
 
 # Social/viral search queries — stories originating from Reddit, TikTok, social media
@@ -223,7 +275,7 @@ SOCIAL_VIRAL_SEARCHES = {
 }
 
 
-def fetch_social_viral_news(page_size=25):
+def fetch_social_viral_news(page_size=25, max_age_days: int = 7):
     """
     Fetch stories originating from Reddit, TikTok and social media.
     Captures viral content that has crossed into mainstream news —
@@ -238,7 +290,8 @@ def fetch_social_viral_news(page_size=25):
                 a["_category"] = category
         all_articles.extend([a for a in articles if "error" not in a])
 
-    return _sort_by_date(_deduplicate(all_articles))[:page_size]
+    filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
+    return _sort_by_date(_deduplicate(filtered))[:page_size]
 
 
 def _format_uk_date(iso_str: str) -> str:

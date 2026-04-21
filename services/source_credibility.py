@@ -102,25 +102,45 @@ TIER_2 = {
 #     unidentified content)
 
 
+def _normalise(s: str) -> str:
+    """
+    Clean up a Google News / RSS source string for matching.
+    Strips common suffixes ("Source - Domain.com", "Source | Publication"),
+    strips surrounding whitespace, and lowercases.
+    """
+    if not s:
+        return ""
+    s = s.strip()
+    # "The Guardian - theguardian.com" -> "The Guardian"
+    if " - " in s:
+        s = s.split(" - ", 1)[0].strip()
+    # "The Guardian | Opinion" -> "The Guardian"
+    if " | " in s:
+        s = s.split(" | ", 1)[0].strip()
+    # Strip trailing domain in parens "BBC News (BBC.co.uk)"
+    if s.endswith(")") and " (" in s:
+        s = s.rsplit(" (", 1)[0].strip()
+    return s.lower()
+
+
+# Pre-compute lowercase lookup sets once (case- and suffix-insensitive)
+_TIER_1_LOOKUP = {_normalise(x) for x in TIER_1}
+_TIER_2_LOOKUP = {_normalise(x) for x in TIER_2}
+
+
 def get_tier(source_name: str) -> int:
     """Return 1, 2, or 3 for a given source name. 3 = blocked."""
     if not source_name:
         return 3
-    s = source_name.strip()
 
-    if s in TIER_1:
+    normalised = _normalise(source_name)
+    if not normalised:
+        return 3
+
+    if normalised in _TIER_1_LOOKUP:
         return 1
-    if s in TIER_2:
+    if normalised in _TIER_2_LOOKUP:
         return 2
-
-    # Case-insensitive fallback — handles "bbc news" vs "BBC News" etc.
-    s_lower = s.lower()
-    for src in TIER_1:
-        if src.lower() == s_lower:
-            return 1
-    for src in TIER_2:
-        if src.lower() == s_lower:
-            return 2
 
     return 3
 
