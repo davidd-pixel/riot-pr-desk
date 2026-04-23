@@ -20,6 +20,25 @@ STATUS_OPTIONS = ["pending", "approved", "rejected", "generating", "generated", 
 _DRIVE_RESYNC_SECONDS = 60
 _last_drive_sync_at: float = 0.0
 
+# When True, _load() does NOT auto-pull from Drive. Used during the briefing
+# run so mid-process _load() calls don't overwrite our in-progress local file
+# with a stale Drive copy (which could happen if a previous upload failed
+# silently due to rate-limit or network blip).
+_drive_sync_suppressed: bool = False
+
+
+def suppress_drive_sync() -> None:
+    """Disable Drive auto-pulls. Call at the start of a briefing run."""
+    global _drive_sync_suppressed
+    _drive_sync_suppressed = True
+
+
+def resume_drive_sync() -> None:
+    """Re-enable Drive auto-pulls. Call at the end of a briefing run."""
+    global _drive_sync_suppressed, _last_drive_sync_at
+    _drive_sync_suppressed = False
+    _last_drive_sync_at = 0.0  # force fresh pull on next Streamlit read
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -44,7 +63,10 @@ def _load() -> list:
     _ensure_file()
 
     now = time.time()
-    if now - _last_drive_sync_at > _DRIVE_RESYNC_SECONDS:
+    if (
+        not _drive_sync_suppressed
+        and now - _last_drive_sync_at > _DRIVE_RESYNC_SECONDS
+    ):
         _last_drive_sync_at = now
         try:
             from services.drive_persistence import download_json, is_configured

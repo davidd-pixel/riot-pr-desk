@@ -225,12 +225,17 @@ def run_daily_briefing(force: bool = False) -> list:
     """
     from services.opportunity_tracker import (
         save_opportunity, get_all_opportunities, get_pending_opportunities,
-        update_opportunity_status,
+        update_opportunity_status, suppress_drive_sync, resume_drive_sync,
     )
 
     # Return cached pending opportunities if cache is fresh
     if not force and _cache_is_fresh():
         return get_pending_opportunities()
+
+    # During the briefing, suppress Drive auto-pulls so mid-process _load()
+    # calls can't overwrite our in-progress local file with a stale Drive
+    # copy. This prevents opp data loss if a silent upload hiccups.
+    suppress_drive_sync()
 
     # On a forced run (GitHub Actions / manual), clear old pending opps so
     # inbox count matches the email exactly
@@ -383,6 +388,9 @@ def run_daily_briefing(force: bool = False) -> list:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": new_count,
     })
+
+    # Re-enable Drive auto-pulls for Streamlit readers
+    resume_drive_sync()
 
     return get_pending_opportunities()
 
