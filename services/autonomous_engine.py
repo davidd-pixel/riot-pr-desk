@@ -12,7 +12,51 @@ from datetime import datetime, timezone, timedelta
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 BRIEFING_CACHE_FILE = os.path.join(DATA_DIR, "briefing_cache.json")
+DIGEST_SENT_FILE = os.path.join(DATA_DIR, "digest_sent.json")
 BRIEFING_CACHE_HOURS = 4
+
+
+def _digest_sent_today() -> bool:
+    """
+    Return True if we've already sent today's digest email. Used by the
+    GitHub Actions runner so backup cron slots (09:00, 11:00 UTC) don't
+    double-send if the 07:00 slot already succeeded.
+
+    Synced via Google Drive so multiple runners agree on the state.
+    """
+    try:
+        from services.drive_persistence import download_json, is_configured
+        data = None
+        if is_configured():
+            data = download_json("digest_sent.json")
+        if data is None and os.path.exists(DIGEST_SENT_FILE):
+            with open(DIGEST_SENT_FILE, "r") as f:
+                data = json.load(f)
+        if not data:
+            return False
+        last_iso = data.get("last_sent_at", "")
+        last = datetime.fromisoformat(last_iso)
+        if last.tzinfo is None:
+            last = last.replace(tzinfo=timezone.utc)
+        return last.date() == datetime.now(timezone.utc).date()
+    except Exception:
+        return False
+
+
+def _mark_digest_sent() -> None:
+    """Record that today's digest has been sent. Persists to Drive."""
+    payload = {"last_sent_at": datetime.now(timezone.utc).isoformat()}
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        with open(DIGEST_SENT_FILE, "w") as f:
+            json.dump(payload, f, indent=2)
+    except Exception:
+        pass
+    try:
+        from services.drive_persistence import upload_json
+        upload_json("digest_sent.json", payload)
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -845,6 +889,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Riot PR Desk Autonomous Engine")
     parser.add_argument("--send-digest", action="store_true", help="Run briefing and send email digest")
     parser.add_argument("--force", action="store_true", help="Bypass 4-hour cache")
+    parser.add_argument(
+        "--force-resend",
+        action="store_true",
+        help="Override the duplicate-send guard and send even if today's digest was already delivered",
+    )
     args = parser.parse_args()
 
     if args.send_digest:
@@ -870,6 +919,13 @@ if __name__ == "__main__":
             print("ERROR: SMTP_USER or SMTP_PASSWORD not set")
             sys.exit(1)
 
+        # Duplicate-send guard: if we already sent today's digest from an
+        # earlier cron slot, exit cleanly. --force-resend overrides.
+        if not args.force_resend and _digest_sent_today():
+            print("Today's digest has already been sent — skipping to avoid duplicate.")
+            print("(Use --force-resend to override.)")
+            sys.exit(0)
+
         print("\nFetching and analysing news...")
         try:
             opps = run_daily_briefing(force=True)
@@ -882,6 +938,7 @@ if __name__ == "__main__":
         print(f"\nSending digest to {to_email}...")
         success = send_digest_email(opps, to_email)
         if success:
+            _mark_digest_sent()
             print("Digest sent successfully.")
             sys.exit(0)
         else:

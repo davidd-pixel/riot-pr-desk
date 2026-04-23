@@ -14,6 +14,10 @@ OPP_FILE = os.path.join(DATA_DIR, "opportunities.json")
 
 STATUS_OPTIONS = ["pending", "approved", "rejected", "generating", "generated", "skipped"]
 
+# Set True after the first Drive-sync of this process so we only do it once
+# per server restart (matches pattern used in journalist_db / pr_library / blog_library).
+_drive_synced = False
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -27,12 +31,41 @@ def _ensure_file():
 
 
 def _load() -> list:
+    """
+    Load opportunities from the local file. On the first call of a process,
+    pull the authoritative copy from Google Drive first — this is how
+    Streamlit Cloud picks up opps freshly created by the GitHub Actions
+    daily briefing runner.
+    """
+    global _drive_synced
     _ensure_file()
+
+    if not _drive_synced:
+        _drive_synced = True
+        try:
+            from services.drive_persistence import download_json, is_configured
+            if is_configured():
+                drive_data = download_json("opportunities.json")
+                if drive_data is not None:
+                    with open(OPP_FILE, "w") as f:
+                        json.dump(drive_data, f, indent=2)
+        except Exception:
+            pass
+
     try:
         with open(OPP_FILE, "r") as f:
             return json.load(f)
     except (json.JSONDecodeError, FileNotFoundError):
         return []
+
+
+def force_resync_from_drive() -> None:
+    """
+    Clear the one-shot sync flag so the next _load() re-pulls from Drive.
+    Call this if you suspect the local cache has drifted.
+    """
+    global _drive_synced
+    _drive_synced = False
 
 
 def _save(records: list) -> None:

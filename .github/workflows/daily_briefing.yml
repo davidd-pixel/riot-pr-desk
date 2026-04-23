@@ -2,8 +2,13 @@ name: Daily PR Briefing
 
 on:
   schedule:
-    # 07:00 UTC = 08:00 BST (summer) / 07:00 GMT (winter)
+    # Primary — 07:00 UTC = 08:00 BST / 07:00 GMT
     - cron: '0 7 * * 1-5'
+    # Backup slots — GitHub scheduled runs are notoriously unreliable and
+    # can drift by hours. The duplicate-send guard in autonomous_engine
+    # means these are no-ops if the 07:00 run already succeeded.
+    - cron: '0 9 * * 1-5'
+    - cron: '0 11 * * 1-5'
   workflow_dispatch:   # manual trigger for testing
 
 env:
