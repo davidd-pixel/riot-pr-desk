@@ -23,7 +23,20 @@ render_sidebar()
 # Header
 # ---------------------------------------------------------------------------
 
-st.title("Inbox")
+_hdr_title, _hdr_refresh = st.columns([6, 2])
+with _hdr_title:
+    st.title("Inbox")
+with _hdr_refresh:
+    st.write("")
+    if st.button("↻ Refresh from cloud", use_container_width=True, help="Pull the latest opportunities from Google Drive (forces a re-sync in case the inbox looks stale)"):
+        try:
+            from services.opportunity_tracker import force_resync_from_drive
+            force_resync_from_drive()
+            st.success("Refreshed.")
+            st.rerun()
+        except Exception as _ex:
+            st.error(f"Refresh failed: {_ex}")
+
 st.divider()
 
 # ---------------------------------------------------------------------------

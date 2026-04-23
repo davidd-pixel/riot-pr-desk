@@ -14,9 +14,11 @@ OPP_FILE = os.path.join(DATA_DIR, "opportunities.json")
 
 STATUS_OPTIONS = ["pending", "approved", "rejected", "generating", "generated", "skipped"]
 
-# Set True after the first Drive-sync of this process so we only do it once
-# per server restart (matches pattern used in journalist_db / pr_library / blog_library).
-_drive_synced = False
+# Opportunities are written by the GitHub Actions runner and read by Streamlit
+# Cloud, so the local cache gets stale quickly. Re-sync from Drive if our last
+# sync was more than this many seconds ago.
+_DRIVE_RESYNC_SECONDS = 60
+_last_drive_sync_at: float = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -32,16 +34,18 @@ def _ensure_file():
 
 def _load() -> list:
     """
-    Load opportunities from the local file. On the first call of a process,
-    pull the authoritative copy from Google Drive first — this is how
-    Streamlit Cloud picks up opps freshly created by the GitHub Actions
-    daily briefing runner.
+    Load opportunities from the local file. Re-syncs from Google Drive if
+    our last sync was more than _DRIVE_RESYNC_SECONDS ago (or if we've never
+    synced this process). This keeps Streamlit Cloud in lock-step with
+    whatever the GitHub Actions briefing runner just wrote.
     """
-    global _drive_synced
+    import time
+    global _last_drive_sync_at
     _ensure_file()
 
-    if not _drive_synced:
-        _drive_synced = True
+    now = time.time()
+    if now - _last_drive_sync_at > _DRIVE_RESYNC_SECONDS:
+        _last_drive_sync_at = now
         try:
             from services.drive_persistence import download_json, is_configured
             if is_configured():
@@ -61,11 +65,11 @@ def _load() -> list:
 
 def force_resync_from_drive() -> None:
     """
-    Clear the one-shot sync flag so the next _load() re-pulls from Drive.
-    Call this if you suspect the local cache has drifted.
+    Reset the sync timestamp so the next _load() pulls fresh data from Drive.
+    Call from a UI button when the user wants to force a refresh.
     """
-    global _drive_synced
-    _drive_synced = False
+    global _last_drive_sync_at
+    _last_drive_sync_at = 0.0
 
 
 def _save(records: list) -> None:
