@@ -20,7 +20,42 @@ _project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(_project_root, ".env"), override=True)
 
 
+def _materialise_service_account_from_env() -> None:
+    """
+    GitHub Actions and Streamlit Cloud only expose secrets as env vars, not
+    files. If GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT is set (raw JSON content)
+    but GOOGLE_SERVICE_ACCOUNT_JSON (file path) is not, write the content to
+    a tempfile and point the path env var at it. Idempotent — once the path
+    env var is set, this is a no-op.
+
+    This previously only ran in app.py, which broke Drive sync for any
+    process that started directly from CLI (e.g. the GitHub Actions
+    autonomous_engine briefing runner). Doing it here guarantees both
+    Streamlit Cloud and the briefing runner have working Drive auth.
+    """
+    sa_content = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT", "")
+    if not sa_content:
+        return
+    if os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON"):
+        return
+    import tempfile
+    try:
+        sa_data = json.loads(sa_content)
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        json.dump(sa_data, tmp)
+        tmp.close()
+        os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"] = tmp.name
+    except Exception:
+        pass
+
+
+# Run on import — covers every process that imports this module.
+_materialise_service_account_from_env()
+
+
 def is_configured() -> bool:
+    # Re-run materialisation in case env was set after module import
+    _materialise_service_account_from_env()
     sa_path = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
     folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
     if not sa_path or not folder_id:

@@ -1,17 +1,30 @@
 name: Keepalive
 
-# Runs every Sunday at 06:00 UTC — keeps the repo active so GitHub
-# doesn't disable the Daily PR Briefing scheduled workflow.
+# Runs every Sunday at 06:00 UTC. Makes a tiny empty commit to keep the
+# repo "active" so GitHub doesn't disable the Daily PR Briefing scheduled
+# workflow (which auto-deactivates after 60 days of repo inactivity).
 
 on:
   schedule:
     - cron: '0 6 * * 0'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   keepalive:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Keep workflow active
-        uses: gautamkrishnar/keepalive-workflow@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Empty commit + push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keepalive"
+          git push origin HEAD:main

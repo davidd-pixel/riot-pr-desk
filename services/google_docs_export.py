@@ -21,6 +21,11 @@ def _get_credentials(impersonate=True):
     """
     from google.oauth2 import service_account
 
+    # Ensure GOOGLE_SERVICE_ACCOUNT_JSON points at a real file, even when the
+    # process only has the JSON content env var (CI / GitHub Actions case).
+    from services.drive_persistence import _materialise_service_account_from_env
+    _materialise_service_account_from_env()
+
     json_path = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
     if not os.path.isabs(json_path):
         json_path = os.path.join(_project_root, json_path)
