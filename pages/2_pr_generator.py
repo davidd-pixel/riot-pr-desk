@@ -83,14 +83,8 @@ st.markdown("### 1. What's the story?")
 if "pr_input" in st.session_state:
     st.session_state["input_content"] = st.session_state.pop("pr_input")
 
-input_content = st.text_area(
-    "Paste a news headline, article excerpt, product update or campaign idea:",
-    key="input_content",
-    height=150,
-    placeholder="e.g. 'Government announces new vape tax starting January 2027, adding £1 per 10ml to all e-liquids...'",
-)
-
-# --- Example inputs via selectbox ---
+# --- Example inputs (must be defined BEFORE the text area so the on_change
+# callback can populate input_content before the widget renders) ---
 example_options = {
     "Select an example...": "",
     "Vape tax announcement": "The UK government has confirmed that a new excise duty on vaping products will take effect from October 2026. The tax will add £1 per 10ml to e-liquid costs, with the stated aim of discouraging youth uptake while maintaining vaping as a cheaper alternative to smoking.",
@@ -99,10 +93,28 @@ example_options = {
     "Industry controversy": "A major investigation by The Times has revealed that over 60% of disposable vapes sold in UK convenience stores fail basic safety tests, with many containing nicotine levels above the legal limit. The story names several Chinese manufacturers but does not mention Riot Labs.",
 }
 
-selected_example = st.selectbox("Or try an example:", list(example_options.keys()))
-if selected_example != "Select an example..." and example_options[selected_example]:
-    st.session_state["input_content"] = example_options[selected_example]
-    st.rerun()
+
+def _apply_example():
+    """Callback fires before the next rerun, so we can safely set
+    input_content here even though it's also a widget key."""
+    chosen = st.session_state.get("pr_gen_example_select", "Select an example...")
+    if chosen != "Select an example..." and example_options.get(chosen):
+        st.session_state["input_content"] = example_options[chosen]
+
+
+input_content = st.text_area(
+    "Paste a news headline, article excerpt, product update or campaign idea:",
+    key="input_content",
+    height=150,
+    placeholder="e.g. 'Government announces new vape tax starting January 2027, adding £1 per 10ml to all e-liquids...'",
+)
+
+st.selectbox(
+    "Or try an example:",
+    list(example_options.keys()),
+    key="pr_gen_example_select",
+    on_change=_apply_example,
+)
 
 st.divider()
 
