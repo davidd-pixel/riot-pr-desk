@@ -23,12 +23,13 @@ def _call_anthropic(system_prompt, user_prompt):
 
     client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-5",
         max_tokens=8192,
+        thinking={"type": "disabled"},
         system=system_prompt,
         messages=[{"role": "user", "content": user_prompt}],
     )
-    return response.content[0].text
+    return next(block.text for block in response.content if block.type == "text")
 
 
 def _call_openai(system_prompt, user_prompt):
@@ -69,8 +70,9 @@ def _stream_anthropic(system_prompt, user_prompt):
     from anthropic import Anthropic
     client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     with client.messages.stream(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-5",
         max_tokens=8192,
+        thinking={"type": "disabled"},
         system=system_prompt,
         messages=[{"role": "user", "content": user_prompt}],
     ) as stream:
