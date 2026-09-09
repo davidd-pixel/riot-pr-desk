@@ -7,6 +7,8 @@ as relevant to Riot, with a suggested angle and position.
 import json
 import os
 import uuid
+import threading
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
@@ -14,96 +16,69 @@ OPP_FILE = os.path.join(DATA_DIR, "opportunities.json")
 
 STATUS_OPTIONS = ["pending", "approved", "rejected", "generating", "generated", "skipped"]
 
-# Opportunities are written by the GitHub Actions runner and read by Streamlit
-# Cloud, so the local cache gets stale quickly. Re-sync from Drive if our last
-# sync was more than this many seconds ago.
+# Only the scheduled job writes opportunity records. User decisions are
+# immutable events, so replacing a stale opportunity snapshot cannot undo them.
 _DRIVE_RESYNC_SECONDS = 60
-_last_drive_sync_at: float = 0.0
-
-# When True, _load() does NOT auto-pull from Drive. Used during the briefing
-# run so mid-process _load() calls don't overwrite our in-progress local file
-# with a stale Drive copy (which could happen if a previous upload failed
-# silently due to rate-limit or network blip).
-_drive_sync_suppressed: bool = False
+_last_drive_sync_at = 0.0
+_lock = threading.RLock()
 
 
-def suppress_drive_sync() -> None:
-    """Disable Drive auto-pulls. Call at the start of a briefing run."""
-    global _drive_sync_suppressed
-    _drive_sync_suppressed = True
+def _atomic_json(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+    try:
+        temporary.write_text(json.dumps(value, indent=2), encoding="utf-8")
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
-def resume_drive_sync() -> None:
-    """Re-enable Drive auto-pulls. Call at the end of a briefing run."""
-    global _drive_sync_suppressed, _last_drive_sync_at
-    _drive_sync_suppressed = False
-    _last_drive_sync_at = 0.0  # force fresh pull on next Streamlit read
-
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-def _ensure_file():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(OPP_FILE):
-        with open(OPP_FILE, "w") as f:
-            json.dump([], f)
+def _actions_dir():
+    return Path(DATA_DIR) / "opportunity_actions"
 
 
 def _load() -> list:
-    """
-    Load opportunities from the local file. Re-syncs from Google Drive if
-    our last sync was more than _DRIVE_RESYNC_SECONDS ago (or if we've never
-    synced this process). This keeps Streamlit Cloud in lock-step with
-    whatever the GitHub Actions briefing runner just wrote.
-    """
     import time
+    from services import drive_persistence as drive
     global _last_drive_sync_at
-    _ensure_file()
-
-    now = time.time()
-    if (
-        not _drive_sync_suppressed
-        and now - _last_drive_sync_at > _DRIVE_RESYNC_SECONDS
-    ):
-        _last_drive_sync_at = now
-        try:
-            from services.drive_persistence import download_json, is_configured
-            if is_configured():
-                drive_data = download_json("opportunities.json")
-                if drive_data is not None:
-                    with open(OPP_FILE, "w") as f:
-                        json.dump(drive_data, f, indent=2)
-        except Exception:
-            pass
-
-    try:
-        with open(OPP_FILE, "r") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        return []
+    with _lock:
+        directory = _actions_dir()
+        directory.mkdir(parents=True, exist_ok=True)
+        if drive.is_configured() and time.time() - _last_drive_sync_at > _DRIVE_RESYNC_SECONDS:
+            records = drive.download_json("opportunities.json", strict=True)
+            if records is not None:
+                if not isinstance(records, list):
+                    raise RuntimeError("Invalid opportunities in Google Drive")
+                _atomic_json(OPP_FILE, records)
+            events = drive.download_action_events({p.name for p in directory.glob("*.json")})
+            for name, event in events.items():
+                if Path(name).name != name or not isinstance(event, dict):
+                    raise RuntimeError("Invalid opportunity action in Google Drive")
+                _atomic_json(directory / name, event)
+            _last_drive_sync_at = time.time()
+        path = Path(OPP_FILE)
+        records = json.loads(path.read_text()) if path.exists() else []
+        by_id = {o["id"]: o for o in records}
+        events = [json.loads(p.read_text()) for p in directory.glob("*.json")]
+        for event in sorted(events, key=lambda e: (e["created_at"], e["id"])):
+            if event["opportunity_id"] in by_id:
+                by_id[event["opportunity_id"]].update(event["changes"])
+        return list(by_id.values())
 
 
 def force_resync_from_drive() -> None:
-    """
-    Reset the sync timestamp so the next _load() pulls fresh data from Drive.
-    Call from a UI button when the user wants to force a refresh.
-    """
     global _last_drive_sync_at
     _last_drive_sync_at = 0.0
+    _load()  # Report errors now, before the UI announces success.
 
 
 def _save(records: list) -> None:
-    _ensure_file()
-    with open(OPP_FILE, "w") as f:
-        json.dump(records, f, indent=2)
-    # Sync to Google Drive if configured
-    try:
-        from services.drive_persistence import upload_json
-        upload_json("opportunities.json", records)
-    except Exception:
-        pass
+    from services import drive_persistence as drive
+    with _lock:
+        if drive.is_configured():
+            drive.upload_json("opportunities.json", records, strict=True)
+        _atomic_json(OPP_FILE, records)
 
 
 # ---------------------------------------------------------------------------
@@ -164,7 +139,6 @@ def get_all_opportunities() -> list:
 
 def get_pending_opportunities() -> list:
     """Return pending (not yet actioned) opportunities, highest relevance first."""
-    expire_old_opportunities()
     all_opps = _load()
     pending = [o for o in all_opps if o.get("status") == "pending"]
     return sorted(pending, key=lambda o: o.get("relevance_score", 0), reverse=True)
@@ -179,98 +153,25 @@ def get_opportunity(opp_id: str) -> dict | None:
 
 def update_opportunity_status(opp_id: str, status: str, pack_id: str = None, custom_angle: str = None) -> bool:
     """Update the status (and optionally pack_id / custom_angle) of an opportunity."""
-    records = _load()
-    for o in records:
-        if o.get("id") == opp_id:
-            o["status"] = status
-            if pack_id is not None:
-                o["pack_id"] = pack_id
-            if custom_angle is not None:
-                o["custom_angle"] = custom_angle
-            _save(records)
-            return True
-    return False
+    if status not in STATUS_OPTIONS:
+        raise ValueError("Unknown opportunity status")
+    from services import drive_persistence as drive
+    with _lock:
+        if not get_opportunity(opp_id):
+            return False
+        changes = {"status": status}
+        if pack_id is not None:
+            changes["pack_id"] = pack_id
+        if custom_angle is not None:
+            changes["custom_angle"] = custom_angle
+        event = {"id": uuid.uuid4().hex, "opportunity_id": opp_id,
+                 "created_at": datetime.now(timezone.utc).isoformat(), "changes": changes}
+        name = f"opportunity_action_{event['id']}.json"
+        if drive.is_configured():
+            drive.upload_json(name, event, strict=True)
+        _atomic_json(_actions_dir() / name, event)
+        return True
 
-
-def expire_old_opportunities() -> int:
-    """Mark expired pending opportunities as skipped. Returns count expired."""
-    records = _load()
-    now = datetime.now(timezone.utc)
-    expired = 0
-    for o in records:
-        if o.get("status") == "pending":
-            expires = o.get("expires_at", "")
-            try:
-                exp_dt = datetime.fromisoformat(expires)
-                if exp_dt.tzinfo is None:
-                    exp_dt = exp_dt.replace(tzinfo=timezone.utc)
-                if now > exp_dt:
-                    o["status"] = "skipped"
-                    expired += 1
-            except Exception:
-                pass
-    if expired:
-        _save(records)
-    return expired
-
-
-def trim_pending_to_top_n_per_type(n: int = 5) -> int:
-    """
-    Clean up pending opportunities so the inbox + email only show a focused
-    top-N per type. Does three things in order:
-
-    1. Marks pending opps from low-credibility sources as 'skipped'
-       (retroactively applies services.source_credibility — catches opps
-       that were created before the credibility filter existed).
-    2. Marks pending newsjacking opps with no newsjacking_hook as 'skipped'
-       (they were created before the richer prompt — we'd rather regenerate).
-    3. For each remaining pending opportunity_type, keeps the top N by
-       relevance_score and marks the rest as 'skipped'.
-
-    Returns the total count trimmed.
-    """
-    try:
-        from services.source_credibility import is_credible
-    except ImportError:
-        def is_credible(_):  # type: ignore
-            return True
-
-    records = _load()
-    trimmed = 0
-
-    # Pass 1 — drop low-credibility sources retroactively
-    for o in records:
-        if o.get("status") != "pending":
-            continue
-        if not is_credible(o.get("story_source", "")):
-            o["status"] = "skipped"
-            trimmed += 1
-
-    # Pass 2 — drop pre-prompt-upgrade newsjacking opps missing the richer hook
-    for o in records:
-        if o.get("status") != "pending":
-            continue
-        if o.get("opportunity_type") == "newsjacking" and not o.get("newsjacking_hook"):
-            o["status"] = "skipped"
-            trimmed += 1
-
-    # Pass 3 — cap each type at top-N by relevance score
-    pending_by_type: dict = {}
-    for o in records:
-        if o.get("status") != "pending":
-            continue
-        t = o.get("opportunity_type", "pr_commentary")
-        pending_by_type.setdefault(t, []).append(o)
-
-    for opp_type, opps in pending_by_type.items():
-        opps.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
-        for overflow in opps[n:]:
-            overflow["status"] = "skipped"
-            trimmed += 1
-
-    if trimmed:
-        _save(records)
-    return trimmed
 
 
 def get_inbox_count() -> int:

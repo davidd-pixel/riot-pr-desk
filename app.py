@@ -67,16 +67,18 @@ except Exception:
     upcoming = []
 
 # ---------------------------------------------------------------------------
-# Morning briefing (cached 4 hours — runs fast if cache is fresh)
+# Saved morning briefing — opening the dashboard never regenerates it
 # ---------------------------------------------------------------------------
 briefing_opps = []
 briefing_meta = {}
 briefing_error = None
 
 try:
-    from services.autonomous_engine import run_daily_briefing, get_briefing_meta
-    briefing_opps = run_daily_briefing()
-    briefing_meta = get_briefing_meta()
+    from services.digest_delivery import load_briefing
+    saved_briefing = load_briefing()
+    if saved_briefing:
+        briefing_opps = saved_briefing["opportunities"]
+        briefing_meta = {"generated_at": saved_briefing["created_at"], "count": len(briefing_opps)}
 except Exception as e:
     briefing_error = str(e)
 

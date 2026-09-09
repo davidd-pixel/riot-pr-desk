@@ -9,6 +9,8 @@ from datetime import datetime, timezone, timedelta
 from utils.styles import apply_global_styles, render_sidebar, get_page_icon
 from services.regulator_monitor import (
     REGULATORS,
+    parse_published,
+    filter_recent_articles,
     REGULATOR_DESCRIPTIONS,
     get_all_regulator_news,
     get_news_for_body,
@@ -39,19 +41,7 @@ st.divider()
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _parse_published(pub_str: str):
-    """Parse ISO or RFC-2822 date string to a timezone-aware datetime, or None."""
-    if not pub_str:
-        return None
-    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%f%z"):
-        try:
-            return datetime.strptime(pub_str, fmt)
-        except ValueError:
-            pass
-    try:
-        return datetime.fromisoformat(pub_str)
-    except ValueError:
-        return None
+_parse_published = parse_published
 
 
 def _is_recent(pub_str: str, hours: int = 24) -> bool:
@@ -62,7 +52,7 @@ def _is_recent(pub_str: str, hours: int = 24) -> bool:
     now = datetime.now(timezone.utc)
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    return (now - dt) < timedelta(hours=hours)
+    return timedelta(0) <= (now - dt) < timedelta(hours=hours)
 
 
 def _most_recent_date(articles: list) -> str:
@@ -189,6 +179,10 @@ def _render_body_articles(articles: list, body_name: str, key_prefix: str):
 # Top controls
 # ---------------------------------------------------------------------------
 
+lookback_days = st.selectbox("Publication window", [30, 90, 365],
+    format_func=lambda days: f"Last {days} days", key="reg_lookback_days")
+st.caption("Only stories with known publication dates in this window are shown.")
+
 ctrl_col, refresh_col = st.columns([3, 1])
 
 with ctrl_col:
@@ -209,16 +203,18 @@ with refresh_col:
         help="Fetch the latest news for all regulatory bodies (~30s)",
     )
 
-if refresh_all:
+if refresh_all or ("reg_radar_news" in st.session_state and st.session_state.get("reg_radar_window") != lookback_days):
     with st.spinner("Fetching regulatory news..."):
-        st.session_state["reg_radar_news"] = get_all_regulator_news(page_size=8)
+        st.session_state["reg_radar_news"] = get_all_regulator_news(page_size=8, lookback_days=lookback_days, force_refresh=refresh_all)
+        st.session_state["reg_radar_window"] = lookback_days
 
 # Auto-load on first visit
 if "reg_radar_news" not in st.session_state:
     st.caption("Click **Refresh All** to load the latest regulatory news.")
     st.stop()
 
-all_news: dict = st.session_state.get("reg_radar_news", {})
+all_news: dict = {body: ([a for a in articles if "error" in a] + filter_recent_articles(articles, lookback_days))
+                  for body, articles in st.session_state.get("reg_radar_news", {}).items()}
 
 if not all_news:
     st.caption("Click **Refresh All** to load the latest regulatory news.")

@@ -149,7 +149,19 @@ Rules:
         clean = re.sub(r"```(?:json)?", "", raw).strip()
         match = re.search(r"\{[\s\S]*\}", clean)
         if match:
-            return json.loads(match.group())
+            result = json.loads(match.group())
+            if not isinstance(result, dict):
+                return {}
+            if result.get("blog_type") not in BLOG_TYPE_OPTIONS:
+                return {}
+            if not isinstance(result.get("primary_keyword"), str) or not result["primary_keyword"].strip():
+                return {}
+            keywords = result.get("secondary_keywords", [])
+            if not isinstance(keywords, list) or not all(isinstance(k, str) for k in keywords):
+                return {}
+            if not isinstance(result.get("rationale", ""), str):
+                return {}
+            return result
         return {}
     except Exception:
         return {}
@@ -222,6 +234,13 @@ def _build_blog_docx(sections: dict, blog_title: str) -> bytes:
     return buffer.read()
 
 
+def _set_quickstart_topic(value):
+    """Callbacks run before widgets, so the topic can safely be updated."""
+    st.session_state["blog_topic"] = value
+    for key in ("blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"):
+        st.session_state.pop(key, None)
+
+
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
@@ -272,11 +291,8 @@ with tab_write:
     }
     for col, (label, value) in zip([qs_col1, qs_col2, qs_col3, qs_col4], quickstarts.items()):
         with col:
-            if st.button(label, key=f"blog_qs_{label}", use_container_width=True):
-                st.session_state["blog_topic"] = value
-                for _k in ["blog_suggestions", "blog_suggestions_applied", "blog_suggestions_for_topic"]:
-                    st.session_state.pop(_k, None)
-                st.rerun()
+            st.button(label, key=f"blog_qs_{label}", use_container_width=True,
+                      on_click=_set_quickstart_topic, args=(value,))
 
     # Clear stale suggestions if the topic has changed since they were generated
     _sugg_for = st.session_state.get("blog_suggestions_for_topic", "")
@@ -288,6 +304,8 @@ with tab_write:
     if _trigger_suggest and topic.strip() and "blog_suggestions" not in st.session_state:
         with st.spinner("Analysing story and suggesting the best blog settings..."):
             _sugg_result = _generate_blog_suggestions(topic.strip())
+        if not _sugg_result:
+            st.warning("Blog suggestions are unavailable. Enter the blog type and keywords manually, or try suggesting again.")
         st.session_state["blog_suggestions"] = _sugg_result
         st.session_state["blog_suggestions_for_topic"] = topic.strip()
 
