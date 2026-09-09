@@ -914,7 +914,7 @@ if __name__ == "__main__":
                 print("Inactive seasonal slot; no email sent.")
                 sys.exit(0)
             if not scheduled_run_due(now, schedule):
-                print("::error::Morning delivery window missed because the scheduled job arrived late; no email sent.")
+                print("::error::Not eligible for weekday delivery after 08:00 UK; no email sent.")
                 sys.exit(1)
         try:
             result = deliver_digest(

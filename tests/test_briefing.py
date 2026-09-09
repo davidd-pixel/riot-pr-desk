@@ -97,7 +97,7 @@ class DigestTests(unittest.TestCase):
                  ('2026-07-01T08:10:00+00:00', '0 8 * * 1-5', False),
                  ('2026-12-01T08:10:00+00:00', '0 8 * * 1-5', True),
                  ('2026-12-01T08:10:00+00:00', '0 7 * * 1-5', False),
-                 ('2026-07-01T10:00:00+00:00', '0 7 * * 1-5', False),
+                 ('2026-07-01T10:00:00+00:00', '0 7 * * 1-5', True),
                  ('2026-07-04T07:10:00+00:00', '0 7 * * 1-5', False)]
         for iso, schedule, want in cases:
             with self.subTest(iso=iso, schedule=schedule):
@@ -156,9 +156,33 @@ class DigestTests(unittest.TestCase):
             self.deliver(builder=fail)
         self.assertEqual(self.sent, [])
 
-    def test_smtp_login_crossing_deadline_leaves_snapshot_ready(self):
+    def test_smtp_delay_past_nine_still_sends(self):
         def slow_smtp(records, address, **kwargs):
             self.now = datetime(2026, 7, 1, 8, 1, tzinfo=timezone.utc)
+            kwargs['before_send']()
+            self.sent.append(records)
+            return True
+        self.assertEqual(self.deliver(sender=slow_smtp), 'sent')
+        self.assertEqual(self.sent, [self.opps])
+
+    def test_generation_finishing_late_still_sends(self):
+        def slow():
+            self.now = datetime(2026, 7, 1, 8, 5, tzinfo=timezone.utc)
+            return self.opps
+        self.assertEqual(self.deliver(builder=slow), 'sent')
+        self.assertEqual(self.sent, [self.opps])
+
+    def test_afternoon_start_sends_once_despite_later_retry(self):
+        self.now = datetime(2026, 7, 1, 14, 30, tzinfo=timezone.utc)
+        self.assertEqual(self.deliver(), 'sent')
+        self.now = datetime(2026, 7, 1, 18, 0, tzinfo=timezone.utc)
+        self.assertEqual(self.deliver(), 'already_sent')
+        self.assertEqual(self.sent, [self.opps])
+
+    def test_smtp_crossing_midnight_does_not_send_previous_days_digest(self):
+        self.now = datetime(2026, 7, 1, 22, 59, tzinfo=timezone.utc)
+        def slow_smtp(records, address, **kwargs):
+            self.now = datetime(2026, 7, 1, 23, 1, tzinfo=timezone.utc)
             kwargs['before_send']()
             self.sent.append(records)
             return True
@@ -166,14 +190,6 @@ class DigestTests(unittest.TestCase):
             self.deliver(sender=slow_smtp)
         self.assertEqual(self.sent, [])
         self.assertEqual(self.remote['briefing_2026-07-01.json']['status'], 'ready')
-
-    def test_generation_finishing_after_morning_window_does_not_send(self):
-        def slow():
-            self.now = datetime(2026, 7, 1, 8, 5, tzinfo=timezone.utc)
-            return self.opps
-        with self.assertRaises(RuntimeError):
-            self.deliver(builder=slow)
-        self.assertEqual(self.sent, [])
 
 
 if __name__ == '__main__':

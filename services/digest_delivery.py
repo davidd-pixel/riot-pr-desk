@@ -16,9 +16,9 @@ class DeliveryWindowClosed(RuntimeError):
 
 
 
-def _morning(now):
+def _delivery_time(now):
     local = now.astimezone(UK)
-    return local.weekday() < 5 and local.hour == 8
+    return local.weekday() < 5 and local.hour >= 8
 
 
 def active_schedule(now):
@@ -28,8 +28,8 @@ def active_schedule(now):
 
 
 def scheduled_run_due(now, schedule):
-    """Only the season's intended slot, arriving during 08:00–08:59 UK."""
-    return _morning(now) and schedule == active_schedule(now)
+    """The season's intended slot may arrive any time after 08:00 UK."""
+    return _delivery_time(now) and schedule == active_schedule(now)
 
 
 def _filename(briefing_id):
@@ -88,8 +88,8 @@ def deliver_digest(to_email, *, build, send, now=None, force_resend=False):
                 previous = previous.replace(tzinfo=timezone.utc)
             if previous.astimezone(UK).date().isoformat() == briefing_id:
                 return 'already_sent'
-    if not _morning(started):
-        raise RuntimeError('Digest delivery is limited to 08:00–08:59 UK on weekdays.')
+    if not _delivery_time(started):
+        raise RuntimeError('Digest delivery starts at 08:00 UK on weekdays; delayed runs remain eligible.')
     if record is None:
         opportunities = select_opportunities(build())
         record = {'id': briefing_id, 'created_at': started.isoformat(),
@@ -102,16 +102,16 @@ def deliver_digest(to_email, *, build, send, now=None, force_resend=False):
     # The Inbox opens this exact snapshot even after subsequent briefings.
     drive.upload_json('latest_briefing.json', {'id': briefing_id}, strict=True)
     current = now()
-    if not _morning(current) or current.astimezone(UK).date().isoformat() != briefing_id:
-        raise RuntimeError('Briefing prepared too late for the morning window; no email sent.')
+    if not _delivery_time(current) or current.astimezone(UK).date().isoformat() != briefing_id:
+        raise RuntimeError('The UK briefing date changed during preparation; no previous-day email sent.')
     record['status'] = 'sending'
     record['attempts'] += 1
     record['attempted_at'] = current.isoformat()
     drive.upload_json(filename, record, strict=True)
     def before_send():
         instant = now()
-        if not _morning(instant) or instant.astimezone(UK).date().isoformat() != briefing_id:
-            raise DeliveryWindowClosed('Morning window closed before SMTP send; no email sent.')
+        if not _delivery_time(instant) or instant.astimezone(UK).date().isoformat() != briefing_id:
+            raise DeliveryWindowClosed('The UK briefing date changed before SMTP send; no previous-day email sent.')
 
     try:
         success = send(record['opportunities'], to_email, briefing_id=briefing_id, before_send=before_send)

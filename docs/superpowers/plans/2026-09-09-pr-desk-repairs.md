@@ -4,7 +4,7 @@
 
 **Architecture:** Keep Streamlit, Google Drive and GitHub Actions. The scheduled runner owns opportunity creation and daily digest snapshots. The app reads the saved briefing and records user decisions as separate immutable events so a background briefing cannot overwrite them. Persist the exact daily snapshot before sending; record an uncertain send before SMTP and require explicit recovery if delivery cannot be confirmed.
 
-**Approved scope:** Weekday morning delivery around 08:00 Europe/London via GitHub Actions; Regulatory Radar defaults to 30 days with older-history access; preserve unapproved opportunities; repair AI/News Desk/blog flows; remove Story Ladder, Quote Generator and Crisis Comms. No live email tests or deployment during development.
+**Approved scope:** Weekday delivery targeting 08:00 Europe/London via GitHub Actions, allowing same-day delays with one digest per UK date; Regulatory Radar defaults to 30 days with older-history access; preserve unapproved opportunities; repair AI/News Desk/blog flows; remove Story Ladder, Quote Generator and Crisis Comms. No live email tests or deployment during development.
 
 ## Tasks
 
