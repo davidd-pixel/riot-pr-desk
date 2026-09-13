@@ -64,10 +64,10 @@ def is_configured():
     return True
 
 
-def _fetch_rss(url, max_items=30):
+def _fetch_rss(url, max_items=30, force_refresh=False):
     """Fetch and parse a Google News RSS feed."""
     cache_key = f"rss|{url}"
-    cached = _get_cache(cache_key)
+    cached = None if force_refresh else _get_cache(cache_key)
     if cached is not None:
         return cached
 
@@ -125,11 +125,11 @@ def _fetch_rss(url, max_items=30):
         return [{"error": f"Failed to fetch news: {e}"}]
 
 
-def _search_gnews(query, max_items=30):
+def _search_gnews(query, max_items=30, force_refresh=False):
     """Search Google News RSS for a query."""
     encoded_query = query.replace(" ", "+")
     url = f"{GNEWS_BASE}/search?q={encoded_query}&{GNEWS_PARAMS}"
-    return _fetch_rss(url, max_items=max_items)
+    return _fetch_rss(url, max_items=max_items, force_refresh=force_refresh)
 
 
 def _deduplicate(articles):
@@ -222,9 +222,13 @@ def _sort_by_date(articles: list) -> list:
 def fetch_uk_vape_news(page_size=20, max_age_days: int = 7):
     """Fetch UK vaping news via Google News search. Free and unlimited."""
     all_articles = []
+    source_results = []
     for query in UK_VAPE_SEARCHES:
         articles = _search_gnews(query, max_items=15)
+        source_results.append(articles)
         all_articles.extend([a for a in articles if "error" not in a])
+    if source_results and all(feed and all("error" in a for a in feed) for feed in source_results):
+        return [{"error": "All news sources failed to load. Please retry later."}]
     filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
     return _sort_by_date(_deduplicate(filtered))[:page_size]
 
@@ -232,9 +236,13 @@ def fetch_uk_vape_news(page_size=20, max_age_days: int = 7):
 def fetch_global_vape_news(page_size=20, max_age_days: int = 7):
     """Fetch global vaping news via Google News search."""
     all_articles = []
+    source_results = []
     for query in GLOBAL_VAPE_SEARCHES:
         articles = _search_gnews(query, max_items=15)
+        source_results.append(articles)
         all_articles.extend([a for a in articles if "error" not in a])
+    if source_results and all(feed and all("error" in a for a in feed) for feed in source_results):
+        return [{"error": "All news sources failed to load. Please retry later."}]
     filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
     return _sort_by_date(_deduplicate(filtered))[:page_size]
 
@@ -245,12 +253,14 @@ def fetch_trending_news(page_size=30, days_back=None, max_age_days: int = 7):
     Free and unlimited via Google News RSS topic feeds.
     """
     all_articles = []
+    source_results = []
 
     # Top UK stories
     top_stories = _fetch_rss(f"{GNEWS_BASE}?{GNEWS_PARAMS}", max_items=10)
     for a in top_stories:
         if "error" not in a:
             a["_category"] = "Top Stories"
+    source_results.append(top_stories)
     all_articles.extend([a for a in top_stories if "error" not in a])
 
     # Topic feeds
@@ -259,8 +269,11 @@ def fetch_trending_news(page_size=30, days_back=None, max_age_days: int = 7):
         for a in articles:
             if "error" not in a:
                 a["_category"] = topic_name
+        source_results.append(articles)
         all_articles.extend([a for a in articles if "error" not in a])
 
+    if source_results and all(feed and all("error" in a for a in feed) for feed in source_results):
+        return [{"error": "All news sources failed to load. Please retry later."}]
     filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
     return _sort_by_date(_deduplicate(filtered))[:page_size]
 
@@ -282,14 +295,18 @@ def fetch_social_viral_news(page_size=25, max_age_days: int = 7):
     exactly the kind of stories Riot can news-jack or add comment to.
     """
     all_articles = []
+    source_results = []
 
     for category, query in SOCIAL_VIRAL_SEARCHES.items():
         articles = _search_gnews(query, max_items=10)
         for a in articles:
             if "error" not in a:
                 a["_category"] = category
+        source_results.append(articles)
         all_articles.extend([a for a in articles if "error" not in a])
 
+    if source_results and all(feed and all("error" in a for a in feed) for feed in source_results):
+        return [{"error": "All news sources failed to load. Please retry later."}]
     filtered = _filter_credible(_filter_recent(all_articles, max_age_days=max_age_days))
     return _sort_by_date(_deduplicate(filtered))[:page_size]
 

@@ -2,30 +2,35 @@ name: Daily PR Briefing
 
 on:
   schedule:
-    # Primary — 07:00 UTC = 08:00 BST / 07:00 GMT
+    # Seasonal slots: runtime gate selects 08:00 Europe/London, including DST.
     - cron: '0 7 * * 1-5'
-    # Backup slots — GitHub scheduled runs are notoriously unreliable and
-    # can drift by hours. The duplicate-send guard in autonomous_engine
-    # means these are no-ops if the 07:00 run already succeeded.
-    - cron: '0 9 * * 1-5'
-    - cron: '0 11 * * 1-5'
+    - cron: '0 8 * * 1-5'
   workflow_dispatch:   # manual trigger for testing
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+  group: daily-pr-digest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
   briefing:
+    if: github.repository == 'davidd-pixel/riot-pr-desk'
+    timeout-minutes: 50
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -33,6 +38,10 @@ jobs:
       - name: Run daily briefing and send digest email
         run: python -m services.autonomous_engine --send-digest --force
         env:
+          DIGEST_SCHEDULE: ${{ github.event.schedule }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          PR_DESK_APP_URL: ${{ vars.PR_DESK_APP_URL }}
+          GOOGLE_DRIVE_OWNER_EMAIL: ${{ secrets.GOOGLE_DRIVE_OWNER_EMAIL }}
           ANTHROPIC_API_KEY:                   ${{ secrets.ANTHROPIC_API_KEY }}
           NEWSCATCHER_API_KEY:                 ${{ secrets.NEWSCATCHER_API_KEY }}
           DIGEST_EMAIL_TO:                     ${{ secrets.DIGEST_EMAIL_TO }}

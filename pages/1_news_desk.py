@@ -73,9 +73,13 @@ def _render_articles(articles, key_prefix):
             c1, c2, c3, c4, c5 = st.columns([2, 2, 2, 1, 1])
             with c1:
                 if ai_configured() and st.button("Analyse", key=f"{key_prefix}_tri_{i}", use_container_width=True):
-                    with st.spinner("Analysing..."):
-                        result = triage_news(f"{formatted['title']}\n\n{formatted['description']}")
-                    st.session_state[f"{key_prefix}_result_{i}"] = result
+                    st.session_state.pop(f"{key_prefix}_result_{i}", None)
+                    try:
+                        with st.spinner("Analysing..."):
+                            result = triage_news(f"{formatted['title']}\n\n{formatted['description']}")
+                        st.session_state[f"{key_prefix}_result_{i}"] = result
+                    except Exception:
+                        st.error("Analysis could not be completed. Please try again. If it keeps failing, check the AI provider, API key and model settings.")
             with c2:
                 if st.button("Create PR Pack →", key=f"{key_prefix}_gen_{i}", use_container_width=True):
                     st.session_state["pr_input"] = f"{formatted['title']}\n\n{formatted['description']}"

@@ -4,9 +4,10 @@ Tracks UK regulatory and trade body activity relevant to Riot and the vaping ind
 Free, unlimited, no API key required.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 
-from services.news_monitor import _search_gnews, _deduplicate, _sort_by_date
+from services.news_monitor import _search_gnews, _deduplicate
 
 # ---------------------------------------------------------------------------
 # Regulatory body definitions
@@ -56,19 +57,48 @@ def _set_cache(key, data):
     _cache[key] = (datetime.now(), data)
 
 
-def _fetch_for_body(body_name: str, page_size: int = 8) -> list:
+def parse_published(value):
+    """Parse ISO/RFC dates as UTC; malformed or absent dates stay unknown."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        result = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            result = parsedate_to_datetime(value)
+        except (ValueError, TypeError, OverflowError):
+            return None
+    if result.tzinfo is None:
+        result = result.replace(tzinfo=timezone.utc)
+    return result.astimezone(timezone.utc)
+
+
+def filter_recent_articles(articles, lookback_days=30):
+    """Keep known publication dates inside the selected window, newest first."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=lookback_days)
+    dated = [(parse_published(a.get("publishedAt")), a) for a in articles if "error" not in a]
+    return [a for date, a in sorted(
+        ((date, a) for date, a in dated if date is not None and cutoff <= date <= now),
+        key=lambda item: item[0], reverse=True,
+    )]
+
+
+def _fetch_for_body(body_name: str, page_size: int = 8, lookback_days: int = 30, force_refresh: bool = False) -> list:
     """Internal: fetch and cache articles for a single regulatory body."""
     query = REGULATORS.get(body_name)
     if not query:
         return [{"error": f"Unknown regulatory body: {body_name}"}]
 
-    cache_key = f"reg|{body_name}|{page_size}"
-    cached = _get_cache(cache_key)
+    cache_key = f"reg|{body_name}|{page_size}|{lookback_days}"
+    cached = None if force_refresh else _get_cache(cache_key)
     if cached is not None:
-        return cached
+        return filter_recent_articles(cached, lookback_days)
 
-    articles = _search_gnews(query, max_items=page_size * 2)
-    results = _sort_by_date(_deduplicate([a for a in articles if "error" not in a]))[:page_size]
+    articles = _search_gnews(f"({query}) when:{lookback_days}d", max_items=page_size * 2, force_refresh=force_refresh)
+    if articles and all("error" in a for a in articles):
+        return articles
+    results = filter_recent_articles(_deduplicate(articles), lookback_days)[:page_size]
     _set_cache(cache_key, results)
     return results
 
@@ -82,24 +112,24 @@ def is_configured() -> bool:
     return True
 
 
-def get_all_regulator_news(page_size: int = 8) -> dict:
+def get_all_regulator_news(page_size: int = 8, lookback_days: int = 30, force_refresh: bool = False) -> dict:
     """
     Fetch news for every tracked regulatory body.
     Returns {body_name: [article_dicts]}.
     Article schema: {title, url, source: {name}, description, publishedAt}
     """
     return {
-        name: _fetch_for_body(name, page_size=page_size)
+        name: _fetch_for_body(name, page_size=page_size, lookback_days=lookback_days, force_refresh=force_refresh)
         for name in REGULATORS
     }
 
 
-def get_news_for_body(body_name: str, page_size: int = 8) -> list:
+def get_news_for_body(body_name: str, page_size: int = 8, lookback_days: int = 30, force_refresh: bool = False) -> list:
     """
     Fetch news for a single regulatory body by display name.
     Returns a list of article dicts.
     """
-    return _fetch_for_body(body_name, page_size=page_size)
+    return _fetch_for_body(body_name, page_size=page_size, lookback_days=lookback_days, force_refresh=force_refresh)
 
 
 def get_latest_alerts() -> dict:
