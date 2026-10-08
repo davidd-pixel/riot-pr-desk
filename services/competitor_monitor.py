@@ -74,6 +74,8 @@ def fetch_competitor_news(competitor_name: str, page_size: int = 10) -> list:
         return cached
 
     articles = _search_gnews(query, max_items=page_size * 2)
+    if articles and all("error" in a for a in articles):
+        return articles
     results = _sort_by_date(_deduplicate([a for a in articles if "error" not in a]))[:page_size]
     _set_cache(cache_key, results)
     return results
@@ -104,6 +106,9 @@ def fetch_regulator_news(page_size: int = 8) -> dict:
             continue
 
         articles = _search_gnews(query, max_items=page_size * 2)
+        if articles and all("error" in a for a in articles):
+            results[name] = articles
+            continue
         clean = _sort_by_date(_deduplicate([a for a in articles if "error" not in a]))[:page_size]
         _set_cache(cache_key, clean)
         results[name] = clean

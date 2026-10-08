@@ -23,7 +23,7 @@ def _call_anthropic(system_prompt, user_prompt):
 
     client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     response = client.messages.create(
-        model="claude-sonnet-5",
+        model=os.getenv("ANTHROPIC_MODEL", "").strip() or "claude-sonnet-5",
         max_tokens=8192,
         thinking={"type": "disabled"},
         system=system_prompt,
@@ -70,7 +70,7 @@ def _stream_anthropic(system_prompt, user_prompt):
     from anthropic import Anthropic
     client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     with client.messages.stream(
-        model="claude-sonnet-5",
+        model=os.getenv("ANTHROPIC_MODEL", "").strip() or "claude-sonnet-5",
         max_tokens=8192,
         thinking={"type": "disabled"},
         system=system_prompt,
@@ -106,9 +106,9 @@ def generate_stream(user_prompt, system_prompt=None):
     provider = _get_provider()
     try:
         if provider == "anthropic":
-            return _stream_anthropic(system_prompt, user_prompt)
+            yield from _stream_anthropic(system_prompt, user_prompt)
         elif provider == "openai":
-            return _stream_openai(system_prompt, user_prompt)
+            yield from _stream_openai(system_prompt, user_prompt)
         else:
             raise ValueError(f"Unknown AI_PROVIDER: {provider}")
     except Exception as e:

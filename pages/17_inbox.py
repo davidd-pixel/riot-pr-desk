@@ -74,7 +74,39 @@ except Exception as e:
     all_packs = []
     st.error(f"Could not load packs: {e}")
 
+# Email links identify the immutable daily snapshot; user decisions remain live.
+briefing_id = st.query_params.get("briefing")
+briefing_unavailable = False
+if briefing_id:
+    try:
+        from services.digest_delivery import load_briefing, inbox_opportunities
+        from services.opportunity_tracker import get_all_opportunities
+        saved = load_briefing(briefing_id)
+        if saved is None:
+            st.error("That briefing could not be found. Use All pending ideas to view the inbox.")
+            pending_opps = []
+            briefing_unavailable = True
+        else:
+            pending_opps, handled = inbox_opportunities(saved, get_all_opportunities())
+            st.caption(f"Email briefing · {briefing_id} · {len(saved['opportunities'])} ideas")
+            for opp in handled:
+                st.markdown(f"**{opp.get('story_title', 'Untitled')}** — {opp.get('status', 'unknown')}")
+                if opp.get("riot_angle"):
+                    st.write(opp["riot_angle"])
+                if opp.get("status") == "unavailable":
+                    st.warning("This idea's current record is unavailable. Refresh from cloud before acting on it.")
+    except Exception:
+        st.error("Could not load this briefing from cloud. Please refresh and try again.")
+        pending_opps = []
+        briefing_unavailable = True
+    if st.button("All pending ideas"):
+        st.query_params.clear()
+        st.rerun()
+
 total_items = len(pending_opps) + len(under_review_packs) + len(media_pending_packs)
+
+if total_items == 0 and briefing_unavailable:
+    st.stop()
 
 if total_items == 0:
     st.markdown(
@@ -121,15 +153,7 @@ if pending_opps:
             unsafe_allow_html=True,
         )
 
-        _MAX_PER_SECTION = 5
-        _shown = 0
         for opp in group_opps:
-            if _shown >= _MAX_PER_SECTION:
-                _remaining = len(group_opps) - _MAX_PER_SECTION
-                st.caption(f"+{_remaining} more — skip some above to surface them")
-                break
-            _shown += 1
-
             opp_id = opp.get("id", "")
             score = opp.get("relevance_score", 0)
             title = opp.get("story_title", "Untitled")

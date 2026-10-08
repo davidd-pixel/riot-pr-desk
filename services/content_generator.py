@@ -19,7 +19,19 @@ def triage_news(news_content):
         news_content=news_content,
         positions_context=positions_context,
     )
-    return generate_json(prompt)
+    result = generate_json(prompt)
+    if not isinstance(result, dict):
+        raise ValueError("The AI returned an invalid analysis. Please try again.")
+    if "raw_response" in result:
+        if not isinstance(result["raw_response"], str) or not result["raw_response"].strip():
+            raise ValueError("The AI returned an empty analysis. Please try again.")
+        return result
+    if result.get("category") not in ("respond", "campaign", "monitor", "ignore"):
+        raise ValueError("The AI returned an invalid analysis category. Please try again.")
+    for field in ("reasoning", "suggested_angle", "urgency"):
+        if field in result and not isinstance(result[field], str):
+            raise ValueError("The AI returned invalid analysis fields. Please try again.")
+    return result
 
 
 def _build_pr_pack_prompt(input_content, position_name, spokesperson_key, audience_key, tone_key, tone_dial=None, length_dial=None):

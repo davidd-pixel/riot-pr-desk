@@ -16,49 +16,6 @@ DIGEST_SENT_FILE = os.path.join(DATA_DIR, "digest_sent.json")
 BRIEFING_CACHE_HOURS = 4
 
 
-def _digest_sent_today() -> bool:
-    """
-    Return True if we've already sent today's digest email. Used by the
-    GitHub Actions runner so backup cron slots (09:00, 11:00 UTC) don't
-    double-send if the 07:00 slot already succeeded.
-
-    Synced via Google Drive so multiple runners agree on the state.
-    """
-    try:
-        from services.drive_persistence import download_json, is_configured
-        data = None
-        if is_configured():
-            data = download_json("digest_sent.json")
-        if data is None and os.path.exists(DIGEST_SENT_FILE):
-            with open(DIGEST_SENT_FILE, "r") as f:
-                data = json.load(f)
-        if not data:
-            return False
-        last_iso = data.get("last_sent_at", "")
-        last = datetime.fromisoformat(last_iso)
-        if last.tzinfo is None:
-            last = last.replace(tzinfo=timezone.utc)
-        return last.date() == datetime.now(timezone.utc).date()
-    except Exception:
-        return False
-
-
-def _mark_digest_sent() -> None:
-    """Record that today's digest has been sent. Persists to Drive."""
-    payload = {"last_sent_at": datetime.now(timezone.utc).isoformat()}
-    try:
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(DIGEST_SENT_FILE, "w") as f:
-            json.dump(payload, f, indent=2)
-    except Exception:
-        pass
-    try:
-        from services.drive_persistence import upload_json
-        upload_json("digest_sent.json", payload)
-    except Exception:
-        pass
-
-
 # ---------------------------------------------------------------------------
 # Cache helpers
 # ---------------------------------------------------------------------------
@@ -197,17 +154,29 @@ opportunity_types must be a JSON array containing one or more of: "pr_commentary
 
     try:
         result = generate_json(prompt)
-        if isinstance(result, dict) and "relevance_score" in result:
-            # Normalise to list
-            valid_types = {"pr_commentary", "newsjacking", "blog"}
-            raw_types = result.get("opportunity_types") or result.get("opportunity_type")
-            if isinstance(raw_types, str):
-                raw_types = [raw_types]
-            if not isinstance(raw_types, list):
-                raw_types = ["pr_commentary"]
-            result["opportunity_types"] = [t for t in raw_types if t in valid_types] or ["pr_commentary"]
-            return result
-        return {"error": "Invalid AI response format"}
+        if not isinstance(result, dict):
+            return {"error": "Invalid AI response format"}
+        score = result.get("relevance_score")
+        if type(score) is not int or not 1 <= score <= 10:
+            return {"error": "Invalid AI relevance score"}
+        result = dict(result)
+        for field in (
+            "riot_angle", "suggested_position", "why_it_matters",
+            "newsjacking_concept", "newsjacking_hook", "newsjacking_execution",
+            "newsjacking_format", "newsjacking_speed",
+        ):
+            if not isinstance(result.get(field, ""), str):
+                return {"error": "Invalid AI text field"}
+            result.setdefault(field, "")
+        valid_types = {"pr_commentary", "newsjacking", "blog"}
+        raw_types = result.get("opportunity_types", result.get("opportunity_type", "pr_commentary"))
+        if isinstance(raw_types, str):
+            raw_types = [raw_types]
+        if (not isinstance(raw_types, list) or not raw_types or
+                any(not isinstance(t, str) or t not in valid_types for t in raw_types)):
+            return {"error": "Invalid AI opportunity types"}
+        result["opportunity_types"] = list(dict.fromkeys(raw_types))
+        return result
     except Exception as e:
         return {"error": str(e)}
 
@@ -225,33 +194,27 @@ def run_daily_briefing(force: bool = False) -> list:
     """
     from services.opportunity_tracker import (
         save_opportunity, get_all_opportunities, get_pending_opportunities,
-        update_opportunity_status, suppress_drive_sync, resume_drive_sync,
+        force_resync_from_drive,
     )
 
     # Return cached pending opportunities if cache is fresh
     if not force and _cache_is_fresh():
         return get_pending_opportunities()
 
-    # During the briefing, suppress Drive auto-pulls so mid-process _load()
-    # calls can't overwrite our in-progress local file with a stale Drive
-    # copy. This prevents opp data loss if a silent upload hiccups.
-    suppress_drive_sync()
-
-    # On a forced run (GitHub Actions / manual), clear old pending opps so
-    # inbox count matches the email exactly
-    if force:
-        for old in get_pending_opportunities():
-            update_opportunity_status(old["id"], "skipped")
+    force_resync_from_drive()
 
     # Fetch news — all feeds: vape-specific, trending, social, competitors, regulatory
     articles = []
     seen_titles: set = set()
     _credibility_skipped = 0
+    successful_feeds = 0
 
     from services.source_credibility import is_credible
 
     def _add_articles(feed: list):
-        nonlocal _credibility_skipped
+        nonlocal _credibility_skipped, successful_feeds
+        if not feed or any("error" not in a for a in feed):
+            successful_feeds += 1
         for a in feed:
             if "error" in a:
                 continue
@@ -271,9 +234,11 @@ def run_daily_briefing(force: bool = False) -> list:
             fetch_uk_vape_news, fetch_global_vape_news,
             fetch_trending_news,
         )
-        _add_articles(fetch_uk_vape_news(page_size=10))
-        _add_articles(fetch_global_vape_news(page_size=10))
-        _add_articles(fetch_trending_news(page_size=15))
+        for fetch, size in [(fetch_uk_vape_news, 10), (fetch_global_vape_news, 10), (fetch_trending_news, 15)]:
+            try:
+                _add_articles(fetch(page_size=size))
+            except Exception as exc:
+                print(f"News feed error: {exc}")
     except Exception as e:
         print(f"News feed error: {e}")
 
@@ -303,7 +268,7 @@ def run_daily_briefing(force: bool = False) -> list:
                 a.setdefault("source", {})
                 if isinstance(a.get("source"), dict):
                     a["source"]["name"] = a["source"].get("name") or comp_name
-                _add_articles([a])
+            _add_articles(comp_articles)
     except Exception as e:
         print(f"Competitor feed error: {e}")
 
@@ -315,12 +280,15 @@ def run_daily_briefing(force: bool = False) -> list:
                 a.setdefault("source", {})
                 if isinstance(a.get("source"), dict):
                     a["source"]["name"] = a["source"].get("name") or reg_name
-                _add_articles([a])
+            _add_articles(reg_articles)
     except Exception as e:
         print(f"Regulatory feed error: {e}")
 
     print(f"Fetched {len(articles)} articles across all feeds "
           f"({_credibility_skipped} skipped as low-credibility sources)")
+
+    if not successful_feeds:
+        raise RuntimeError("All news feeds failed; briefing was not prepared.")
 
     if not articles:
         _save_cache({"generated_at": datetime.now(timezone.utc).isoformat(), "count": 0})
@@ -333,17 +301,21 @@ def run_daily_briefing(force: bool = False) -> list:
     # Analyse up to 20 credible articles — we'll trim to 5-per-type afterwards
     new_count = 0
     analysed = []
+    analysis_attempts = 0
+    analysis_successes = 0
     for article in articles[:20]:
         title = article.get("title", "")
         if not title or title.lower() in seen_titles:
             continue
 
         print(f"  Analysing: {title[:80]}")
+        analysis_attempts += 1
         analysis = analyse_story_for_riot(article)
         if "error" in analysis:
             print(f"    → Error: {analysis['error']}")
             continue
 
+        analysis_successes += 1
         score = analysis.get("relevance_score", 0)
         print(f"    → Score: {score}/10 types={analysis.get('opportunity_types')} — {analysis.get('riot_angle','')[:50]}")
         if score < 4:  # only surface genuinely relevant stories
@@ -378,19 +350,13 @@ def run_daily_briefing(force: bool = False) -> list:
         if new_count >= 15:
             break
 
-    # Trim to top-5-per-type so inbox + email see the same focused set
-    from services.opportunity_tracker import trim_pending_to_top_n_per_type
-    trimmed = trim_pending_to_top_n_per_type(n=5)
-    if trimmed:
-        print(f"Trimmed {trimmed} lower-ranked opportunities to keep top-5 per type")
+    if analysis_attempts and not analysis_successes:
+        raise RuntimeError("All story analysis attempts failed; briefing was not prepared.")
 
     _save_cache({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": new_count,
     })
-
-    # Re-enable Drive auto-pulls for Streamlit readers
-    resume_drive_sync()
 
     return get_pending_opportunities()
 
@@ -683,7 +649,7 @@ def build_mailto_link(journalist: dict, pack: dict) -> str:
 # Email digest (called by GitHub Actions)
 # ---------------------------------------------------------------------------
 
-def send_digest_email(opportunities: list, to_email: str) -> bool:
+def send_digest_email(opportunities: list, to_email: str, *, briefing_id: str = None, before_send=None) -> bool:
     """
     Send the daily PR briefing email digest via Gmail SMTP.
     Requires env vars: SMTP_USER, SMTP_PASSWORD.
@@ -700,7 +666,12 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
         print("SMTP credentials not configured — skipping email digest")
         return False
 
-    today = datetime.now().strftime("%A %d %B %Y")
+    from services.digest_delivery import UK
+    today = datetime.now(UK).strftime("%A %d %B %Y")
+    inbox_url = (os.getenv("PR_DESK_APP_URL") or "https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app").rstrip("/") + "/inbox"
+    if briefing_id:
+        from urllib.parse import urlencode
+        inbox_url += "?" + urlencode({"briefing": briefing_id})
     n = len(opportunities)
 
     # Split by type
@@ -820,7 +791,7 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
         f'<div style="font-size:13px;color:#aaa;margin-bottom:20px">{summary}</div>'
         f'{section_html}'
         f'<div style="margin-top:20px">'
-        f'<a href="https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox" '
+        f'<a href="{inbox_url}" '
         f'style="background:#E8192C;color:#fff;padding:10px 20px;text-decoration:none;'
         f'font-weight:700;font-size:13px;border-radius:3px;display:inline-block">Open Inbox →</a>'
         f'</div>'
@@ -863,7 +834,7 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
                     entry.append(f"  Angle: {opp.get('riot_angle','')}")
                 entry.append("")
                 lines += entry
-    lines += ["Open Inbox: https://riot-pr-desk-5k9kicamlm6rxkugrrymxq.streamlit.app/inbox", "", "—", "Riot PR Desk · Auto-generated"]
+    lines += [f"Open Inbox: {inbox_url}", "", "—", "Riot PR Desk · Auto-generated"]
 
     msg = MIMEMultipart("alternative")
     subject_line = f"Riot PR Desk — {summary} · {today}"
@@ -873,12 +844,17 @@ def send_digest_email(opportunities: list, to_email: str) -> bool:
     msg.attach(MIMEText("\n".join(lines), "plain"))
     msg.attach(MIMEText(html_body, "html"))
 
+    from services.digest_delivery import DeliveryWindowClosed
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as server:
             server.login(smtp_user, smtp_password)
+            if before_send is not None:
+                before_send()
             server.sendmail(smtp_user, to_email, msg.as_string())
         print(f"Digest sent to {to_email}")
         return True
+    except DeliveryWindowClosed:
+        raise
     except Exception as e:
         print(f"Failed to send digest: {e}")
         return False
@@ -927,28 +903,25 @@ if __name__ == "__main__":
             print("ERROR: SMTP_USER or SMTP_PASSWORD not set")
             sys.exit(1)
 
-        # Duplicate-send guard: if we already sent today's digest from an
-        # earlier cron slot, exit cleanly. --force-resend overrides.
-        if not args.force_resend and _digest_sent_today():
-            print("Today's digest has already been sent — skipping to avoid duplicate.")
-            print("(Use --force-resend to override.)")
-            sys.exit(0)
-
-        print("\nFetching and analysing news...")
+        from services.digest_delivery import deliver_digest, scheduled_run_due, active_schedule
+        if os.getenv("GITHUB_EVENT_NAME") == "schedule":
+            if os.getenv("GITHUB_REPOSITORY") != "davidd-pixel/riot-pr-desk":
+                print("Automatic delivery is enabled only in Dave's live repository.")
+                sys.exit(0)
+            now = datetime.now(timezone.utc)
+            schedule = os.getenv("DIGEST_SCHEDULE", "")
+            if schedule != active_schedule(now):
+                print("Inactive seasonal slot; no email sent.")
+                sys.exit(0)
+            if not scheduled_run_due(now, schedule):
+                print("::error::Not eligible for weekday delivery after 08:00 UK; no email sent.")
+                sys.exit(1)
         try:
-            opps = run_daily_briefing(force=True)
-            print(f"Found {len(opps)} opportunities")
-        except Exception as e:
-            print(f"Briefing failed: {e}")
-            opps = []
-
-        # Always send — even on a quiet news day
-        print(f"\nSending digest to {to_email}...")
-        success = send_digest_email(opps, to_email)
-        if success:
-            _mark_digest_sent()
-            print("Digest sent successfully.")
-            sys.exit(0)
-        else:
-            print("ERROR: Failed to send digest email.")
+            result = deliver_digest(
+                to_email, build=lambda: run_daily_briefing(force=True),
+                send=send_digest_email, force_resend=args.force_resend,
+            )
+            print(f"Digest result: {result}")
+        except Exception as exc:
+            print(f"ERROR: {exc}")
             sys.exit(1)

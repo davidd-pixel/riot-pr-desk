@@ -92,17 +92,21 @@ def _find_file_id(drive, filename: str) -> str | None:
     drive_name = f"riot_db_{filename}"
     fid = _folder_id()
     q = f"name='{drive_name}' and '{fid}' in parents and trashed=false"
-    result = drive.files().list(q=q, fields="files(id)", pageSize=1).execute()
+    result = drive.files().list(q=q, fields="files(id)", pageSize=2).execute()
     files = result.get("files", [])
+    if len(files) > 1:
+        raise RuntimeError(f"Duplicate Drive records for {filename}; reconcile them before continuing")
     return files[0]["id"] if files else None
 
 
-def download_json(filename: str):
+def download_json(filename: str, *, strict: bool = False):
     """
     Download riot_db_<filename> from Drive and return parsed JSON.
-    Returns None if not configured, file not found, or any error.
+    Strict callers distinguish missing files from configuration/transport failures.
     """
     if not is_configured():
+        if strict:
+            raise RuntimeError("Google Drive persistence is not configured")
         return None
     try:
         drive = _get_drive()
@@ -118,16 +122,20 @@ def download_json(filename: str):
             _, done = downloader.next_chunk()
         buf.seek(0)
         return json.loads(buf.read().decode("utf-8"))
-    except Exception:
+    except Exception as exc:
+        if strict:
+            raise RuntimeError(f"Could not read {filename} from Google Drive") from exc
         return None
 
 
-def upload_json(filename: str, data) -> None:
+def upload_json(filename: str, data, *, strict: bool = False) -> None:
     """
     Upload data as riot_db_<filename> to Drive.  Creates or overwrites.
-    Silent fail — never raises, never crashes the app.
+    Strict callers receive failures before acknowledging a successful save.
     """
     if not is_configured():
+        if strict:
+            raise RuntimeError("Google Drive persistence is not configured")
         return
     try:
         from googleapiclient.http import MediaIoBaseUpload
@@ -143,5 +151,36 @@ def upload_json(filename: str, data) -> None:
         else:
             metadata = {"name": drive_name, "parents": [_folder_id()]}
             drive.files().create(body=metadata, media_body=media, fields="id").execute()
-    except Exception:
-        pass
+    except Exception as exc:
+        if strict:
+            raise RuntimeError(f"Could not save {filename} to Google Drive") from exc
+
+
+def download_action_events(known_names: set[str]) -> dict:
+    """Read new immutable user actions, paginating without re-downloading old ones.
+
+    The scheduled writer never updates these files. Concurrent app actions use
+    distinct UUID filenames; listing failures are fatal rather than an empty log.
+    """
+    if not is_configured():
+        raise RuntimeError("Google Drive persistence is not configured")
+    drive = _get_drive()
+    result = {}
+    page_token = None
+    prefix = "riot_db_opportunity_action_"
+    while True:
+        page = drive.files().list(
+            q=f"'{_folder_id()}' in parents and trashed=false and name contains '{prefix}'",
+            fields="nextPageToken,files(id,name)", pageSize=1000,
+            pageToken=page_token,
+        ).execute()
+        for file in page.get("files", []):
+            name = file["name"].removeprefix("riot_db_")
+            if not file["name"].startswith(prefix) or name in known_names:
+                continue
+            raw = drive.files().get_media(fileId=file["id"]).execute()
+            event = json.loads(raw.decode("utf-8"))
+            result[name] = event
+        page_token = page.get("nextPageToken")
+        if not page_token:
+            return result

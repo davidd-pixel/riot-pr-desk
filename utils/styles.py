@@ -621,9 +621,6 @@ def render_sidebar():
         st.page_link("pages/2_pr_generator.py",     label="PR Generator",     icon=":material/edit_note:")
         st.page_link("pages/7_pr_library.py",       label="PR Library",       icon=":material/folder_open:")
         st.page_link("pages/12_pr_calendar.py",     label="PR Calendar",      icon=":material/calendar_month:")
-        st.page_link("pages/10_story_ladder.py",    label="Story Ladder",     icon=":material/trending_up:")
-        st.page_link("pages/14_quote_generator.py", label="Quote Generator",  icon=":material/format_quote:")
-        st.page_link("pages/11_crisis_comms.py",    label="Crisis Comms",     icon=":material/crisis_alert:")
 
         st.markdown('<p class="section-header">Intelligence</p>', unsafe_allow_html=True)
         st.page_link("pages/9_competitors.py",      label="Competitor Monitor", icon=":material/manage_search:")
